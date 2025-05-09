@@ -17,6 +17,19 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun MainScreen() {
+    var currentScreen by remember { mutableStateOf("main") }
+
+    when (currentScreen) {
+        "main" -> MainContent(
+            onConfigClick = { currentScreen = "config" }
+        )
+        "config" -> ConfigurationsListScreen(
+            onBackClick = { currentScreen = "main" }
+        )
+    }
+}
+@Composable
+fun MainContent(onConfigClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -48,7 +61,7 @@ fun MainScreen() {
         ) {
             Spacer(modifier = Modifier.height(200.dp))
             Button(
-                onClick = { /* Akcja dla "KONFIGURACJE" */ },
+                onClick =  onConfigClick,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = Color(0xFFA1CDE1),
                     contentColor = Color.Black
