@@ -3,6 +3,8 @@ package com.example.friendly_words
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,7 +28,9 @@ data class VocabularyItem(
 )
 
 @Composable
-fun ConfigurationSettingsScreen() {
+fun ConfigurationSettingsScreen(
+    onBackClick: () -> Unit // Dodajemy funkcję do obsługi kliknięcia w strzałkę
+) {
     var vocabItems by remember {
         mutableStateOf(
             mutableListOf(
@@ -46,17 +51,21 @@ fun ConfigurationSettingsScreen() {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        IconButton(onClick = { /* Go back */ }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
                         }
                         Text(
-                            "Nazwa konfiguracji: Przykład",
-                            fontSize = 18.sp,
-                            modifier = Modifier.weight(1f)
+                            "Nowa konfiguracja",
+                            fontSize = 30.sp,
+                            modifier = Modifier.weight(1f),
+                            color = Color.White
                         )
-                        TextButton(onClick = { /* Save action */ }) {
-                            Text("ZAPISZ", color = Color.White, fontWeight = FontWeight.Bold)
-                        }
+
+                        Spacer(modifier = Modifier.width(15.dp))
                     }
                 },
                 backgroundColor = Color(0xFF004B88)
@@ -70,28 +79,38 @@ fun ConfigurationSettingsScreen() {
         ) {
             TabRow(
                 selectedTabIndex = 0,
-                backgroundColor = Color(0xFF004B88),
-                contentColor = Color.White
+                backgroundColor = Color.White,
+                contentColor = Color.Black
             ) {
                 Tab(
                     selected = true,
                     onClick = {},
-                    text = { Text("Materiał", modifier = Modifier.padding(vertical = 12.dp)) }
+                    modifier = Modifier.height(50.dp),
+                    text = { Text(text="MATERIAŁ", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
                 )
                 Tab(
                     selected = false,
                     onClick = {},
-                    text = { Text("Uczenie", modifier = Modifier.padding(vertical = 12.dp)) }
+                    modifier = Modifier.width(50.dp),
+                    text = { Text(text="UCZENIE", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
                 )
                 Tab(
                     selected = false,
                     onClick = {},
-                    text = { Text("Wzmocnienia", modifier = Modifier.padding(vertical = 12.dp)) }
+                    modifier = Modifier.width(50.dp),
+                    text = { Text(text="WZMOCNIENIA", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
                 )
                 Tab(
                     selected = false,
                     onClick = {},
-                    text = { Text("Test", modifier = Modifier.padding(vertical = 12.dp)) }
+                    modifier = Modifier.width(50.dp),
+                    text = { Text(text="TEST", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
+                )
+                Tab(
+                    selected = false,
+                    onClick = {},
+                    modifier = Modifier.width(50.dp),
+                    text = { Text(text="ZAPISZ", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
                 )
             }
 
@@ -99,10 +118,15 @@ fun ConfigurationSettingsScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-            ) {
+            ) {Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(Color(0xFF004B88).copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ){
                 Column(
                     modifier = Modifier
-                        .weight(1f)
                         .fillMaxHeight()
                 ) {
                     Row(
@@ -113,24 +137,36 @@ fun ConfigurationSettingsScreen() {
                     ) {
                         Text(
                             "SŁOWO",
+                            fontSize=20.sp,
                             modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color=Color.Gray
                         )
+                        Spacer(modifier = Modifier.width(50.dp))
                         Text(
                             "W UCZENIU",
+                            fontSize=20.sp,
                             modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color=Color.Gray
                         )
+                        Spacer(modifier = Modifier.width(50.dp))
                         Text(
                             "W TEŚCIE",
+                            fontSize=20.sp,
                             modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color=Color.Gray
                         )
+                        Spacer(modifier = Modifier.width(65.dp))
                         Text(
                             "USUŃ",
+                            fontSize=20.sp,
                             modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color=Color.Gray
                         )
+                        //Spacer(modifier = Modifier.width(10.dp))
                     }
 
                     LazyColumn(
@@ -147,6 +183,8 @@ fun ConfigurationSettingsScreen() {
                             ) {
                                 Text(
                                     item.word,
+                                    fontSize=30.sp,
+                                    fontWeight = FontWeight.Bold,
                                     modifier = Modifier.weight(1f)
                                 )
                                 Box(
@@ -161,6 +199,7 @@ fun ConfigurationSettingsScreen() {
                                                 this[index] = item.copy(inLearning = it)
                                             }
                                         },
+                                        modifier = Modifier.scale(1.5f),
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = Color(0xFF2EB2D6),
                                             uncheckedColor = Color.Gray,
@@ -180,6 +219,7 @@ fun ConfigurationSettingsScreen() {
                                                 this[index] = item.copy(inTest = it)
                                             }
                                         },
+                                        modifier = Modifier.scale(1.5f),
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = Color(0xFF2EB2D6),
                                             uncheckedColor = Color.Gray,
@@ -201,7 +241,8 @@ fun ConfigurationSettingsScreen() {
                                         Icon(
                                             Icons.Default.Delete,
                                             contentDescription = "Usuń",
-                                            tint = Color(0xFF004B88)
+                                            tint = Color(0xFF004B88),
+                                            modifier = Modifier.size(40.dp)
                                         )
                                     }
                                 }
@@ -231,21 +272,25 @@ fun ConfigurationSettingsScreen() {
                             Text(
                                 "DODAJ",
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
                             )
                         }
                     }
                 }
-
+            }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Wybierz materiał na liście obok")
+                    Text(text="Wybierz materiał na liście obok",
+                        fontSize=25.sp)
                 }
             }
         }
     }
 }
+
+

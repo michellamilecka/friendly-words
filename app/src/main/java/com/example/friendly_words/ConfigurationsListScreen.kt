@@ -1,28 +1,31 @@
 package com.example.friendly_words
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FileCopy
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Search
-
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 
 @Composable
-fun ConfigurationsListScreen(onBackClick: () -> Unit) {
-    var searchQuery by remember { mutableStateOf("") } // Stan dla tekstu wyszukiwania
+fun ConfigurationsListScreen(
+    onBackClick: () -> Unit,
+    onCreateClick: () -> Unit,
+) {
+    var searchQuery by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -47,8 +50,10 @@ fun ConfigurationsListScreen(onBackClick: () -> Unit) {
                         )
                         Text(
                             "UTWÓRZ",
-                            fontSize=30.sp,
-                            color=Color.White
+                            fontSize = 30.sp,
+                            color = Color.White,
+                            modifier = Modifier
+                                .clickable { onCreateClick() }
                         )
                         Spacer(modifier = Modifier.width(15.dp))
                     }
@@ -62,7 +67,6 @@ fun ConfigurationsListScreen(onBackClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Pasek wyszukiwania
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -72,7 +76,7 @@ fun ConfigurationsListScreen(onBackClick: () -> Unit) {
                 placeholder = {
                     Text(
                         text = "Wyszukaj",
-                        style = TextStyle(fontSize = 35.sp) // Zwiększona wielkość napisu
+                        style = TextStyle(fontSize = 35.sp)
                     )
                 },
                 leadingIcon = {
@@ -91,116 +95,141 @@ fun ConfigurationsListScreen(onBackClick: () -> Unit) {
                 shape = RoundedCornerShape(8.dp)
             )
 
-            // Reszta zawartości ekranu
             Box(
                 modifier = Modifier
-                    .fillMaxSize(),
-                //contentAlignment = Alignment.Center
+                    .fillMaxSize()
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(20.dp))
-                    Row { Spacer(modifier = Modifier.width(20.dp))
-                        Text(text="NAZWA KONFIGURACJI",
-                        fontSize=25.sp,
-                        color=Color.Gray)
-                        Spacer(modifier = Modifier.width(895.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.width(20.dp))
+
+                        var showTooltip by remember { mutableStateOf(false) }
+
                         Text(
-                            text="AKCJE",
-                            fontSize=25.sp,
-                            color=Color.Gray)
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .background(Color.LightGray),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            var isChecked by remember { mutableStateOf(false) }
+                            text = "NAZWA KONFIGURACJI",
+                            fontSize = 25.sp,
+                            color = Color.Gray
+                        )
 
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { isChecked = it },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = Color(0xFF004B88),
-                                    uncheckedColor = Color.Gray,
-                                    checkmarkColor = Color.White
-                                )
+                        Spacer(modifier = Modifier.width(6.dp))
+
+                        Box {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Informacja",
+                                tint = Color.Gray,
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clickable { showTooltip = !showTooltip }
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Spacer(modifier = Modifier.height(13.dp))
-                                Text(
-                                    text = "1 konfiguracja",
-                                    fontSize = 30.sp
-                                )
-                                Spacer(modifier = Modifier.height(3.dp))
-                                Text(
-                                    text = "(konfiguracja aktywna w trybie: uczenie)",
-                                    fontSize = 20.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(150.dp))
-                            IconButton(onClick = { /* Akcja kopiowania */ }) {
-                                Icon(
-                                    imageVector = Icons.Default.FileCopy,
-                                    contentDescription = "Copy",
-                                    tint = Color(0xFF004B88)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(onClick = { /* Akcja edycji */ }) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Edit",
-                                    tint = Color(0xFF004B88)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(onClick = { /* Akcja usuwania */ }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete",
-                                    tint = Color(0xFF004B88)
-                                )
+
+                            if (showTooltip) {
+                                Popup(
+                                    alignment = Alignment.TopStart,
+                                    onDismissRequest = { showTooltip = false }
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color.White)
+                                            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                            .padding(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Zestaw wybranych opcji do zestawu nauki.",
+                                            fontSize = 30.sp,
+                                            color = Color.Black,
+                                            textAlign = TextAlign.Start
+                                        )
+                                    }
+                                }
                             }
                         }
 
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .background(Color.LightGray),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically // Wyrównanie elementów w pionie
-                        ) {
-                            var isChecked by remember { mutableStateOf(false) } // Stan dla checkboxa
+                        Spacer(modifier = Modifier.width(840.dp))
 
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = { isChecked = it }, // Aktualizacja stanu po zaznaczeniu
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = Color(0xFF004B88), // Kolor checkboxa po zaznaczeniu (niebieski z Twojego projektu)
-                                    uncheckedColor = Color.Gray, // Kolor checkboxa, gdy niezaznaczony
-                                    checkmarkColor = Color.White // Kolor znacznika (biały)
-                                )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp)) // Odstęp między checkboxem a tekstem
-                            Text(
-                                text = "1 konfiguracja",
-                                fontSize = 30.sp
-                            )
-                        }
+                        Text(
+                            text = "AKCJE",
+                            fontSize = 25.sp,
+                            color = Color.Gray
+                        )
                     }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    ConfigurationItem("1 konfiguracja")
+                    Spacer(modifier = Modifier.height(20.dp))
+                    ConfigurationItem("2 konfiguracja")
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConfigurationItem(title: String) {
+    var isChecked by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .background(Color(0xFF004B88).copy(alpha = 0.2f)),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { isChecked = it },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF004B88),
+                    uncheckedColor = Color.Gray,
+                    checkmarkColor = Color.White
+                )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Spacer(modifier = Modifier.height(13.dp))
+                Text(
+                    text = title,
+                    fontSize = 30.sp
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = "(konfiguracja aktywna w trybie: uczenie)",
+                    fontSize = 20.sp
+                )
+            }
+            Spacer(modifier = Modifier.width(590.dp))
+            IconButton(onClick = { }) {
+                Icon(
+                    imageVector = Icons.Default.FileCopy,
+                    contentDescription = "Copy",
+                    tint = Color(0xFF004B88),
+                    modifier = Modifier.size(65.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(20.dp))
+            IconButton(onClick = { }) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color(0xFF004B88),
+                    modifier = Modifier.size(65.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(20.dp))
+            IconButton(onClick = { }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color(0xFF004B88),
+                    modifier = Modifier.size(65.dp)
+                )
             }
         }
     }
