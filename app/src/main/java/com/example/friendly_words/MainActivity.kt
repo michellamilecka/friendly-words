@@ -3,267 +3,171 @@ package com.example.friendly_words
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.painterResource
+import kotlinx.coroutines.delay
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                LanguageLearningApp()
+                ScreenNavigation()
             }
         }
     }
 }
-
-data class VocabularyItem(
-    val word: String,
-    var inLearning: Boolean = true,
-    var inTest: Boolean = true
-)
 
 @Composable
-fun LanguageLearningApp() {
-    var vocabItems by remember {
-        mutableStateOf(
-            mutableListOf(
-                VocabularyItem("Misiu"),
-                VocabularyItem("Tablet"),
-                VocabularyItem("But")
-            )
-        )
+fun ScreenNavigation() {
+    var showFirstScreen by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(5000L)
+        showFirstScreen = false
     }
 
-    var newWordText by remember { mutableStateOf("") }
+    if (showFirstScreen) {
+        InformationScreen()
+    } else {
+        MainScreen()
+    }
+}
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        IconButton(onClick = { /* Go back */ }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                        Text(
-                            "Nazwa konfiguracji: Przykład",
-                            fontSize = 18.sp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        TextButton(onClick = { /* Save action */ }) {
-                            Text("ZAPISZ", color = Color.White, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                },
-                backgroundColor = Color(0xFF3F51B5)
-            )
-        }
-    ) { padding ->
+@Composable
+fun InformationScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF2EB2D6))
+    ) {
+        Spacer(modifier = Modifier.height(55.dp))
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+                .fillMaxWidth()
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Tabs with equal width
-            TabRow(
-                selectedTabIndex = 0,
-                backgroundColor = Color(0xFF3F51B5),
-                contentColor = Color.White
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Przyjazne Słowa Ustawienia",
+                color = Color.White,
+                fontSize = 55.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(50.dp))
+
+            Text(
+                text = "Rozpoznawanie słów na podstawie zdjęć - konfiguracja",
+                color = Color.White,
+                fontSize = 35.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1.9f),
+            color = Color.White,
+            shape = RoundedCornerShape(topStart = 100.dp, topEnd = 100.dp),
+            elevation = 4.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Tab(
-                    selected = true,
-                    onClick = {},
-                    text = { Text("Materiał", modifier = Modifier.padding(vertical = 12.dp)) }
+                Text(
+                    text = "Aplikacje powstają w ramach wspólnego projektu \"non-profit\" i \"open-source\" ",
+                    fontSize = 27.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    text = { Text("Uczenie", modifier = Modifier.padding(vertical = 12.dp)) }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Politechniki Gdańskiej i fundacji Instytut Wspomagania Rozwoju Dziecka w Gdańsku (http://iwrd.pl/).",
+                    fontSize = 26.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    text = { Text("Wzmocnienia", modifier = Modifier.padding(vertical = 12.dp)) }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "IWRD, Politechnika Gdańska, ani żaden uczestnik projektu nie odnosi korzyści materialnych z udziału w ",
+                    fontSize = 26.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    text = { Text("Test", modifier = Modifier.padding(vertical = 12.dp)) }
-                )
-            }
 
-            // Main content area taking full remaining height
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f)
-            ) {
-                // Left side - vocabulary list
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "wytwarzaniu aplikacji",
+                    fontSize = 26.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Więcej informacji na stronie: https://tiapps.org/",
+                    fontSize = 26.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = "Do poprawnego działania potrzebne jest para aplikacji: Przyjazne Słowa i Przyjazne Słowa Ustawienia!",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Headers
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "SŁOWO",
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "W UCZENIU",
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "W TEŚCIE",
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            "USUŃ",
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // List of vocabulary items - takes all available space
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        items(vocabItems) { item ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
-                                Text(
-                                    item.word,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Box(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Checkbox(
-                                        checked = item.inLearning,
-                                        onCheckedChange = {
-                                            val index = vocabItems.indexOf(item)
-                                            vocabItems = vocabItems.toMutableList().apply {
-                                                this[index] = item.copy(inLearning = it)
-                                            }
-                                        },
-                                        colors = CheckboxDefaults.colors(
-                                            checkedColor = Color(0xFF039BE5),
-                                            uncheckedColor = Color.Gray,
-                                            checkmarkColor = Color.White
-                                        )
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Checkbox(
-                                        checked = item.inTest,
-                                        onCheckedChange = {
-                                            val index = vocabItems.indexOf(item)
-                                            vocabItems = vocabItems.toMutableList().apply {
-                                                this[index] = item.copy(inTest = it)
-                                            }
-                                        },
-                                        colors = CheckboxDefaults.colors(
-                                            checkedColor = Color(0xFF039BE5),
-                                            uncheckedColor = Color.Gray,
-                                            checkmarkColor = Color.White
-                                        )
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    IconButton(
-                                        onClick = {
-                                            vocabItems = vocabItems.toMutableList().apply {
-                                                remove(item)
-                                            }
-                                        }
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Usuń",
-                                            tint = Color(0xFF3F51B5)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Add button at bottom
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Button(
-                            onClick = {
-                                vocabItems = vocabItems.toMutableList().apply {
-                                    add(VocabularyItem("Nowe słowo"))
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = Color(0xFF3F51B5)
-                            ),
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(48.dp)
-                        ) {
-                            Text(
-                                "DODAJ",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                // Right side panel
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Wybierz materiał na liście obok")
+                    Spacer(modifier = Modifier.width(85.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.pg_logo),
+                        contentDescription = "Politechnika Gdańska Logo",
+                        modifier = Modifier.size(250.dp)
+                    )
+                    Spacer(modifier = Modifier.width(95.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.iwrd_logo),
+                        contentDescription = "Instytut Wspomagania Rozwoju Dziecka Logo",
+                        modifier = Modifier.size(400.dp)
+                    )
+                    Spacer(modifier = Modifier.width(70.dp))
+                    Image(
+                        painter = painterResource(id = R.drawable.eti_logo),
+                        contentDescription = "ETI Logo",
+                        modifier = Modifier.size(300.dp)
+                    )
+                    Spacer(modifier = Modifier.width(80.dp))
                 }
             }
         }
     }
 }
+
