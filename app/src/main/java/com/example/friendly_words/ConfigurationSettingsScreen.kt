@@ -3,6 +3,7 @@ package com.example.friendly_words
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,8 +30,20 @@ data class VocabularyItem(
 )
 
 @Composable
+fun getImageResourcesForWord(word: String): List<Int> {
+    return when (word.lowercase()) {
+        "misiu" -> listOf(
+            R.drawable.misiu_1,
+            R.drawable.misiu_2,
+            R.drawable.misiu_3
+        )
+        else -> listOf(R.drawable.placeholder)
+    }
+}
+
+@Composable
 fun ConfigurationSettingsScreen(
-    onBackClick: () -> Unit // Dodajemy funkcję do obsługi kliknięcia w strzałkę
+    onBackClick: () -> Unit
 ) {
     var vocabItems by remember {
         mutableStateOf(
@@ -41,7 +55,7 @@ fun ConfigurationSettingsScreen(
         )
     }
 
-    var newWordText by remember { mutableStateOf("") }
+    var selectedWord by remember { mutableStateOf<VocabularyItem?>(null) }
 
     Scaffold(
         topBar = {
@@ -64,7 +78,6 @@ fun ConfigurationSettingsScreen(
                             modifier = Modifier.weight(1f),
                             color = Color.White
                         )
-
                         Spacer(modifier = Modifier.width(15.dp))
                     }
                 },
@@ -82,115 +95,74 @@ fun ConfigurationSettingsScreen(
                 backgroundColor = Color.White,
                 contentColor = Color.Black
             ) {
-                Tab(
-                    selected = true,
-                    onClick = {},
-                    modifier = Modifier.height(50.dp),
-                    text = { Text(text="MATERIAŁ", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
-                )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    modifier = Modifier.width(50.dp),
-                    text = { Text(text="UCZENIE", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
-                )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    modifier = Modifier.width(50.dp),
-                    text = { Text(text="WZMOCNIENIA", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
-                )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    modifier = Modifier.width(50.dp),
-                    text = { Text(text="TEST", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
-                )
-                Tab(
-                    selected = false,
-                    onClick = {},
-                    modifier = Modifier.width(50.dp),
-                    text = { Text(text="ZAPISZ", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 10.dp)) }
-                )
+                listOf("MATERIAŁ", "UCZENIE", "WZMOCNIENIA", "TEST", "ZAPISZ").forEachIndexed { index, title ->
+                    Tab(
+                        selected = index == 0,
+                        onClick = {},
+                        modifier = Modifier.height(50.dp),
+                        text = {
+                            Text(
+                                text = title,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 10.dp)
+                            )
+                        }
+                    )
+                }
             }
 
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f)
-            ) {Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(Color(0xFF004B88).copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ){
-                Column(
+            ) {
+                Box(
                     modifier = Modifier
+                        .weight(1f)
                         .fillMaxHeight()
+                        .background(Color(0xFF004B88).copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.fillMaxHeight()
                     ) {
-                        Text(
-                            "SŁOWO",
-                            fontSize=20.sp,
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold,
-                            color=Color.Gray
-                        )
-                        Spacer(modifier = Modifier.width(50.dp))
-                        Text(
-                            "W UCZENIU",
-                            fontSize=20.sp,
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold,
-                            color=Color.Gray
-                        )
-                        Spacer(modifier = Modifier.width(50.dp))
-                        Text(
-                            "W TEŚCIE",
-                            fontSize=20.sp,
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold,
-                            color=Color.Gray
-                        )
-                        Spacer(modifier = Modifier.width(65.dp))
-                        Text(
-                            "USUŃ",
-                            fontSize=20.sp,
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold,
-                            color=Color.Gray
-                        )
-                        //Spacer(modifier = Modifier.width(10.dp))
-                    }
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        items(vocabItems) { item ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            listOf("SŁOWO", "W UCZENIU", "W TEŚCIE", "USUŃ").forEach {
                                 Text(
-                                    item.word,
-                                    fontSize=30.sp,
+                                    text = it,
+                                    fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
+                                    color = Color.Gray,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Box(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center
+                                Spacer(modifier = Modifier.width(30.dp))
+                            }
+                        }
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                        ) {
+                            items(vocabItems) { item ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                        .clickable { selectedWord = item }
                                 ) {
+                                    Text(
+                                        item.word,
+                                        fontSize = 30.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f)
+                                    )
                                     Checkbox(
                                         checked = item.inLearning,
                                         onCheckedChange = {
@@ -199,18 +171,15 @@ fun ConfigurationSettingsScreen(
                                                 this[index] = item.copy(inLearning = it)
                                             }
                                         },
-                                        modifier = Modifier.scale(1.5f),
+                                        modifier = Modifier
+                                            .scale(1.5f)
+                                            .weight(1f),
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = Color(0xFF2EB2D6),
                                             uncheckedColor = Color.Gray,
                                             checkmarkColor = Color.White
                                         )
                                     )
-                                }
-                                Box(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center
-                                ) {
                                     Checkbox(
                                         checked = item.inTest,
                                         onCheckedChange = {
@@ -219,24 +188,23 @@ fun ConfigurationSettingsScreen(
                                                 this[index] = item.copy(inTest = it)
                                             }
                                         },
-                                        modifier = Modifier.scale(1.5f),
+                                        modifier = Modifier
+                                            .scale(1.5f)
+                                            .weight(1f),
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = Color(0xFF2EB2D6),
                                             uncheckedColor = Color.Gray,
                                             checkmarkColor = Color.White
                                         )
                                     )
-                                }
-                                Box(
-                                    modifier = Modifier.weight(1f),
-                                    contentAlignment = Alignment.Center
-                                ) {
                                     IconButton(
                                         onClick = {
                                             vocabItems = vocabItems.toMutableList().apply {
                                                 remove(item)
                                             }
-                                        }
+                                            if (selectedWord == item) selectedWord = null
+                                        },
+                                        modifier = Modifier.weight(1f)
                                     ) {
                                         Icon(
                                             Icons.Default.Delete,
@@ -248,49 +216,76 @@ fun ConfigurationSettingsScreen(
                                 }
                             }
                         }
-                    }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Button(
-                            onClick = {
-                                vocabItems = vocabItems.toMutableList().apply {
-                                    add(VocabularyItem("Nowe słowo"))
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = Color(0xFF004B88)
-                            ),
+                        Box(
                             modifier = Modifier
-                                .width(200.dp)
-                                .height(48.dp)
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                "DODAJ",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
+                            Button(
+                                onClick = {
+                                    vocabItems = vocabItems.toMutableList().apply {
+                                        add(VocabularyItem("Nowe słowo"))
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = Color(0xFF004B88)
+                                ),
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .height(48.dp)
+                            ) {
+                                Text(
+                                    "DODAJ",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
                 }
-            }
+
+                // PRAWY PANEL – ZDJĘCIA
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                        .fillMaxHeight()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.TopCenter
                 ) {
-                    Text(text="Wybierz materiał na liście obok",
-                        fontSize=25.sp)
+                    Column {
+                        Text("Wybierz obrazki")
+                    if (selectedWord != null) {
+                        val images = getImageResourcesForWord(selectedWord!!.word)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+
+                            images.forEach { resId ->
+                                Box(
+                                    modifier = Modifier
+                                        .height(200.dp)
+                                        .weight(1f)
+                                        .background(Color(0xFF004B88))
+                                        .padding(8.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = resId),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Text("Wybierz materiał na liście obok", fontSize = 25.sp)
+                    }
+                }
                 }
             }
         }
     }
 }
-
-
