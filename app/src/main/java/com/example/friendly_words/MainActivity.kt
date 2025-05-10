@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
+import com.example.friendly_words.ui.theme.LightBlue
 import kotlinx.coroutines.delay
 
 
@@ -53,7 +54,7 @@ fun InformationScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF2EB2D6))
+            .background(LightBlue)
     ) {
         Spacer(modifier = Modifier.height(55.dp))
         Column(

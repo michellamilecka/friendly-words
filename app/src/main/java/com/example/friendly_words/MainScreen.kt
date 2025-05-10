@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.ui.theme.DarkBlue
+import com.example.friendly_words.ui.theme.LightBlue2
 
 @Composable
 fun MainScreen() {
@@ -51,7 +53,7 @@ fun MainContent(onConfigClick: () -> Unit) {
                         )
                     }
                 },
-                backgroundColor = Color(0xFF004B88)
+                backgroundColor = DarkBlue
             )
         }
     ) { padding ->
@@ -67,7 +69,7 @@ fun MainContent(onConfigClick: () -> Unit) {
             Button(
                 onClick =  onConfigClick,
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFA1CDE1),
+                    backgroundColor = LightBlue2,
                     contentColor = Color.Black
                 ),
                 modifier = Modifier
@@ -84,7 +86,7 @@ fun MainContent(onConfigClick: () -> Unit) {
             Button(
                 onClick = { /* Akcja dla "DODAJ MATERIAŁY" */ },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(0xFFA1CDE1),
+                    backgroundColor = LightBlue2,
                     contentColor = Color.Black
                 ),
                 modifier = Modifier

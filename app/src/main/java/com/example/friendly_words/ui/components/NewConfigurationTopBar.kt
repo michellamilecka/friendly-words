@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
+import com.example.friendly_words.ui.theme.DarkBlue
 
 @Composable
 fun NewConfigurationTopBar(title: String, onBackClick: () -> Unit) {
@@ -35,6 +36,6 @@ fun NewConfigurationTopBar(title: String, onBackClick: () -> Unit) {
                 Spacer(modifier = Modifier.width(15.dp))
             }
         },
-        backgroundColor = Color(0xFF004B88)
+        backgroundColor = DarkBlue
     )
 }

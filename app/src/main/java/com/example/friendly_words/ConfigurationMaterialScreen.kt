@@ -18,6 +18,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.ui.theme.DarkBlue
+import com.example.friendly_words.ui.theme.LightBlue
 
 
 data class VocabularyItem(
@@ -58,8 +60,6 @@ fun ConfigurationMaterialScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-
-
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -69,7 +69,7 @@ fun ConfigurationMaterialScreen(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .background(Color(0xFF004B88).copy(alpha = 0.2f)),
+                        .background(DarkBlue.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -124,7 +124,7 @@ fun ConfigurationMaterialScreen(
                                             .scale(1.5f)
                                             .weight(1f),
                                         colors = CheckboxDefaults.colors(
-                                            checkedColor = Color(0xFF2EB2D6),
+                                            checkedColor = LightBlue,
                                             uncheckedColor = Color.Gray,
                                             checkmarkColor = Color.White
                                         )
@@ -141,7 +141,7 @@ fun ConfigurationMaterialScreen(
                                             .scale(1.5f)
                                             .weight(1f),
                                         colors = CheckboxDefaults.colors(
-                                            checkedColor = Color(0xFF2EB2D6),
+                                            checkedColor = LightBlue,
                                             uncheckedColor = Color.Gray,
                                             checkmarkColor = Color.White
                                         )
@@ -158,7 +158,7 @@ fun ConfigurationMaterialScreen(
                                         Icon(
                                             Icons.Default.Delete,
                                             contentDescription = "Usuń",
-                                            tint = Color(0xFF004B88),
+                                            tint = DarkBlue,
                                             modifier = Modifier.size(40.dp)
                                         )
                                     }
@@ -179,7 +179,7 @@ fun ConfigurationMaterialScreen(
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = Color(0xFF004B88)
+                                    backgroundColor = DarkBlue
                                 ),
                                 modifier = Modifier
                                     .width(200.dp)
@@ -218,7 +218,7 @@ fun ConfigurationMaterialScreen(
                                         modifier = Modifier
                                             .height(200.dp)
                                             .weight(1f)
-                                            .background(Color(0xFF004B88))
+                                            .background(DarkBlue)
                                             .padding(8.dp)
                                     ) {
                                         Image(

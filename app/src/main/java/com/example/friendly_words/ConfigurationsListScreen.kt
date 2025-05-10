@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import com.example.friendly_words.ui.theme.DarkBlue
 
 @Composable
 fun ConfigurationsListScreen(
@@ -58,7 +59,7 @@ fun ConfigurationsListScreen(
                         Spacer(modifier = Modifier.width(15.dp))
                     }
                 },
-                backgroundColor = Color(0xFF004B88)
+                backgroundColor = DarkBlue
             )
         }
     ) { padding ->
@@ -176,7 +177,7 @@ fun ConfigurationItem(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .background(Color(0xFF004B88).copy(alpha = 0.2f)),
+            .background(DarkBlue.copy(alpha = 0.2f)),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -186,7 +187,7 @@ fun ConfigurationItem(title: String) {
                 checked = isChecked,
                 onCheckedChange = { isChecked = it },
                 colors = CheckboxDefaults.colors(
-                    checkedColor = Color(0xFF004B88),
+                    checkedColor = DarkBlue,
                     uncheckedColor = Color.Gray,
                     checkmarkColor = Color.White
                 )
@@ -209,7 +210,7 @@ fun ConfigurationItem(title: String) {
                 Icon(
                     imageVector = Icons.Default.FileCopy,
                     contentDescription = "Copy",
-                    tint = Color(0xFF004B88),
+                    tint = DarkBlue,
                     modifier = Modifier.size(65.dp)
                 )
             }
@@ -218,7 +219,7 @@ fun ConfigurationItem(title: String) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit",
-                    tint = Color(0xFF004B88),
+                    tint = DarkBlue,
                     modifier = Modifier.size(65.dp)
                 )
             }
@@ -227,7 +228,7 @@ fun ConfigurationItem(title: String) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = Color(0xFF004B88),
+                    tint = DarkBlue,
                     modifier = Modifier.size(65.dp)
                 )
             }
