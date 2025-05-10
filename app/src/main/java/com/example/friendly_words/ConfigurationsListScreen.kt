@@ -138,7 +138,7 @@ fun ConfigurationsListScreen(
                                             .padding(8.dp)
                                     ) {
                                         Text(
-                                            text = "Zestaw wybranych opcji do zestawu nauki.",
+                                            text = "Zestaw do nauki z dodatkowymi ustawieniami procesu uczenia.",
                                             fontSize = 30.sp,
                                             color = Color.Black,
                                             textAlign = TextAlign.Start
