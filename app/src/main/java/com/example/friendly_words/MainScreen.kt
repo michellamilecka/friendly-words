@@ -1,17 +1,11 @@
 package com.example.friendly_words
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.ui.theme.DarkBlue
@@ -23,7 +17,8 @@ fun MainScreen() {
 
     when (currentScreen) {
         "main" -> MainContent(
-            onConfigClick = { currentScreen = "config" }
+            onConfigClick = { currentScreen = "config" },
+            onMaterialsClick = { currentScreen = "materials" }
         )
         "config" -> ConfigurationsListScreen(
             onBackClick = { currentScreen = "main" },
@@ -32,10 +27,19 @@ fun MainScreen() {
         "create" -> ConfigurationSettingsScreen(
             onBackClick={currentScreen="config"}
         )
+        "materials" -> MaterialsListScreen(
+            onBackClick = { currentScreen = "main" },
+            onCreateClick = { currentScreen = "createMaterial" }
+        )
+        "createMaterial" -> MaterialsCreatingNewMaterialScreen(
+            onBackClick = { currentScreen = "materials"}
+        )
+
     }
 }
+
 @Composable
-fun MainContent(onConfigClick: () -> Unit) {
+fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,7 +88,7 @@ fun MainContent(onConfigClick: () -> Unit) {
             }
 
             Button(
-                onClick = { /* Akcja dla "DODAJ MATERIAŁY" */ },
+                onClick = { onMaterialsClick() },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = LightBlue2,
                     contentColor = Color.Black
@@ -94,7 +98,7 @@ fun MainContent(onConfigClick: () -> Unit) {
                     .height(70.dp)
             ) {
                 Text(
-                    text = "DODAJ MATERIAŁY",
+                    text = "MATERIAŁY",
                     fontSize = 15.sp,
 
                 )
