@@ -30,8 +30,8 @@ fun ConfigurationSettingsScreen(onBackClick: () -> Unit) {
             when (selectedTabIndex) {
                 0 -> ConfigurationMaterialScreen(onBackClick = onBackClick)
                 1 -> ConfigurationLearningScreen(onBackClick = onBackClick)
-                //2 -> ConfigurationReinforcementScreen()
-                //3 -> ConfigurationTestScreen()
+                2 -> ConfigurationReinforcementScreen(onBackClick = onBackClick)
+                3 -> ConfigurationTestScreen(onBackClick = onBackClick)
                 //4 -> ConfigurationSaveScreen()
             }
         }
