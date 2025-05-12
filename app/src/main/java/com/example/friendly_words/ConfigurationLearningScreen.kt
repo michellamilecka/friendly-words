@@ -74,7 +74,7 @@ fun ConfigurationLearningScreen(
 
                 var expanded by remember { mutableStateOf(false) }
                 var selectedOption by remember { mutableStateOf("{Słowo}") }
-                val options = listOf("{Słowo}", "Pokaż {Słowo}", "Pokaż gdzie jest {Słowo}")
+                val options = listOf("{Słowo}", "Gdzie jest {Słowo}", "Pokaż gdzie jest {Słowo}")
                 var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
 
 
@@ -88,7 +88,6 @@ fun ConfigurationLearningScreen(
 
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
                             .onGloballyPositioned { coordinates ->
                                 textFieldSize = coordinates.size
                             }

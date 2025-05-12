@@ -1,7 +1,11 @@
 package com.example.friendly_words
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -10,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.ui.components.NumberSelector
+import com.example.friendly_words.ui.theme.DarkBlue
 
 
 @Composable
@@ -63,15 +68,32 @@ fun ConfigurationTestScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "W trybie testu dziecko pracuje na materiałach w zakładce MATERIAŁ. " +
-                            "W trybie testu nie używa się podpowiedzi i wzmocnień, " +
-                            "a terapeuta powinien powstrzymać się od interwencji w interakcje dziecka aż do zakończenia testu.",
-                    fontSize = 16.sp,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
+                Column(
+                    modifier = Modifier
+                        .widthIn(max = 450.dp)
+                        .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
+                        .padding(12.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Informacja",
+                        tint = DarkBlue,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .padding(bottom = 8.dp)
+                    )
+
+                    Text(
+                        text = "W trybie testu dziecko pracuje na materiałach w zakładce MATERIAŁ. " +
+                                "W trybie testu nie używa się podpowiedzi i wzmocnień, " +
+                                "a terapeuta powinien powstrzymać się od interwencji w interakcje dziecka aż do zakończenia testu.",
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        lineHeight = 22.sp,
+                        textAlign = TextAlign.Start
+                    )
+                }
             }
         }
     }
