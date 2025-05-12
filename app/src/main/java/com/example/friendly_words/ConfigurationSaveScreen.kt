@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -46,9 +47,12 @@ fun ConfigurationSaveScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .weight(0.4f)
+                    .weight(0.3f)
                     .fillMaxHeight()
-                    .padding(end = 16.dp)
+                    .padding(end = 16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+
             ) {
                 Text(
                     text = "Nazwa kroku:",
