@@ -32,7 +32,7 @@ fun ConfigurationSettingsScreen(onBackClick: () -> Unit) {
                 1 -> ConfigurationLearningScreen(onBackClick = onBackClick)
                 2 -> ConfigurationReinforcementScreen(onBackClick = onBackClick)
                 3 -> ConfigurationTestScreen(onBackClick = onBackClick)
-                //4 -> ConfigurationSaveScreen()
+                4 -> ConfigurationSaveScreen(onBackClick = onBackClick)
             }
         }
     }
