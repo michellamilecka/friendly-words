@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,8 +24,15 @@ import com.example.friendly_words.ui.theme.DarkBlue
 fun ConfigurationsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
+    onEditClick: (String) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
+
+    var configurations by remember {
+        mutableStateOf(
+            mutableListOf("1 konfiguracja", "2 konfiguracja")
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -160,9 +166,19 @@ fun ConfigurationsListScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    ConfigurationItem("1 konfiguracja")
-                    Spacer(modifier = Modifier.height(20.dp))
-                    ConfigurationItem("2 konfiguracja")
+
+                    configurations.forEach { config ->
+                        ConfigurationItem(
+                            title = config,
+                            onDelete = {
+                                configurations = configurations.toMutableList().apply {
+                                    remove(config)
+                                }
+                            },
+                            onEdit = { onEditClick(config) }
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
                 }
             }
         }
@@ -170,7 +186,11 @@ fun ConfigurationsListScreen(
 }
 
 @Composable
-fun ConfigurationItem(title: String) {
+fun ConfigurationItem(
+    title: String,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit // Callback for edit action
+) {
     var isChecked by remember { mutableStateOf(false) }
 
     Box(
@@ -215,7 +235,7 @@ fun ConfigurationItem(title: String) {
                 )
             }
             Spacer(modifier = Modifier.width(20.dp))
-            IconButton(onClick = { }) {
+            IconButton(onClick = onEdit) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Edit",
@@ -224,7 +244,7 @@ fun ConfigurationItem(title: String) {
                 )
             }
             Spacer(modifier = Modifier.width(20.dp))
-            IconButton(onClick = { }) {
+            IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",

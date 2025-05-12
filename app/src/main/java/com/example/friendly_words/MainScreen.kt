@@ -22,7 +22,8 @@ fun MainScreen() {
         )
         "config" -> ConfigurationsListScreen(
             onBackClick = { currentScreen = "main" },
-            onCreateClick = { currentScreen = "create" }
+            onCreateClick = { currentScreen = "create" },
+            onEditClick={currentScreen="create"}
         )
         "create" -> ConfigurationSettingsScreen(
             onBackClick={currentScreen="config"}
