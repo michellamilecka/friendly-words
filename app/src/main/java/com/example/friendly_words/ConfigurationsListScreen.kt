@@ -30,9 +30,11 @@ fun ConfigurationsListScreen(
 
     var configurations by remember {
         mutableStateOf(
-            mutableListOf("1 konfiguracja", "2 konfiguracja")
+            mutableListOf("1 konfiguracja", "2 konfiguracja", "3 konfiguracja")
         )
     }
+
+    var activeConfiguration by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     Scaffold(
         topBar = {
@@ -59,8 +61,7 @@ fun ConfigurationsListScreen(
                             "UTWÓRZ",
                             fontSize = 30.sp,
                             color = Color.White,
-                            modifier = Modifier
-                                .clickable { onCreateClick() }
+                            modifier = Modifier.clickable { onCreateClick() }
                         )
                         Spacer(modifier = Modifier.width(15.dp))
                     }
@@ -103,8 +104,7 @@ fun ConfigurationsListScreen(
             )
 
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(20.dp))
@@ -166,13 +166,20 @@ fun ConfigurationsListScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-
                     configurations.forEach { config ->
                         ConfigurationItem(
                             title = config,
+                            isActive = activeConfiguration?.first == config,
+                            activeMode = activeConfiguration?.second,
+                            onActivate = { selectedMode ->
+                                activeConfiguration = config to selectedMode
+                            },
                             onDelete = {
                                 configurations = configurations.toMutableList().apply {
                                     remove(config)
+                                }
+                                if (activeConfiguration?.first == config) {
+                                    activeConfiguration = null
                                 }
                             },
                             onEdit = { onEditClick(config) }
@@ -188,10 +195,13 @@ fun ConfigurationsListScreen(
 @Composable
 fun ConfigurationItem(
     title: String,
+    isActive: Boolean,
+    activeMode: String?,
+    onActivate: (String) -> Unit,
     onDelete: () -> Unit,
-    onEdit: () -> Unit // Callback for edit action
+    onEdit: () -> Unit
 ) {
-    var isChecked by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -200,12 +210,14 @@ fun ConfigurationItem(
             .background(DarkBlue.copy(alpha = 0.2f)),
         contentAlignment = Alignment.CenterStart
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
-                checked = isChecked,
-                onCheckedChange = { isChecked = it },
+                checked = isActive,
+                onCheckedChange = {
+                    if (!isActive) {
+                        showDialog = true
+                    }
+                },
                 colors = CheckboxDefaults.colors(
                     checkedColor = DarkBlue,
                     uncheckedColor = Color.Gray,
@@ -220,12 +232,29 @@ fun ConfigurationItem(
                     fontSize = 30.sp
                 )
                 Spacer(modifier = Modifier.height(3.dp))
-                Text(
-                    text = "(konfiguracja aktywna w trybie: uczenie)",
-                    fontSize = 20.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .height(26.sp.value.dp)
+                        .width(400.sp.value.dp)
+                        .fillMaxWidth()
+                        //.background(Color.LightGray)
+                ){
+                    Text(
+                        text = if (isActive)
+                            "(aktywna konfiguracja w trybie: $activeMode)"
+                        else
+                            "(konfiguracja nieaktywna)",
+                        fontSize = 20.sp
+                    )
+                }
+
             }
-            Spacer(modifier = Modifier.width(590.dp))
+            Spacer(modifier = Modifier.width(570.dp))
+//            if(isActive)
+//                Spacer(modifier = Modifier.width(601.dp))
+//            else
+//                Spacer(modifier = Modifier.width(735.dp))
+
             IconButton(onClick = { }) {
                 Icon(
                     imageVector = Icons.Default.FileCopy,
@@ -253,5 +282,38 @@ fun ConfigurationItem(
                 )
             }
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = {
+                Text("Wybierz tryb")
+            },
+            text = {
+                Text("Czy chcesz uruchomić konfigurację w trybie:")
+            },
+            buttons = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(onClick = {
+                        onActivate("uczenie")
+                        showDialog = false
+                    }) {
+                        Text("Uczenie")
+                    }
+                    Button(onClick = {
+                        onActivate("test")
+                        showDialog = false
+                    }) {
+                        Text("Test")
+                    }
+                }
+            }
+        )
     }
 }
