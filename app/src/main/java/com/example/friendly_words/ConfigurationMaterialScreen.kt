@@ -27,9 +27,10 @@ data class VocabularyItem(
     var inLearning: Boolean = true,
     var inTest: Boolean = true,
     var selectedImages: MutableList<Boolean> = mutableListOf<Boolean>().apply {
-        addAll(List(getImageResourcesForWord(word).size) { false })
+        addAll(List(getImageResourcesForWord(word).size) { true })
     }
 )
+
 
 
 fun getImageResourcesForWord(word: String): List<Int> {
