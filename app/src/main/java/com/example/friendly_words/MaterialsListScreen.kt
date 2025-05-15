@@ -1,5 +1,6 @@
 package com.example.friendly_words
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,8 +17,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.ui.theme.DarkBlue
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
+import com.example.friendly_words.ui.theme.LightBlue
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 
 
 @Composable
@@ -25,15 +34,18 @@ fun MaterialsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit
 ) {
-    val materials = remember { mutableStateListOf("Baja", "But", "Kredka", "vsvcsd", "sdcdscd", "cdsdc", "cdscd", "cdcdscsdc", "cdscdc", "cdsc","534","6789cv") }
+    var selectedWordIndex by remember { mutableStateOf<Int?>(null) }
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var materialToDelete by remember { mutableStateOf<String?>(null) }  // Przechowujemy nazwę materiału do usunięcia
-    var showDeleteNotification by remember { mutableStateOf(false) }
+    var materials by remember {
+        mutableStateOf(
+            mutableListOf("Misiu", "Tablet", "But")
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
+                backgroundColor = DarkBlue,
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -46,208 +58,157 @@ fun MaterialsListScreen(
                                 tint = Color.White
                             )
                         }
+
                         Text(
                             "Materiały",
                             fontSize = 30.sp,
-                            modifier = Modifier.weight(1f),
-                            color = Color.White
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
                         )
+
                         Text(
                             "UTWÓRZ",
                             fontSize = 30.sp,
                             color = Color.White,
-                            modifier = Modifier
-                                .clickable { onCreateClick() }
+                            modifier = Modifier.clickable { onCreateClick() }
                         )
                         Spacer(modifier = Modifier.width(15.dp))
                     }
-                },
-                backgroundColor = DarkBlue
+                }
             )
         }
     ) { padding ->
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 50.dp)
-            ) {
-                Text(
-                    "NAZWA ZASOBU",
-                    fontSize = 25.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 140.dp)
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    "AKCJE",
-                    fontSize = 25.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(end = 140.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Box(
+            // Lewy panel – 1/3 ekranu
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(500.dp)
-                    .padding(horizontal = 120.dp)
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .background(DarkBlue.copy(alpha = 0.1f))
+                    //.padding(12.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        //.width(2000.dp)
-                        //.align(Alignment.Center)
-                        .padding(start = 20.dp, end = 20.dp)
-                ) {
-                    itemsIndexed(materials) { index, material ->
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    //.padding(start = 160.dp, end = 120.dp)
-                                    .padding(vertical = 10.dp)
-                                    .background(Color.White)
-                                    .height(40.dp)
-                            ) {
-                                Text(
-                                    text = material,
-                                    fontSize = 25.sp,
-                                    //modifier = Modifier.weight(1f)
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(start = 10.dp)
-                                )
-
-                                IconButton(onClick = {
-                                    // edycja TODO
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edytuj",
-                                        tint = DarkBlue,
-                                        modifier = Modifier.size(35.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(10.dp))
-
-                                IconButton(onClick = {
-                                    materialToDelete = material
-                                    showDeleteDialog = true
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Usuń",
-                                        tint = DarkBlue,
-                                        modifier = Modifier.size(35.dp)
-                                    )
-                                }
-                            }
-
-                            if (index != materials.lastIndex) {
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Divider(
-                                    color = Color.LightGray,
-                                    thickness = 1.dp,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                    //.padding(start = 140.dp, end = 110.dp)
-                                )
-                                Spacer(modifier = Modifier.height(10.dp))
-                            }
-                        }
-                    }
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                if (showDeleteNotification) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            //.padding(16.dp)
-                            .background(Color(0xFF4CAF50))
-                    ) {
-                        Text(
-                            text = "Usunięto zasób: ${materialToDelete ?: "nieznany"}",
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(8.dp)
-                        )
-                    }
-
-                    LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(3000)
-                        showDeleteNotification = false
-                    }
-                }
-            }
-        }
-    }
-
-    if (showDeleteDialog) {
-        Dialog(onDismissRequest = { showDeleteDialog = false }) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White, shape = MaterialTheme.shapes.medium)
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(12.dp)
+                        //.padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
                 ) {
                     Text(
-                        text = "Czy na pewno chcesz usunąć zasób: $materialToDelete?",
-                        fontSize = 24.sp,
-                        modifier = Modifier.padding(bottom = 32.dp)
+                        "NAZWA ZASOBU",
+                        modifier = Modifier.weight(1f),
+                        fontSize = 20.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold
                     )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = {
-                                materialToDelete?.let { material ->
-                                    materials.remove(material)
-                                    showDeleteNotification = true
-                                    showDeleteDialog = false
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color.White)
+                    Text(
+                        "AKCJE",
+                        fontSize = 20.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                LazyColumn {
+                    itemsIndexed(materials) { index, word ->
+                        val isSelected = selectedWordIndex == index
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
+                                .clickable { selectedWordIndex = index }
                         ) {
-                            Text("Tak", fontSize = 20.sp, color = DarkBlue)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                //.background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
+                                //.clickable { selectedWordIndex = index }
+                                .padding(vertical = 8.dp, horizontal = 12.dp)
+                                .height(55.dp)
+                        ) {
+                            Text(
+                                word,
+                                fontSize = 28.sp,
+                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                                //fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = { /* TODO: edit logic */ }) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edytuj",
+                                    tint = DarkBlue,
+                                    modifier = Modifier.size(35.dp)
+                                )
+                            }
+                            IconButton(onClick = {
+                                materials = materials.toMutableList().apply { removeAt(index) }
+                                if (selectedWordIndex == index) {
+                                    selectedWordIndex = null
+                                } else if (selectedWordIndex != null && selectedWordIndex!! > index) {
+                                    selectedWordIndex = selectedWordIndex!! - 1
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Usuń",
+                                    tint = DarkBlue,
+                                    modifier = Modifier.size(35.dp)
+                                )
+                            }
+                        }}
+                    }
+                }
+            }
+
+            // Prawy panel – 2/3 ekranu
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(2f)
+                    .padding(16.dp)
+            ) {
+                if (selectedWordIndex != null && selectedWordIndex in materials.indices) {
+                    val word = materials[selectedWordIndex!!]
+                    val images = getImageResourcesForWord(word)
+
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            "Obrazki dla: $word",
+                            fontSize = 24.sp,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+                            items(images) { resId ->
+                                Image(
+                                    painter = painterResource(id = resId),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f)
+                                )
+                            }
                         }
 
-                        Button(
-                            onClick = { showDeleteDialog = false },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue)
-                        ) {
-                            Text("Nie", fontSize = 20.sp, color = Color.White)
-                        }
                     }
+
+                } else {
+                    Text("Wybierz materiał z listy", fontSize = 25.sp)
                 }
             }
         }
     }
 }
-
