@@ -33,7 +33,8 @@ fun MainScreen() {
             onCreateClick = { currentScreen = "createMaterial" }
         )
         "createMaterial" -> MaterialsCreatingNewMaterialScreen(
-            onBackClick = { currentScreen = "materials"}
+            onBackClick = { currentScreen = "materials"},
+            onSaveClick = { currentScreen = "materials"}
         )
 
     }
