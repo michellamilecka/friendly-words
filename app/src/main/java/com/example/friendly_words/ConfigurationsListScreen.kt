@@ -1,40 +1,45 @@
 package com.example.friendly_words
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
+import com.example.friendly_words.ui.components.YesNoDialog
 import com.example.friendly_words.ui.theme.DarkBlue
 
 @Composable
 fun ConfigurationsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
-    onEditClick: (String) -> Unit
+    onEditClick: (String) -> Unit,
+    activeConfiguration: Pair<String, String>?,
+    onSetActiveConfiguration: (Pair<String, String>?) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
     var configurations by remember {
         mutableStateOf(
-            mutableListOf("1 konfiguracja", "2 konfiguracja", "3 konfiguracja")
+            mutableListOf("1 konfiguracja", "2 konfiguracja", "3 konfiguracja", "4 konfiguracja", "przyklad")
         )
     }
 
-    var activeConfiguration by remember { mutableStateOf<Pair<String, String>?>(null) }
+    val scrollState = rememberScrollState()
+
+    // Filtrujemy listę wg wpisanego tekstu, ignorując wielkość liter
+    val filteredConfigurations = configurations.filter {
+        it.contains(searchQuery, ignoreCase = true)
+    }
 
     Scaffold(
         topBar = {
@@ -81,12 +86,7 @@ fun ConfigurationsListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                placeholder = {
-                    Text(
-                        text = "Wyszukaj",
-                        style = TextStyle(fontSize = 35.sp)
-                    )
-                },
+                placeholder = { Text("Wyszukaj", fontSize = 35.sp) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -103,89 +103,31 @@ fun ConfigurationsListScreen(
                 shape = RoundedCornerShape(8.dp)
             )
 
-            Box(
-                modifier = Modifier.fillMaxSize()
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height((100.dp + 20.dp) * 4) // wysokość dla 3 konfiguracji
+                    .verticalScroll(scrollState)
             ) {
-                Column {
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(modifier = Modifier.width(20.dp))
-
-                        var showTooltip by remember { mutableStateOf(false) }
-
-                        Text(
-                            text = "NAZWA KONFIGURACJI",
-                            fontSize = 25.sp,
-                            color = Color.Gray
-                        )
-
-                        Spacer(modifier = Modifier.width(6.dp))
-
-                        Box {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Informacja",
-                                tint = Color.Gray,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clickable { showTooltip = !showTooltip }
-                            )
-
-                            if (showTooltip) {
-                                Popup(
-                                    alignment = Alignment.TopStart,
-                                    onDismissRequest = { showTooltip = false }
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(Color.White)
-                                            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                                            .padding(8.dp)
-                                    ) {
-                                        Text(
-                                            text = "Zestaw do nauki z dodatkowymi ustawieniami procesu uczenia.",
-                                            fontSize = 30.sp,
-                                            color = Color.Black,
-                                            textAlign = TextAlign.Start
-                                        )
-                                    }
-                                }
+                filteredConfigurations.forEach { config ->
+                    ConfigurationItem(
+                        title = config,
+                        isActive = activeConfiguration?.first == config,
+                        activeMode = if (activeConfiguration?.first == config) activeConfiguration.second else null,
+                        onActivate = { selectedMode ->
+                            onSetActiveConfiguration(config to selectedMode)
+                        },
+                        onDelete = {
+                            configurations = configurations.toMutableList().apply { remove(config) }
+                            if (activeConfiguration?.first == config) {
+                                onSetActiveConfiguration(null)
                             }
-                        }
-
-                        Spacer(modifier = Modifier.width(840.dp))
-
-                        Text(
-                            text = "AKCJE",
-                            fontSize = 25.sp,
-                            color = Color.Gray
-                        )
-                    }
-
+                        },
+                        onEdit = { onEditClick(config) }
+                    )
                     Spacer(modifier = Modifier.height(20.dp))
-
-                    configurations.forEach { config ->
-                        ConfigurationItem(
-                            title = config,
-                            isActive = activeConfiguration?.first == config,
-                            activeMode = activeConfiguration?.second,
-                            onActivate = { selectedMode ->
-                                activeConfiguration = config to selectedMode
-                            },
-                            onDelete = {
-                                configurations = configurations.toMutableList().apply {
-                                    remove(config)
-                                }
-                                if (activeConfiguration?.first == config) {
-                                    activeConfiguration = null
-                                }
-                            },
-                            onEdit = { onEditClick(config) }
-                        )
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
                 }
             }
         }
@@ -201,7 +143,13 @@ fun ConfigurationItem(
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ) {
+    var switchChecked by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
+
+    // Synchronizacja switcha tylko dla aktywnej konfiguracji
+    LaunchedEffect(activeMode) {
+        switchChecked = (activeMode == "test")
+    }
 
     Box(
         modifier = Modifier
@@ -237,8 +185,7 @@ fun ConfigurationItem(
                         .height(26.sp.value.dp)
                         .width(400.sp.value.dp)
                         .fillMaxWidth()
-                        //.background(Color.LightGray)
-                ){
+                ) {
                     Text(
                         text = if (isActive)
                             "(aktywna konfiguracja w trybie: $activeMode)"
@@ -247,15 +194,35 @@ fun ConfigurationItem(
                         fontSize = 20.sp
                     )
                 }
-
             }
-            Spacer(modifier = Modifier.width(570.dp))
-//            if(isActive)
-//                Spacer(modifier = Modifier.width(601.dp))
-//            else
-//                Spacer(modifier = Modifier.width(735.dp))
 
-            IconButton(onClick = { }) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Tryb", fontSize = 18.sp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("Uczenie", fontSize = 18.sp)
+                    Switch(
+                        checked = switchChecked,
+                        onCheckedChange = {
+                            switchChecked = it
+                            if (isActive) {
+                                onActivate(if (it) "test" else "uczenie")
+                            }
+                        },
+                        enabled = isActive,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = DarkBlue,
+                            uncheckedThumbColor = DarkBlue
+                        )
+                    )
+                    Text("Test", fontSize = 18.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.width(425.dp))
+            IconButton(onClick = { /* TODO: Copy action */ }) {
                 Icon(
                     imageVector = Icons.Default.FileCopy,
                     contentDescription = "Copy",
@@ -285,34 +252,15 @@ fun ConfigurationItem(
     }
 
     if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = {
-                Text("Wybierz tryb")
+        YesNoDialog(
+            show = showDialog,
+            message = "Czy chcesz aktywować konfigurację:\n$title?",
+            onConfirm = {
+                onActivate("uczenie") // Domyślnie uczenie przy aktywacji
+                showDialog = false
             },
-            text = {
-                Text("Czy chcesz uruchomić konfigurację w trybie:")
-            },
-            buttons = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(onClick = {
-                        onActivate("uczenie")
-                        showDialog = false
-                    }) {
-                        Text("Uczenie")
-                    }
-                    Button(onClick = {
-                        onActivate("test")
-                        showDialog = false
-                    }) {
-                        Text("Test")
-                    }
-                }
+            onDismiss = {
+                showDialog = false
             }
         )
     }

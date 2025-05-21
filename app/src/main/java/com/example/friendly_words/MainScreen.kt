@@ -14,34 +14,41 @@ import com.example.friendly_words.ui.theme.LightBlue2
 @Composable
 fun MainScreen() {
     var currentScreen by remember { mutableStateOf("main") }
+    val activeConfiguration = remember { mutableStateOf<Pair<String, String>?>(Pair("1 konfiguracja", "uczenie")) } // Domyślnie zaznaczona pierwsza konfiguracja
 
     when (currentScreen) {
         "main" -> MainContent(
+            activeConfiguration = activeConfiguration.value,
             onConfigClick = { currentScreen = "config" },
             onMaterialsClick = { currentScreen = "materials" }
         )
         "config" -> ConfigurationsListScreen(
             onBackClick = { currentScreen = "main" },
             onCreateClick = { currentScreen = "create" },
-            onEditClick={currentScreen="create"}
+            onEditClick = { currentScreen = "create" },
+            activeConfiguration = activeConfiguration.value,
+            onSetActiveConfiguration = { activeConfiguration.value = it }
         )
         "create" -> ConfigurationSettingsScreen(
-            onBackClick={currentScreen="config"}
+            onBackClick = { currentScreen = "config" }
         )
         "materials" -> MaterialsListScreen(
             onBackClick = { currentScreen = "main" },
             onCreateClick = { currentScreen = "createMaterial" }
         )
         "createMaterial" -> MaterialsCreatingNewMaterialScreen(
-            onBackClick = { currentScreen = "materials"},
-            onSaveClick = { currentScreen = "materials"}
+            onBackClick = { currentScreen = "materials" },
+            onSaveClick = { currentScreen = "materials" }
         )
-
     }
 }
 
 @Composable
-fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
+fun MainContent(
+    activeConfiguration: Pair<String, String>?,
+    onConfigClick: () -> Unit,
+    onMaterialsClick: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,8 +79,16 @@ fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(200.dp))
+
+            Text(
+                text = activeConfiguration?.let {
+                    "Aktywna konfiguracja: ${it.first} (tryb: ${it.second})"
+                } ?: "Brak aktywnej konfiguracji",
+                fontSize = 24.sp
+            )
+
             Button(
-                onClick =  onConfigClick,
+                onClick = onMaterialsClick,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = LightBlue2,
                     contentColor = Color.Black
@@ -82,15 +97,11 @@ fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
                     .width(360.dp)
                     .height(70.dp)
             ) {
-                Text(
-                    text = "KONFIGURACJE",
-                    fontSize = 15.sp,
-
-                )
+                Text("MATERIAŁY", fontSize = 15.sp)
             }
 
             Button(
-                onClick = { onMaterialsClick() },
+                onClick = onConfigClick,
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = LightBlue2,
                     contentColor = Color.Black
@@ -99,11 +110,7 @@ fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
                     .width(360.dp)
                     .height(70.dp)
             ) {
-                Text(
-                    text = "MATERIAŁY",
-                    fontSize = 15.sp,
-
-                )
+                Text("KONFIGURACJE", fontSize = 15.sp)
             }
         }
     }
