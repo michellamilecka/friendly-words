@@ -1,6 +1,7 @@
 package com.example.friendly_words
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,9 +13,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import com.example.friendly_words.ui.components.YesNoDialog
 import com.example.friendly_words.ui.theme.DarkBlue
 
@@ -102,6 +106,95 @@ fun ConfigurationsListScreen(
                 ),
                 shape = RoundedCornerShape(8.dp)
             )
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(20.dp))
+
+                var showTooltipName by remember { mutableStateOf(false) }
+                var showTooltipActions by remember { mutableStateOf(false) }
+                Text(
+                    text = "NAZWA KONFIGURACJI",
+                    fontSize = 25.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                Box {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Informacja",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable { showTooltipName = !showTooltipName }
+                    )
+
+                    if (showTooltipName) {
+                        Popup(
+                            alignment = Alignment.TopStart,
+                            onDismissRequest = { showTooltipName = false }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "Zestaw do nauki z dodatkowymi ustawieniami procesu uczenia.",
+                                    fontSize = 30.sp,
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(800.dp))
+
+                Text(
+                    text = "AKCJE",
+                    fontSize = 25.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.width(15.dp))
+                Box {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Informacja",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable { showTooltipActions = !showTooltipActions }
+                    )
+
+                    if (showTooltipActions) {
+                        Popup(
+                            alignment = Alignment.TopStart,
+                            onDismissRequest = { showTooltipActions = false }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "Skopiuj, Edytuj, Usuń",
+                                    fontSize = 30.sp,
+                                    color = Color.Black,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -144,9 +237,9 @@ fun ConfigurationItem(
     onEdit: () -> Unit
 ) {
     var switchChecked by remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(false) }
+    var showActivateDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Synchronizacja switcha tylko dla aktywnej konfiguracji
     LaunchedEffect(activeMode) {
         switchChecked = (activeMode == "test")
     }
@@ -163,7 +256,7 @@ fun ConfigurationItem(
                 checked = isActive,
                 onCheckedChange = {
                     if (!isActive) {
-                        showDialog = true
+                        showActivateDialog = true
                     }
                 },
                 colors = CheckboxDefaults.colors(
@@ -195,9 +288,8 @@ fun ConfigurationItem(
                     )
                 }
             }
-
+            Spacer(modifier = Modifier.width(25.dp))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Tryb", fontSize = 18.sp)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
@@ -221,7 +313,7 @@ fun ConfigurationItem(
                 }
             }
 
-            Spacer(modifier = Modifier.width(425.dp))
+            Spacer(modifier = Modifier.width(400.dp))
             IconButton(onClick = { /* TODO: Copy action */ }) {
                 Icon(
                     imageVector = Icons.Default.FileCopy,
@@ -240,7 +332,9 @@ fun ConfigurationItem(
                 )
             }
             Spacer(modifier = Modifier.width(20.dp))
-            IconButton(onClick = onDelete) {
+            IconButton(onClick = {
+                showDeleteDialog = true
+            }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
@@ -251,16 +345,32 @@ fun ConfigurationItem(
         }
     }
 
-    if (showDialog) {
+
+    if (showActivateDialog) {
         YesNoDialog(
-            show = showDialog,
+            show = showActivateDialog,
             message = "Czy chcesz aktywować konfigurację:\n$title?",
             onConfirm = {
-                onActivate("uczenie") // Domyślnie uczenie przy aktywacji
-                showDialog = false
+                onActivate("uczenie")
+                showActivateDialog = false
             },
             onDismiss = {
-                showDialog = false
+                showActivateDialog = false
+            }
+        )
+    }
+
+    // Dialog przy usuwaniu
+    if (showDeleteDialog) {
+        YesNoDialog(
+            show = showDeleteDialog,
+            message = "Czy chcesz usunąć konfigurację:\n$title?",
+            onConfirm = {
+                onDelete()
+                showDeleteDialog = false
+            },
+            onDismiss = {
+                showDeleteDialog = false
             }
         )
     }

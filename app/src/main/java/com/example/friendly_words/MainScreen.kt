@@ -78,7 +78,7 @@ fun MainContent(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(200.dp))
+            Spacer(modifier = Modifier.height(120.dp))
 
             Text(
                 text = activeConfiguration?.let {
