@@ -15,12 +15,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.ui.components.YesNoDialog
 import com.example.friendly_words.ui.theme.DarkBlue
 import com.example.friendly_words.ui.theme.LightBlue
+
 data class VocabularyItem(
     val word: String,
     val selectedImages: List<Boolean>,
@@ -32,9 +36,9 @@ data class VocabularyItem(
             val size = getImageResourcesForWord(word).size
             return VocabularyItem(
                 word = word,
-                selectedImages = List(size) { true },
-                inLearningStates = List(size) { true },
-                inTestStates = List(size) { true }
+                selectedImages = List(size) { it == 0 }, // tylko pierwsze zdjęcie = true
+                inLearningStates = List(size) { it == 0 }, // tylko pierwsze = true
+                inTestStates = List(size) { it == 0 } // tylko pierwsze = true
             )
         }
     }
@@ -45,9 +49,12 @@ fun getImageResourcesForWord(word: String): List<Int> {
         "misiu" -> listOf(R.drawable.misiu_1, R.drawable.misiu_2, R.drawable.misiu_3)
         "tablet" -> listOf(R.drawable.tablet_1, R.drawable.tablet_2, R.drawable.tablet_3)
         "but" -> listOf(R.drawable.but_1, R.drawable.but_2, R.drawable.but_3)
+        "kredka" -> listOf(R.drawable.kredka_1, R.drawable.kredka_2, R.drawable.kredka_3) // Przykładowo
+        "parasol" -> listOf(R.drawable.parasol_1, R.drawable.parasol_2, R.drawable.parasol_3) // Przykładowo
         else -> listOf(R.drawable.placeholder)
     }
 }
+
 @Composable
 fun ImageSelectionWithCheckbox(
     images: List<Int>,
@@ -71,9 +78,13 @@ fun ImageSelectionWithCheckbox(
                     onCheckedChange = {
                         val newSelectedImages = selectedImages.toMutableList().also { it[index] = it[index].not() }
                         onImageSelectionChanged(newSelectedImages)
+
+                        // Automatyczne ustawienie inLearning i inTest
+                        val checked = newSelectedImages[index]
+                        onLearningTestChanged(index, checked, checked)
                     },
                     colors = CheckboxDefaults.colors(
-                        checkedColor = LightBlue,
+                        checkedColor = DarkBlue,
                         uncheckedColor = Color.Gray,
                         checkmarkColor = Color.White
                     )
@@ -93,8 +104,16 @@ fun ImageSelectionWithCheckbox(
                     Checkbox(
                         checked = inLearningStates[index],
                         enabled = selectedImages[index],
-                        onCheckedChange = {
-                            onLearningTestChanged(index, it, inTestStates[index])
+                        onCheckedChange = { newLearning ->
+                            val currentTest = inTestStates[index]
+                            val shouldSelectImage = newLearning || currentTest
+
+                            // Update stan obrazka (czy ma być wybrany)
+                            val newSelectedImages = selectedImages.toMutableList().also { it[index] = shouldSelectImage }
+                            onImageSelectionChanged(newSelectedImages)
+
+                            // Update stanu learning i test
+                            onLearningTestChanged(index, newLearning, currentTest)
                         },
                         colors = CheckboxDefaults.colors(
                             checkedColor = LightBlue,
@@ -106,8 +125,16 @@ fun ImageSelectionWithCheckbox(
                     Checkbox(
                         checked = inTestStates[index],
                         enabled = selectedImages[index],
-                        onCheckedChange = {
-                            onLearningTestChanged(index, inLearningStates[index], it)
+                        onCheckedChange = { newTest ->
+                            val currentLearning = inLearningStates[index]
+                            val shouldSelectImage = newTest || currentLearning
+
+                            // Update stan obrazka
+                            val newSelectedImages = selectedImages.toMutableList().also { it[index] = shouldSelectImage }
+                            onImageSelectionChanged(newSelectedImages)
+
+                            // Update stanu learning i test
+                            onLearningTestChanged(index, currentLearning, newTest)
                         },
                         colors = CheckboxDefaults.colors(
                             checkedColor = LightBlue,
@@ -139,12 +166,19 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
             )
         )
     }
+    val configuration = LocalConfiguration.current
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedWordIndex by remember { mutableStateOf(0) }
+    var wordIndexToDelete by remember { mutableStateOf<Int?>(null) } // Nowy stan dla indeksu do usunięcia
+
+    // Nowe stany do dodawania słowa
+    var showAddDialog by remember { mutableStateOf(false) }
+    var availableWordsToAdd by remember { mutableStateOf(listOf("Kredka", "Parasol")) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
-            // Lista słów
+            // Lista słów po lewej
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -154,14 +188,24 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
             ) {
                 Column(modifier = Modifier.fillMaxHeight()) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 30.dp, vertical = 12.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf("SŁOWO", "W UCZENIU", "W TEŚCIE", "USUŃ").forEach {
-                            Text(it, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
-                            Spacer(modifier = Modifier.width(73.dp))
+                        listOf("SŁOWO", "W UCZENIU", "W TEŚCIE", "USUŃ").forEachIndexed { index, label ->
+                            Text(
+                                label,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Gray,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = if (index == 3) 13.dp else 0.dp),
+                                textAlign = when (index) {
+                                    0 -> TextAlign.Start
+                                    3 -> TextAlign.End
+                                    else -> TextAlign.Center
+                                }
+                            )
                         }
                     }
 
@@ -177,45 +221,101 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(if (isSelected) LightBlue.copy(alpha = 0.2f) else Color.Transparent)
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
+                                    .padding(horizontal = 4.dp, vertical = 8.dp)
                                     .clickable { selectedWordIndex = index }
                             ) {
-                                Text(item.word, fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                                Spacer(modifier = Modifier.width(50.dp))
-                                Icon(
-                                    imageVector = if (hasLearning) Icons.Default.Check else Icons.Default.Close,
-                                    contentDescription = null,
-                                    tint = if (hasLearning) Color(0xFF4CAF50) else Color.Red,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(150.dp))
-                                Icon(
-                                    imageVector = if (hasTest) Icons.Default.Check else Icons.Default.Close,
-                                    contentDescription = null,
-                                    tint = if (hasTest) Color(0xFF4CAF50) else Color.Red,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(100.dp))
-                                IconButton(onClick = {
-                                    vocabItems = vocabItems.toMutableList().also { it.removeAt(index) }
-                                    selectedWordIndex = when {
-                                        selectedWordIndex == index -> -1
-                                        selectedWordIndex > index -> selectedWordIndex - 1
-                                        else -> selectedWordIndex
-                                    }
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Usuń", tint = DarkBlue, modifier = Modifier.size(40.dp))
+                                Box(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        item.word,
+                                        fontSize = 30.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
                                 }
-                                Spacer(modifier = Modifier.width(50.dp))
+
+                                Row(
+                                    modifier = Modifier.weight(2f)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (hasLearning) Icons.Default.Check else Icons.Default.Close,
+                                            contentDescription = null,
+                                            tint = if (hasLearning) Color(0xFF4CAF50) else Color.Red,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight(),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = if (hasTest) Icons.Default.Check else Icons.Default.Close,
+                                            contentDescription = null,
+                                            tint = if (hasTest) Color(0xFF4CAF50) else Color.Red,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .fillMaxWidth(),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    IconButton(onClick = {
+                                        wordIndexToDelete = index // Ustaw indeks elementu do usunięcia
+                                        showDeleteDialog = true
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Usuń",
+                                            tint = DarkBlue,
+                                            modifier = Modifier.size(40.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
+                    }
+
+                    // Dialog przeniesiony poza pętlę LazyColumn
+                    if (showDeleteDialog && wordIndexToDelete != null && wordIndexToDelete!! in vocabItems.indices) {
+                        YesNoDialog(
+                            show = showDeleteDialog,
+                            message = "Czy chcesz usunąć z konfiguracji materiał:\n${vocabItems[wordIndexToDelete!!].word}?",
+                            onConfirm = {
+                                vocabItems = vocabItems.toMutableList().also { it.removeAt(wordIndexToDelete!!) }
+                                selectedWordIndex = when {
+                                    selectedWordIndex == wordIndexToDelete -> -1
+                                    selectedWordIndex > wordIndexToDelete!! -> selectedWordIndex - 1
+                                    else -> selectedWordIndex
+                                }
+                                showDeleteDialog = false
+                                wordIndexToDelete = null // Resetuj indeks po usunięciu
+                            },
+                            onDismiss = {
+                                showDeleteDialog = false
+                                wordIndexToDelete = null // Resetuj indeks po zamknięciu dialogu
+                            }
+                        )
                     }
 
                     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                         Button(
                             onClick = {
-                                vocabItems = vocabItems + VocabularyItem.create("Nowe słowo")
+                                showAddDialog = true
                             },
                             colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                             modifier = Modifier.width(200.dp).height(48.dp)
@@ -226,7 +326,7 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                 }
             }
 
-            // Obrazki i checkboxy
+            // Obrazki i checkboxy po prawej
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -267,6 +367,52 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                     }
                 }
             }
+        }
+
+        // Dialog dodawania słowa
+        if (showAddDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = {
+                    Text("Wybierz słowo, które chcesz dodać do konfiguracji:")
+                },
+                text = {
+                    if (availableWordsToAdd.isEmpty()) {
+                        Text("BRAK")
+                    } else {
+                        Column {
+                            availableWordsToAdd.forEach { word ->
+                                Text(
+                                    text = word,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            // Dodaj słowo
+                                            vocabItems = vocabItems + VocabularyItem.create(word)
+                                            // Usuń słowo z dostępnych
+                                            availableWordsToAdd = availableWordsToAdd.filterNot { it == word }
+                                            // Zamknij dialog
+                                            showAddDialog = false
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    fontSize = 18.sp
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { showAddDialog = false },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = DarkBlue,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("ANULUJ")
+                    }
+                }
+            )
         }
     }
 }
