@@ -96,7 +96,7 @@ fun MaterialsListScreen(
                 }
 
                 LazyColumn {
-                    itemsIndexed(state.materials) { index, word ->
+                    itemsIndexed(state.materials) { index, material ->
                         val isSelected = state.selectedIndex == index
                         Box(
                             modifier = Modifier
@@ -111,12 +111,12 @@ fun MaterialsListScreen(
                                     .padding(vertical = 8.dp, horizontal = 12.dp)
                                     .height(55.dp)
                             ) {
-                                Text(word, fontSize = 28.sp, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, modifier = Modifier.weight(1f))
+                                Text(material.name, fontSize = 28.sp, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, modifier = Modifier.weight(1f))
                                 IconButton(onClick = onCreateClick) {
                                     Icon(Icons.Default.Edit, contentDescription = "Edytuj", tint = DarkBlue, modifier = Modifier.size(35.dp))
                                 }
                                 IconButton(onClick = {
-                                    viewModel.onEvent(MaterialsListEvent.RequestDelete(index, word))
+                                    viewModel.onEvent(MaterialsListEvent.RequestDelete(index, material))
                                 }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Usuń", tint = DarkBlue, modifier = Modifier.size(35.dp))
                                 }
@@ -135,7 +135,7 @@ fun MaterialsListScreen(
             ) {
                 if (state.selectedIndex != null && state.selectedIndex in state.materials.indices) {
                     val word = state.materials[state.selectedIndex!!]
-                    val images = getImageResourcesForWord(word)
+                    val images = getImageResourcesForWord(word.name)
 
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text("Obrazki dla: $word", fontSize = 24.sp, modifier = Modifier.padding(bottom = 12.dp))
