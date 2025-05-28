@@ -23,9 +23,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.Dp
 import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.theme.LightBlue
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import java.lang.Math.sqrt
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

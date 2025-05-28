@@ -7,9 +7,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.example.friendly_words.data.another.ResourceWithImages
 import com.example.friendly_words.data.entities.Image
 import com.example.friendly_words.data.entities.Resource
-import com.example.friendly_words.data.entities.ResourceImage
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ResourceDao {
@@ -18,7 +19,7 @@ interface ResourceDao {
     suspend fun insert(resource: Resource): Long
 
     @Query("SELECT * FROM resources")
-    suspend fun getAll(): List<Resource>
+    suspend fun getAll(): Flow<List<Resource>>
 
     @Query("SELECT * FROM resources WHERE id = :resourceId")
     suspend fun getById(resourceId: Long): Resource
@@ -26,11 +27,8 @@ interface ResourceDao {
     @Delete
     suspend fun delete(resource: Resource)
 
-    //wtf is even this
-    @Query("""
-    SELECT images.* FROM images
-    INNER JOIN resource_images ON images.id = resource_images.imageId
-    WHERE resource_images.resourceId = :resourceId
-""")
-    suspend fun getImagesForResource(resourceId: Long): List<Image>
+    @Transaction
+    @Query("SELECT * FROM resources")
+    suspend fun getResourcesWithImages(): List<ResourceWithImages>
+
 }

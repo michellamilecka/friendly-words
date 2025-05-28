@@ -27,13 +27,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import com.example.friendly_words.therapist.ui.configuration.material.getImageResourcesForWord
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun MaterialsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
-    viewModel: MaterialsListViewModel = viewModel()
+    viewModel: MaterialsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState
 

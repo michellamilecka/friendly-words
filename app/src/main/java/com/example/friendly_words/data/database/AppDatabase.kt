@@ -4,24 +4,22 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.friendly_words.data.daos.ImageDao
 import com.example.friendly_words.data.daos.ResourceDao
-import com.example.friendly_words.data.daos.ResourceImageDao
 import com.example.friendly_words.data.entities.Image
 import com.example.friendly_words.data.entities.Resource
-import com.example.friendly_words.data.entities.ResourceImage
 
 
 @Database(
     entities = [
         Resource::class,
-        Image::class,
-        ResourceImage::class,
+        Image::class
+        //ResourceImage::class,
         // todo dodanie reszty encji jak juz dao beda zrobione
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase(){
     abstract fun resourceDao(): ResourceDao
     abstract fun imageDao() : ImageDao
-    abstract fun resourceImageDao() : ResourceImageDao
+    //abstract fun resourceImageDao() : ResourceImageDao
 }

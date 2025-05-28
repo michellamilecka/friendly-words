@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Resource
 import com.example.friendly_words.data.repositories.ResourceRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class MaterialsListViewModel @Inject constructor(
-    private val repository: ResourceRepository
+    private val resourceRepository: ResourceRepository
 ) : ViewModel() {
 
     var uiState = mutableStateOf(MaterialsListState())
@@ -21,7 +23,9 @@ class MaterialsListViewModel @Inject constructor(
 
     private fun loadResources() {
         viewModelScope.launch {
-            val resources = repository.getAll()
+            resourceRepository.insert(Resource(name = "Zasób testowy 1"))
+            resourceRepository.insert(Resource(name = "Zasób testowy 2"))
+            val resources = resourceRepository.getAll()
             uiState.value = uiState.value.copy(materials = resources)
         }
     }
@@ -42,7 +46,7 @@ class MaterialsListViewModel @Inject constructor(
             MaterialsListEvent.ConfirmDelete -> {
                 val (index, resource) = uiState.value.materialToDelete ?: return
                 viewModelScope.launch {
-                    repository.delete(resource)
+                    resourceRepository.delete(resource)
 
                     val updatedList = uiState.value.materials.toMutableList().apply {
                         removeAt(index)

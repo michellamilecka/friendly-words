@@ -1,5 +1,7 @@
 package com.example.friendly_words.therapist.ui.materials.creating_new
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,21 +29,41 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.components.NewConfigurationTopBar
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 
 
 @Composable
 fun MaterialsCreatingNewMaterialScreen(
-    viewModel: MaterialsCreatingNewMaterialViewModel = viewModel(),
+    viewModel: MaterialsCreatingNewMaterialViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onSaveClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Launcher do wyboru obrazu z galerii
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                // konwersja Uri do String i wysłanie do ViewModel
+                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.AddImage(
+                    com.example.friendly_words.data.entities.Image(
+                        path = it.toString()
+                    )
+                ))
+            }
+        }
+    )
+
+    // TODO robienie zdjęcia z zapisem do pliku i podaniem URI
+
 
     Scaffold(
         topBar = {
@@ -94,7 +116,9 @@ fun MaterialsCreatingNewMaterialScreen(
                     )
                     Spacer(modifier = Modifier.height(80.dp))
                     Button(
-                        onClick = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.AddImage) },
+                        onClick = {
+                            galleryLauncher.launch("image/*")
+                        },
                         colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                         modifier = Modifier.fillMaxWidth(0.3f).height(48.dp)
                     ) {
@@ -125,13 +149,14 @@ fun MaterialsCreatingNewMaterialScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    group.forEach { imageRes ->
+                                    group.forEach { image ->
                                         Box(
                                             modifier = Modifier.weight(1f).aspectRatio(1f).padding(top = 8.dp),
                                             contentAlignment = Alignment.TopEnd
                                         ) {
+                                            val painter = rememberAsyncImagePainter(model = image.path)
                                             Image(
-                                                painter = painterResource(id = imageRes),
+                                                painter = painter,
                                                 contentDescription = null,
                                                 contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
@@ -152,7 +177,7 @@ fun MaterialsCreatingNewMaterialScreen(
                                                         .size(14.dp)
                                                         .clickable {
                                                             viewModel.onEvent(
-                                                                MaterialsCreatingNewMaterialEvent.RemoveImage(imageRes)
+                                                                MaterialsCreatingNewMaterialEvent.RemoveImage(image)
                                                             )
                                                         }
                                                 )
