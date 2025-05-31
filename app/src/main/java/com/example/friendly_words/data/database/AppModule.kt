@@ -22,7 +22,9 @@ object AppModule {
             context.applicationContext,
             AppDatabase::class.java,
             "friendly_words"
-        ).fallbackToDestructiveMigration(true).build()
+        )
+            //.fallbackToDestructiveMigration(true)
+            .build()
 
     @Provides
     fun provideResourceDao(db: AppDatabase): ResourceDao = db.resourceDao()

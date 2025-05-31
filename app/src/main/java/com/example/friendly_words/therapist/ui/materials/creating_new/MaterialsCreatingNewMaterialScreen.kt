@@ -37,38 +37,48 @@ import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import com.example.friendly_words.therapist.ui.components.InfoDialog
 
 
 @Composable
 fun MaterialsCreatingNewMaterialScreen(
     viewModel: MaterialsCreatingNewMaterialViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onSaveClick: () -> Unit
+    onSaveClick: () -> Unit,
+    //resourceId: Long?
 ) {
     val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state.saveCompleted) {
+        if (state.saveCompleted) {
+            onSaveClick()
+            viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetSaveCompleted)
+        }
+    }
+
+    LaunchedEffect(state.exitWithoutSaving) {
+        if (state.exitWithoutSaving) {
+            onBackClick()
+            viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetExitWithoutSaving)
+        }
+    }
+
+
 
     // Launcher do wyboru obrazu z galerii
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             uri?.let {
-                // konwersja Uri do String i wysłanie do ViewModel
-                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.AddImage(
-                    com.example.friendly_words.data.entities.Image(
-                        path = it.toString()
-                    )
-                ))
+                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.AddImage(it))
             }
         }
     )
 
-    // TODO robienie zdjęcia z zapisem do pliku i podaniem URI
-
-
     Scaffold(
         topBar = {
             NewConfigurationTopBar(
-                title = "Nazwa zasobu:",
+                title = if (state.isEditing) "Edycja zasobu:" else "Tworzenie zasobu:",
                 onBackClick = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ShowExitDialog) }
             )
         },
@@ -76,7 +86,7 @@ fun MaterialsCreatingNewMaterialScreen(
             FloatingActionButton(
                 onClick = {
                     viewModel.onEvent(MaterialsCreatingNewMaterialEvent.SaveClicked)
-                    onSaveClick()
+                    //onSaveClick()
                 },
                 backgroundColor = DarkBlue,
                 contentColor = Color.White,
@@ -114,6 +124,15 @@ fun MaterialsCreatingNewMaterialScreen(
                             unfocusedIndicatorColor = Color.Gray
                         )
                     )
+                    if (state.showNameConflictDialog) {
+                        InfoDialog(
+                            show = true,
+                            message = "Zasób o tej nazwie już istnieje.",
+                            onDismiss = {
+                                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog)
+                            }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(80.dp))
                     Button(
                         onClick = {

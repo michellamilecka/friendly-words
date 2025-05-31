@@ -28,11 +28,13 @@ import androidx.compose.foundation.lazy.grid.items
 import com.example.friendly_words.therapist.ui.configuration.material.getImageResourcesForWord
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 
 @Composable
 fun MaterialsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
+    onEditClick: (Long) -> Unit,
     viewModel: MaterialsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState
@@ -112,7 +114,9 @@ fun MaterialsListScreen(
                                     .height(55.dp)
                             ) {
                                 Text(material.name, fontSize = 28.sp, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, modifier = Modifier.weight(1f))
-                                IconButton(onClick = onCreateClick) {
+                                IconButton(onClick = {
+                                    onEditClick(material.id)
+                                }) {
                                     Icon(Icons.Default.Edit, contentDescription = "Edytuj", tint = DarkBlue, modifier = Modifier.size(35.dp))
                                 }
                                 IconButton(onClick = {
@@ -135,7 +139,8 @@ fun MaterialsListScreen(
             ) {
                 if (state.selectedIndex != null && state.selectedIndex in state.materials.indices) {
                     val word = state.materials[state.selectedIndex!!]
-                    val images = getImageResourcesForWord(word.name)
+                    val images = state.imagesForSelected[word.id] ?: emptyList()
+
 
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text("Obrazki dla: $word", fontSize = 24.sp, modifier = Modifier.padding(bottom = 12.dp))
@@ -148,8 +153,15 @@ fun MaterialsListScreen(
                                 .fillMaxSize()
                                 .padding(16.dp)
                         ) {
-                            items(images) { resId ->
-                                Image(painter = painterResource(id = resId), contentDescription = null, modifier = Modifier.fillMaxWidth().aspectRatio(1f))
+                            items(images) { image ->
+                                val painter = rememberAsyncImagePainter(model = image.path)
+                                Image(
+                                    painter = painter,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1f)
+                                )
                             }
                         }
                     }

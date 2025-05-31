@@ -11,7 +11,9 @@ class ResourceRepository @Inject constructor(
     private val resourceDao: ResourceDao
 ) {
     suspend fun insert(resource: Resource) = resourceDao.insert(resource)
-    suspend fun getAll() = resourceDao.getAll()
+    fun getAll() = resourceDao.getAll()
     suspend fun delete(resource: Resource) = resourceDao.delete(resource)
-
+    suspend fun update(resource: Resource) = resourceDao.update(resource)
+    suspend fun getById(resourceId: Long) = resourceDao.getById(resourceId)
+    suspend fun getAllOnce(): List<Resource> = resourceDao.getAllOnce()
 }

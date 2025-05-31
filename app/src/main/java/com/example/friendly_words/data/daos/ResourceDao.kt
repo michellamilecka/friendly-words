@@ -19,13 +19,20 @@ interface ResourceDao {
     suspend fun insert(resource: Resource): Long
 
     @Query("SELECT * FROM resources")
-    suspend fun getAll(): Flow<List<Resource>>
+    fun getAll(): Flow<List<Resource>>
+
+    @Query("SELECT * FROM resources")
+    suspend fun getAllOnce(): List<Resource>
 
     @Query("SELECT * FROM resources WHERE id = :resourceId")
     suspend fun getById(resourceId: Long): Resource
 
     @Delete
     suspend fun delete(resource: Resource)
+
+    @Update
+    suspend fun update(resource: Resource)
+
 
     @Transaction
     @Query("SELECT * FROM resources")

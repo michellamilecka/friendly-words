@@ -9,6 +9,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.friendly_words.therapist.ui.configuration.settings.ConfigurationSettingsScreen
 import com.example.friendly_words.therapist.ui.configuration.list.ConfigurationsListScreen
 import com.example.friendly_words.therapist.ui.materials.creating_new.MaterialsCreatingNewMaterialScreen
@@ -16,37 +21,74 @@ import com.example.friendly_words.therapist.ui.materials.list.MaterialsListScree
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue2
 
+object NavRoutes {
+    const val MAIN = "main"
+
+    // Materiały
+    const val MATERIALS = "materials"
+    const val MATERIAL_CREATE = "materials/create"
+    const val MATERIAL_EDIT = "materials/edit/{resourceId}"
+
+    // Konfiguracje
+    const val CONFIG_LIST = "config"
+    const val CONFIG_CREATE = "config/create"
+    const val CONFIG_EDIT = "config/edit/{configId}" // opcjonalnie przyszłościowo
+}
+
+
 @Composable
 fun MainScreen() {
-    var currentScreen by remember { mutableStateOf("main") }
-    val activeConfiguration = remember { mutableStateOf<Pair<String, String>?>(Pair("1 konfiguracja NA STAŁE", "uczenie")) } // Domyślnie zaznaczona pierwsza konfiguracja
+    val navController = rememberNavController()
 
-    when (currentScreen) {
-        "main" -> MainContent(
-            activeConfiguration = activeConfiguration.value,
-            onConfigClick = { currentScreen = "config" },
-            onMaterialsClick = { currentScreen = "materials" }
-        )
-        "config" -> ConfigurationsListScreen(
-            onBackClick = { currentScreen = "main" },
-            onCreateClick = { currentScreen = "create" },
-            onEditClick = { currentScreen = "create" },
-            activeConfiguration = activeConfiguration.value,
-            onSetActiveConfiguration = { activeConfiguration.value = it }
-        )
-        "create" -> ConfigurationSettingsScreen(
-            onBackClick = { currentScreen = "config" }
-        )
-        "materials" -> MaterialsListScreen(
-            onBackClick = { currentScreen = "main" },
-            onCreateClick = { currentScreen = "createMaterial" }
-        )
-        "createMaterial" -> MaterialsCreatingNewMaterialScreen(
-            onBackClick = { currentScreen = "materials" },
-            onSaveClick = { currentScreen = "materials" }
-        )
+    NavHost(
+        navController = navController,
+        startDestination = NavRoutes.MAIN
+    ) {
+        composable(NavRoutes.MAIN) {
+            MainContent(
+                onConfigClick = { navController.navigate(NavRoutes.CONFIG_LIST) },
+                onMaterialsClick = { navController.navigate(NavRoutes.MATERIALS) },
+                activeConfiguration = Pair("1 konfiguracja NA STAŁE", "uczenie")
+            )
+        }
+
+        composable(NavRoutes.MATERIALS) {
+            MaterialsListScreen(
+                onBackClick = { navController.popBackStack() },
+                onCreateClick = { navController.navigate(NavRoutes.MATERIAL_CREATE) },
+                onEditClick = { resourceId ->
+                    navController.navigate("materials/edit/$resourceId")
+                }
+            )
+        }
+
+        composable(NavRoutes.MATERIAL_CREATE) {
+            MaterialsCreatingNewMaterialScreen(
+                onBackClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = NavRoutes.MATERIAL_EDIT,
+            arguments = listOf(navArgument("resourceId") {
+                type = NavType.LongType
+            })
+        ) {
+            MaterialsCreatingNewMaterialScreen(
+                onBackClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
+        }
+
+        // Możesz też dodać:
+        // composable(NavRoutes.CONFIG_LIST) { ConfigurationsListScreen(...) }
+        // composable(NavRoutes.CONFIG_CREATE) { ConfigurationSettingsScreen(...) }
     }
 }
+
+
+
 
 @Composable
 fun MainContent(

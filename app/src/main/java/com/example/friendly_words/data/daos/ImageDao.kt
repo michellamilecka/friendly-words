@@ -29,6 +29,8 @@ interface ImageDao {
 //            throw IllegalStateException("Cannot delete image: it is still referenced by a resource.")
 //        }
 //    }
+    @Query("SELECT * FROM images WHERE resourceId = :resourceId")
+    suspend fun getByResourceId(resourceId: Long): List<Image>
 
     @Delete
     suspend fun delete(image: Image)

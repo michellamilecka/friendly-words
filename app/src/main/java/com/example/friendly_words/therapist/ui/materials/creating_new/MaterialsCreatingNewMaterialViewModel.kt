@@ -1,5 +1,7 @@
 package com.example.friendly_words.therapist.ui.materials.creating_new
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,29 +10,63 @@ import com.example.friendly_words.data.entities.Image
 import com.example.friendly_words.data.entities.Resource
 import com.example.friendly_words.data.repositories.ImageRepository
 import com.example.friendly_words.data.repositories.ResourceRepository
+import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.IOException
 
 @HiltViewModel
 class MaterialsCreatingNewMaterialViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
     private val imageRepository: ImageRepository,
-    private val resourceRepository: ResourceRepository,
-    //private val resourceImageRepository: ResourceImageRepository
+    private val resourceRepository: ResourceRepository
 )  : ViewModel() {
 
-    private val initialResourceName = savedStateHandle.get<String>("resourceName") ?: "Nowy zasób"
-    private val _state = MutableStateFlow(MaterialsCreatingNewMaterialState(resourceName = initialResourceName, images = emptyList()))
+    private val resourceIdToEdit = savedStateHandle.get<Long?>("resourceId")
+
+    private val _state = MutableStateFlow(
+        MaterialsCreatingNewMaterialState(
+            resourceName = if (resourceIdToEdit == null) "Nowy zasób" else "",
+            images = emptyList(),
+            isEditing = resourceIdToEdit != null
+        )
+    )
     val state: StateFlow<MaterialsCreatingNewMaterialState> = _state
+
+    private suspend fun copyImageToInternalStorage(uri: Uri): String {
+        val inputStream = context.contentResolver.openInputStream(uri)
+            ?: throw IOException("Cannot open input stream for URI: $uri")
+
+        val fileName = "image_${System.currentTimeMillis()}.jpg"
+        val file = File(context.filesDir, fileName)
+
+        file.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+
+        return file.absolutePath
+    }
+
 
     init {
         viewModelScope.launch {
-            val imagesFromDb = imageRepository.getAll()
-            _state.update { it.copy(images = imagesFromDb) }
+            if (resourceIdToEdit != null) {
+                val resource = resourceRepository.getById(resourceIdToEdit)
+                val images = imageRepository.getByResourceId(resourceIdToEdit)
+                _state.update {
+                    it.copy(
+                        resourceName = resource.name,
+                        images = images
+                    )
+                }
+            }
         }
     }
 
@@ -41,16 +77,27 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             }
             is MaterialsCreatingNewMaterialEvent.AddImage -> {
                 viewModelScope.launch {
-                    imageRepository.insert(event.image)
-                    val updatedImageList = imageRepository.getAll()
-                    _state.update { it.copy(images = updatedImageList) }
+                    val localPath = copyImageToInternalStorage(event.uri)
+
+                    val image = Image(
+                        path = localPath,
+                        resourceId = resourceIdToEdit // może być null podczas tworzenia
+                    )
+
+                    if (resourceIdToEdit == null) {
+                        _state.update {
+                            it.copy(images = it.images + image)
+                        }
+                    } else {
+                        imageRepository.insert(image)
+                        reloadImages()
+                    }
                 }
             }
             is MaterialsCreatingNewMaterialEvent.RemoveImage -> {
                 viewModelScope.launch {
                     imageRepository.delete(event.image)
-                    val updatedImageList = imageRepository.getAll()
-                    _state.update { it.copy(images = updatedImageList) }
+                    reloadImages()
                 }
             }
             is MaterialsCreatingNewMaterialEvent.ShowExitDialog -> {
@@ -60,18 +107,68 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 _state.update { it.copy(showExitConfirmation = false) }
             }
             is MaterialsCreatingNewMaterialEvent.ConfirmExit -> {
-                // Trzeba zadziałać z callbackiem, patrz screen
+                viewModelScope.launch {
+                    imageRepository.deleteUnassignedImages()
+                    _state.update { it.copy(showExitConfirmation = false, exitWithoutSaving = true) }
+                }
             }
             is MaterialsCreatingNewMaterialEvent.SaveClicked -> {
                 viewModelScope.launch {
-                    val resourceId = resourceRepository.insert(Resource(name = state.value.resourceName))
+                    val name = state.value.resourceName.trim()
+                    if (name.isBlank()) {
+                        // Możesz też mieć osobne pole: showBlankNameError
+                        return@launch
+                    }
 
+                    val allResources = resourceRepository.getAllOnce()
+                    val alreadyExists = allResources.any { it.name.equals(name, ignoreCase = true) && it.id != resourceIdToEdit }
+
+                    if (alreadyExists) {
+                        _state.update { it.copy(showNameConflictDialog = true) }
+                        return@launch
+                    }
+
+                    val resourceId = if (resourceIdToEdit == null) {
+                        resourceRepository.insert(Resource(name = state.value.resourceName))
+                    } else {
+                        resourceRepository.update(Resource(id = resourceIdToEdit, name = state.value.resourceName))
+                        resourceIdToEdit
+                    }
+
+                    _state.update { it.copy(saveCompleted = true) }
+
+                    // Ustaw resourceId dla obrazków i zapisz
                     state.value.images.forEach { image ->
-                        val updatedImage = image.copy(resourceId = resourceId)
-                        imageRepository.insert(updatedImage)
+                        val updated = image.copy(resourceId = resourceId)
+                        imageRepository.insert(updated)
                     }
                 }
             }
+            is MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog -> {
+                _state.update { it.copy(showNameConflictDialog = false) }
+            }
+            is MaterialsCreatingNewMaterialEvent.ResetSaveCompleted -> {
+                _state.update { it.copy(saveCompleted = false) }
+            }
+            is MaterialsCreatingNewMaterialEvent.ResetExitWithoutSaving -> {
+                _state.update {
+                    it.copy(
+                        exitWithoutSaving = false,
+                        images = emptyList()
+                    )
+                }
+            }
+
+
         }
+    }
+    private suspend fun reloadImages() {
+        val id = resourceIdToEdit
+        val images = if (id != null) {
+            imageRepository.getByResourceId(id)
+        } else {
+            imageRepository.getAll().filter { it.resourceId == null }
+        }
+        _state.update { it.copy(images = images) }
     }
 }
