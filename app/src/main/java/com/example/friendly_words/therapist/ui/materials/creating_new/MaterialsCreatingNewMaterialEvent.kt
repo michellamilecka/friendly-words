@@ -15,4 +15,5 @@ sealed class MaterialsCreatingNewMaterialEvent {
     object ResetSaveCompleted : MaterialsCreatingNewMaterialEvent()
     object ResetExitWithoutSaving : MaterialsCreatingNewMaterialEvent()
 
+
 }

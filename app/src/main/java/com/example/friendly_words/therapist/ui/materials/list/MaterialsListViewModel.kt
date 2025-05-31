@@ -1,6 +1,7 @@
 package com.example.friendly_words.therapist.ui.materials.list
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Image
@@ -13,45 +14,46 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MaterialsListViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val resourceRepository: ResourceRepository,
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
 ) : ViewModel() {
 
     var uiState = mutableStateOf(MaterialsListState())
-        private set
 
     init {
+        // 1. Nasłuchiwanie ID nowo zapisanego zasobu z SavedStateHandle
+        viewModelScope.launch {
+            savedStateHandle.getStateFlow<Long?>("newlySavedResourceId", null).collect { id ->
+                id?.let {
+                    uiState.value = uiState.value.copy(pendingSelectId = it)
+                    savedStateHandle["newlySavedResourceId"] = null
+                }
+            }
+        }
+
+        // 2. Nasłuchiwanie zmian w bazie zasobów
         viewModelScope.launch {
             resourceRepository.getAll().collect { resources ->
-                // Mapujemy wszystkie zdjęcia dla każdego zasobu
                 val imagesById = resources.associate { resource ->
                     resource.id to imageRepository.getByResourceId(resource.id)
                 }
 
+                // Jeśli jest ID zasobu do zaznaczenia, szukamy jego indeksu
+                val pendingId = uiState.value.pendingSelectId
+                val indexToSelect = pendingId?.let { id ->
+                    resources.indexOfFirst { it.id == id }.takeIf { it != -1 }
+                }
+
                 uiState.value = uiState.value.copy(
                     materials = resources,
-                    imagesForSelected = imagesById
+                    imagesForSelected = imagesById,
+                    selectedIndex = indexToSelect ?: uiState.value.selectedIndex,
+                    pendingSelectId = null // Resetujemy, użyte
                 )
             }
         }
     }
-
-
-
-
-    private fun observeResources() {
-        viewModelScope.launch {
-            resourceRepository.getAll().collect { resources ->
-                uiState.value = uiState.value.copy(materials = resources)
-            }
-        }
-    }
-
-//    private suspend fun loadImagesFor(resourceId: Long) {
-//        val images = imageRepository.getAll().filter { it.resourceId == resourceId }
-//        uiState.value = uiState.value.copy(imagesForSelected = images)
-//    }
-
 
     fun onEvent(event: MaterialsListEvent) {
         when (event) {
@@ -71,6 +73,8 @@ class MaterialsListViewModel @Inject constructor(
                         selectedIndex = selected,
                         imagesForSelected = updatedMap
                     )
+
+
                 }
             }
 
@@ -84,11 +88,20 @@ class MaterialsListViewModel @Inject constructor(
 
             MaterialsListEvent.ConfirmDelete -> {
                 val (index, resource) = uiState.value.materialToDelete ?: return
+                val currentSelected = uiState.value.selectedIndex
                 viewModelScope.launch {
                     resourceRepository.delete(resource)
-                    // Nie trzeba ręcznie aktualizować listy — Flow zrobi to automatycznie
+
+                    val updatedMaterials = uiState.value.materials.filter { it.id != resource.id }
+
+                    val newSelectedIndex = when {
+                        currentSelected == index -> updatedMaterials.indices.firstOrNull()
+                        currentSelected != null && currentSelected > index -> currentSelected - 1
+                        else -> currentSelected
+                    }
+
                     uiState.value = uiState.value.copy(
-                        selectedIndex = null,
+                        selectedIndex = newSelectedIndex,
                         showDeleteDialog = false,
                         materialToDelete = null
                     )

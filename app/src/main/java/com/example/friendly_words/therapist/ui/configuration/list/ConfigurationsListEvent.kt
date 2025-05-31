@@ -1,14 +1,14 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
-sealed class ConfigurationsListEvent {
-    data class OnSearchQueryChange(val query: String) : ConfigurationsListEvent()
-    data class RequestDelete(val config: String) : ConfigurationsListEvent()
-    data class ConfirmDelete(val config: String) : ConfigurationsListEvent()
-    object DismissDeleteDialog : ConfigurationsListEvent()
-
-    data class RequestActivate(val config: String) : ConfigurationsListEvent()
-    data class ConfirmActivate(val config: String) : ConfigurationsListEvent()
-    object DismissActivateDialog : ConfigurationsListEvent()
-
-    data class CopyConfiguration(val config: String) : ConfigurationsListEvent()
+sealed class ConfigurationEvent {
+    data class SearchChanged(val query: String) : ConfigurationEvent()
+    data class DeleteRequested(val name: String) : ConfigurationEvent()
+    data class ConfirmDelete(val name: String) : ConfigurationEvent()
+    data class ActivateRequested(val name: String) : ConfigurationEvent()
+    data class ConfirmActivate(val name: String) : ConfigurationEvent()
+    data class CopyRequested(val name: String) : ConfigurationEvent()
+    data class EditRequested(val name: String) : ConfigurationEvent()
+    object CreateRequested : ConfigurationEvent()
+    object DismissDialogs : ConfigurationEvent()
 }
+

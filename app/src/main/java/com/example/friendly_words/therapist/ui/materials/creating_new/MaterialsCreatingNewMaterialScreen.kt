@@ -44,14 +44,15 @@ import com.example.friendly_words.therapist.ui.components.InfoDialog
 fun MaterialsCreatingNewMaterialScreen(
     viewModel: MaterialsCreatingNewMaterialViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onSaveClick: () -> Unit,
+    onSaveClick: (Long) -> Unit,
     //resourceId: Long?
 ) {
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(state.saveCompleted) {
-        if (state.saveCompleted) {
-            onSaveClick()
+    val savedId = state.newlySavedResourceId
+        if (state.saveCompleted && savedId != null) {
+            onSaveClick(savedId)
             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetSaveCompleted)
         }
     }
@@ -78,7 +79,11 @@ fun MaterialsCreatingNewMaterialScreen(
     Scaffold(
         topBar = {
             NewConfigurationTopBar(
-                title = if (state.isEditing) "Edycja zasobu:" else "Tworzenie zasobu:",
+                title = if (state.isEditing) {
+                    if (state.resourceName.isBlank()) "Edycja zasobu:" else "Edycja: ${state.resourceName}"
+                } else {
+                    if (state.resourceName.isBlank()) "Tworzenie zasobu:" else "Nowy zasób: ${state.resourceName}"
+                },
                 onBackClick = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ShowExitDialog) }
             )
         },

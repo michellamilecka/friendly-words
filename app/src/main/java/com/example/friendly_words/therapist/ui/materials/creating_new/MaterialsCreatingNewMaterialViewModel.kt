@@ -135,20 +135,22 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                         resourceIdToEdit
                     }
 
-                    _state.update { it.copy(saveCompleted = true) }
+                    _state.update { it.copy(saveCompleted = true, newlySavedResourceId = resourceId) }
 
                     // Ustaw resourceId dla obrazków i zapisz
                     state.value.images.forEach { image ->
                         val updated = image.copy(resourceId = resourceId)
                         imageRepository.insert(updated)
                     }
+
+
                 }
             }
             is MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog -> {
                 _state.update { it.copy(showNameConflictDialog = false) }
             }
             is MaterialsCreatingNewMaterialEvent.ResetSaveCompleted -> {
-                _state.update { it.copy(saveCompleted = false) }
+                _state.update { it.copy(saveCompleted = false, newlySavedResourceId = null) }
             }
             is MaterialsCreatingNewMaterialEvent.ResetExitWithoutSaving -> {
                 _state.update {
@@ -158,6 +160,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     )
                 }
             }
+
 
 
         }

@@ -18,40 +18,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
-
-fun generateCopyName(original: String, existing: List<String>): String {
-    var copyIndex = 1
-    var newName: String
-    do {
-        newName = "$original (kopia $copyIndex)"
-        copyIndex++
-    } while (newName in existing)
-    return newName
-}
 
 @Composable
 fun ConfigurationsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
     onEditClick: (String) -> Unit,
-    activeConfiguration: Pair<String, String>?,
-    onSetActiveConfiguration: (Pair<String, String>?) -> Unit
+    viewModel: ConfigurationViewModel = hiltViewModel()
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var configurations by remember {
-        mutableStateOf(
-            mutableListOf("1 konfiguracja NA STAŁE", "2 konfiguracja", "3 konfiguracja", "4 konfiguracja", "przyklad")
-        )
-    }
-
-    var showDeleteDialogFor by remember { mutableStateOf<String?>(null) }
-    var showActivateDialogFor by remember { mutableStateOf<String?>(null) }
-
+    val state by viewModel.state.collectAsState()
     val scrollState = rememberScrollState()
-    val filteredConfigurations = configurations.filter {
-        it.contains(searchQuery, ignoreCase = true)
+
+    val filteredConfigurations = remember(state.searchQuery, state.configurations) {
+        state.configurations.filter { it.contains(state.searchQuery, ignoreCase = true) }
     }
 
     Scaffold(
@@ -66,7 +48,7 @@ fun ConfigurationsListScreen(
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
                         Text("Przyjazne Słowa Ustawienia", fontSize = 30.sp, modifier = Modifier.weight(1f), color = Color.White)
-                        Text("UTWÓRZ", fontSize = 30.sp, color = Color.White, modifier = Modifier.clickable { onCreateClick() })
+                        Text("UTWÓRZ", fontSize = 30.sp, color = Color.White, modifier = Modifier.clickable { viewModel.onEvent(ConfigurationEvent.CreateRequested); onCreateClick() })
                         Spacer(modifier = Modifier.width(15.dp))
                     }
                 },
@@ -80,8 +62,8 @@ fun ConfigurationsListScreen(
                 .padding(padding)
         ) {
             TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
+                value = state.searchQuery,
+                onValueChange = { viewModel.onEvent(ConfigurationEvent.SearchChanged(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.2f)
@@ -155,49 +137,45 @@ fun ConfigurationsListScreen(
                     .verticalScroll(scrollState)
             ) {
                 filteredConfigurations.forEach { config ->
+                    val activeConfig = state.activeConfiguration
+                    val activeMode = if (activeConfig?.first == config) activeConfig.second else null
+
                     ConfigurationItem(
                         title = config,
-                        isActive = activeConfiguration?.first == config,
-                        activeMode = if (activeConfiguration?.first == config) activeConfiguration.second else null,
-                        onActivate = { selectedMode -> onSetActiveConfiguration(config to selectedMode) },
-                        onActivateRequest = { showActivateDialogFor = config },
-                        onDeleteRequest = { showDeleteDialogFor = config },
-                        onEdit = { onEditClick(config) },
-                        onCopy = {
-                            val newName = generateCopyName(config, configurations)
-                            configurations = configurations.toMutableList().apply { add(newName) }
-                        }
+                        isActive = state.activeConfiguration?.first == config,
+                        activeMode = activeMode,
+                        onActivate = { mode -> viewModel.onEvent(ConfigurationEvent.ConfirmActivate(config)) },
+                        onActivateRequest = { viewModel.onEvent(ConfigurationEvent.ActivateRequested(config)) },
+                        onDeleteRequest = { viewModel.onEvent(ConfigurationEvent.DeleteRequested(config)) },
+                        onEdit = {
+                            viewModel.onEvent(ConfigurationEvent.EditRequested(config))
+                            onEditClick(config)
+                        },
+                        onCopy = { viewModel.onEvent(ConfigurationEvent.CopyRequested(config)) }
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
 
-            // Dialog usuwania - NAPRAWIONY
-            showDeleteDialogFor?.let { configToDelete ->
+            state.showDeleteDialogFor?.let { configToDelete ->
                 YesNoDialog(
                     show = true,
                     message = "Czy chcesz usunąć konfigurację:\n$configToDelete?",
                     onConfirm = {
-                        configurations = configurations.toMutableList().apply { remove(configToDelete) }
-                        if (activeConfiguration?.first == configToDelete) {
-                            onSetActiveConfiguration("1 konfiguracja NA STAŁE" to "uczenie")
-                        }
-                        showDeleteDialogFor = null
+                        viewModel.onEvent(ConfigurationEvent.ConfirmDelete(configToDelete))
                     },
-                    onDismiss = { showDeleteDialogFor = null }
+                    onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
                 )
             }
 
-            // Dialog aktywacji - NAPRAWIONY
-            showActivateDialogFor?.let { configToActivate ->
+            state.showActivateDialogFor?.let { configToActivate ->
                 YesNoDialog(
                     show = true,
                     message = "Czy chcesz aktywować konfigurację:\n$configToActivate?",
                     onConfirm = {
-                        onSetActiveConfiguration(configToActivate to "uczenie")
-                        showActivateDialogFor = null
+                        viewModel.onEvent(ConfigurationEvent.ConfirmActivate(configToActivate))
                     },
-                    onDismiss = { showActivateDialogFor = null }
+                    onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
                 )
             }
         }
@@ -218,7 +196,6 @@ fun ConfigurationItem(
     var switchChecked by remember { mutableStateOf(activeMode == "test") }
     val isSpecialConfig = title == "1 konfiguracja NA STAŁE"
 
-    // Aktualizacja stanu switcha gdy zmieni się activeMode
     LaunchedEffect(activeMode) {
         switchChecked = activeMode == "test"
     }
@@ -289,7 +266,7 @@ fun ConfigurationItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(onClick = { onCopy() }) {
+                IconButton(onClick = onCopy) {
                     Icon(
                         imageVector = Icons.Default.FileCopy,
                         contentDescription = "Copy",
@@ -322,3 +299,4 @@ fun ConfigurationItem(
         }
     }
 }
+

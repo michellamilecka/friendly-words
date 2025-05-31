@@ -25,6 +25,7 @@ import com.example.friendly_words.therapist.ui.theme.LightBlue
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.platform.LocalContext
 import com.example.friendly_words.therapist.ui.configuration.material.getImageResourcesForWord
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -143,7 +144,7 @@ fun MaterialsListScreen(
 
 
                     Column(modifier = Modifier.fillMaxSize()) {
-                        Text("Obrazki dla: $word", fontSize = 24.sp, modifier = Modifier.padding(bottom = 12.dp))
+                        //Text("Obrazki dla: $word", fontSize = 24.sp, modifier = Modifier.padding(bottom = 12.dp))
 
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(3),
@@ -178,7 +179,7 @@ fun MaterialsListScreen(
         materialToDelete.let { (index, name) ->
             YesNoDialog(
                 show = true,
-                message = "Czy na pewno chcesz usunąć zasób: $name?",
+                message = "Czy na pewno chcesz usunąć zasób: ${name.name}?",
                 onConfirm = { viewModel.onEvent(MaterialsListEvent.ConfirmDelete) },
                 onDismiss = { viewModel.onEvent(MaterialsListEvent.DismissDeleteDialog) }
             )

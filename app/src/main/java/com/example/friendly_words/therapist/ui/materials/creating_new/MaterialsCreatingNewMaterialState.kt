@@ -10,5 +10,6 @@ data class MaterialsCreatingNewMaterialState (
     //val nameExists: Boolean = false,
     val showNameConflictDialog: Boolean = false,
     val saveCompleted: Boolean = false,
-    val exitWithoutSaving: Boolean = false
+    val exitWithoutSaving: Boolean = false,
+    val newlySavedResourceId: Long? = null
 )

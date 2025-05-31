@@ -62,10 +62,17 @@ fun MainScreen() {
             )
         }
 
+
         composable(NavRoutes.MATERIAL_CREATE) {
             MaterialsCreatingNewMaterialScreen(
                 onBackClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onSaveClick = { savedResourceId ->
+                    navController.popBackStack()
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("newlySavedResourceId", savedResourceId)
+                }
+
             )
         }
 
@@ -77,13 +84,30 @@ fun MainScreen() {
         ) {
             MaterialsCreatingNewMaterialScreen(
                 onBackClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onSaveClick = { savedResourceId ->
+                    navController.popBackStack()
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("newlySavedResourceId", savedResourceId)
+                }
+
             )
         }
 
-        // Możesz też dodać:
-        // composable(NavRoutes.CONFIG_LIST) { ConfigurationsListScreen(...) }
-        // composable(NavRoutes.CONFIG_CREATE) { ConfigurationSettingsScreen(...) }
+        composable(NavRoutes.CONFIG_LIST) {
+            ConfigurationsListScreen(
+                onBackClick = { navController.popBackStack() },
+                onCreateClick = {
+                    navController.navigate(NavRoutes.CONFIG_CREATE)
+                },
+                onEditClick = { configId ->
+                    navController.navigate("config/edit/$configId")
+                }
+            )
+        }
+
+
+        // TODO ekrany, ktore jeszcze nie posiadaja viewmodeli
     }
 }
 
