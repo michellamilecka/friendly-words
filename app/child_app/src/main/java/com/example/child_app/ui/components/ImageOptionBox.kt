@@ -34,7 +34,7 @@ fun ImageOptionBox(
     onClick: () -> Unit = {}
 ) {
     val dimColor = if (isDimmed) Color.Black.copy(alpha = 0.4f) else Color.Transparent
-    val framePadding = 12.dp // Odstęp ramki od białego pola
+    val framePadding = 12.dp
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -45,7 +45,6 @@ fun ImageOptionBox(
         Box(
             modifier = Modifier.size(size + framePadding * 2)
         ) {
-            // Przerywana ramka
             Canvas(modifier = Modifier.matchParentSize()) {
                 drawRoundRect(
                     color = YellowFrames,
@@ -57,8 +56,6 @@ fun ImageOptionBox(
                     cornerRadius = CornerRadius(32.dp.toPx())
                 )
             }
-
-            // Biały kwadrat z obrazkiem i tekstem w środku
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween,
@@ -67,14 +64,14 @@ fun ImageOptionBox(
                     .align(Alignment.Center)
                     .clip(RoundedCornerShape(24.dp))
                     .background(Color.White)
-                    .padding(12.dp) // wewnętrzne paddingi
+                    .padding(12.dp)
             ) {
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = label,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f) // zajmuje całą możliwą wysokość oprócz tekstu
+                        .weight(1f)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -87,7 +84,6 @@ fun ImageOptionBox(
                 )
             }
 
-            // Warstwa wyszarzenia
             Box(
                 modifier = Modifier
                     .size(size)

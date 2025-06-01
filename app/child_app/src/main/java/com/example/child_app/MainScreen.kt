@@ -54,7 +54,6 @@ fun MainScreen(onPlayClick: () -> Unit) {
                 color = LightBlue
             )
             Spacer(modifier = Modifier.height(40.dp))
-
             PlayButton(onClick = onPlayClick )
         }
     }
@@ -64,7 +63,7 @@ fun MainScreen(onPlayClick: () -> Unit) {
 @Composable
 fun PlayButton(
     onClick: () -> Unit,
-    size: Dp = 600.dp,
+    size: Dp = 500.dp,
     outerBorderColor: Color = YellowFrames,
     innerCircleColor: Color = Color.White,
     iconColor: Color = Color(0xFF0B930B)
@@ -99,7 +98,7 @@ fun PlayButton(
                 imageVector = Icons.Rounded.PlayArrow,
                 contentDescription = "Play",
                 tint = iconColor,
-                modifier = Modifier.size(size * 0.7f)
+                modifier = Modifier.size(size * 0.75f)
             )
         }
     }

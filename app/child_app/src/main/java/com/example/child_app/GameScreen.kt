@@ -21,7 +21,6 @@ fun GameScreen() {
     var selected by remember { mutableStateOf<String?>(null) }
     var dimOthers by remember { mutableStateOf(false) }
 
-    // Start 5-second timer
     LaunchedEffect(Unit) {
         delay(5000L)
         if (selected == null) {
