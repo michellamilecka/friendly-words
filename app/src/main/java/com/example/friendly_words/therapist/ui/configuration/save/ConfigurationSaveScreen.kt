@@ -16,11 +16,12 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ConfigurationSaveScreen(
+    state: ConfigurationSaveState,
+    onEvent: (ConfigurationSaveEvent) -> Unit,
     onBackClick: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    var stepName by remember { mutableStateOf("Okno dialogowe") }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -60,8 +61,8 @@ fun ConfigurationSaveScreen(
                 )
 
                 OutlinedTextField(
-                    value = stepName,
-                    onValueChange = { stepName = it },
+                    value = state.stepName,
+                    onValueChange = { onEvent(ConfigurationSaveEvent.SetStepName(it)) },
                     label = { Text("Wpisz nazwę kroku") },
                     modifier = Modifier.fillMaxWidth()
                 )

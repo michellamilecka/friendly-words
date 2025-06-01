@@ -14,6 +14,8 @@ import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
 @Composable
 fun ConfigurationReinforcementScreen(
+    state: ConfigurationReinforcementState,
+    onEvent: (ConfigurationReinforcementEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
     Column(
@@ -29,13 +31,9 @@ fun ConfigurationReinforcementScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        val praiseWords = listOf("dobrze", "super", "świetnie", "ekstra", "rewelacja", "brawo")
-        val praiseStates = remember { praiseWords.map { mutableStateOf(true) } }
+        val praiseWords = state.praiseStates.keys.toList().chunked(3)
 
-        val chunks = praiseWords.chunked(3)
-        val stateChunks = praiseStates.chunked(3)
-
-        chunks.forEachIndexed { rowIndex, rowLabels ->
+        praiseWords.forEach { row ->
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -43,13 +41,13 @@ fun ConfigurationReinforcementScreen(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
-                rowLabels.forEachIndexed { index, label ->
+                row.forEach{ word ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
-                            checked = stateChunks[rowIndex][index].value,
-                            onCheckedChange = { stateChunks[rowIndex][index].value = it },
+                            checked = state.praiseStates[word] == true,
+                            onCheckedChange = { onEvent(ConfigurationReinforcementEvent.TogglePraise(word, it)) },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = DarkBlue,
                                 uncheckedColor = Color.Gray,
@@ -57,7 +55,7 @@ fun ConfigurationReinforcementScreen(
                             )
                         )
                         Text(
-                            text = label,
+                            text = word,
                             fontSize = 24.sp,
                             color = Color.Black
                         )
@@ -65,7 +63,6 @@ fun ConfigurationReinforcementScreen(
                 }
             }
         }
-        var praiseReadingEnabled by remember { mutableStateOf(true) }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -81,8 +78,8 @@ fun ConfigurationReinforcementScreen(
             )
 
             Switch(
-                checked = praiseReadingEnabled,
-                onCheckedChange = { praiseReadingEnabled = it },
+                checked = state.praiseReadingEnabled,
+                onCheckedChange = { onEvent(ConfigurationReinforcementEvent.ToggleReading(it)) },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = DarkBlue,
                     checkedTrackColor = DarkBlue.copy(alpha = 0.5f),

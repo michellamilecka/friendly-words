@@ -19,10 +19,9 @@ fun NumberSelector(
     label: String,
     minValue: Int,
     maxValue: Int,
-    initialValue: Int = minValue,
+    value: Int,
     onValueChange: (Int) -> Unit = {}
 ) {
-    var value by remember { mutableStateOf(initialValue.coerceIn(minValue, maxValue)) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -44,8 +43,7 @@ fun NumberSelector(
             Button(
                 onClick = {
                     if (value > minValue) {
-                        value--
-                        onValueChange(value)
+                        onValueChange(value - 1)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue)
@@ -66,8 +64,7 @@ fun NumberSelector(
             Button(
                 onClick = {
                     if (value < maxValue) {
-                        value++
-                        onValueChange(value)
+                        onValueChange(value + 1)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue)
@@ -87,7 +84,7 @@ fun NumberSelectorPreview(){
                 label = "sth",
                 minValue = 1,
                 maxValue = 10,
-                initialValue = 5
+                value = 5
             )
         }
     }

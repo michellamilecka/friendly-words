@@ -106,8 +106,17 @@ fun MainScreen() {
             )
         }
 
+        composable(NavRoutes.CONFIG_CREATE) {
+            ConfigurationSettingsScreen(onBackClick = { navController.popBackStack() })
+        }
 
-        // TODO ekrany, ktore jeszcze nie posiadaja viewmodeli
+        composable(
+            route = NavRoutes.CONFIG_EDIT,
+            arguments = listOf(navArgument("configId") { type = NavType.StringType })
+        ) {
+            ConfigurationSettingsScreen(onBackClick = { navController.popBackStack() })
+        }
+
     }
 }
 

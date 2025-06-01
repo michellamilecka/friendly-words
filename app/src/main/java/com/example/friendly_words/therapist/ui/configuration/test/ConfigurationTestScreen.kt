@@ -19,10 +19,10 @@ import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
 @Composable
 fun ConfigurationTestScreen(
+    state: ConfigurationTestState,
+    onEvent: (ConfigurationTestEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
-    var attemptsCountTest by remember { mutableStateOf(2) }
-    var timeCountTest by remember { mutableStateOf(3) }
 
     Column(
         modifier = Modifier
@@ -44,8 +44,10 @@ fun ConfigurationTestScreen(
                     label = "Łączna liczba prób w teście:",
                     minValue = 1,
                     maxValue = 5,
-                    initialValue = attemptsCountTest,
-                    onValueChange = { newValue -> attemptsCountTest = newValue }
+                    value = state.attemptsCount,
+                    onValueChange = { newValue ->
+                        onEvent(ConfigurationTestEvent.SetAttemptsCount(newValue))
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -54,8 +56,10 @@ fun ConfigurationTestScreen(
                     label = "Czas na udzielenie odpowiedzi (sekundy):",
                     minValue = 3,
                     maxValue = 9,
-                    initialValue = timeCountTest,
-                    onValueChange = { newValue -> timeCountTest = newValue }
+                    value = state.timeCount,
+                    onValueChange = { newValue ->
+                        onEvent(ConfigurationTestEvent.SetTimeCount(newValue))
+                    }
                 )
             }
 

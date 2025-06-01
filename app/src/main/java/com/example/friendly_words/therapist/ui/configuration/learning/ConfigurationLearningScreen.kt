@@ -16,17 +16,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.therapist.ui.components.NumberSelector
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
 
 @Composable
 fun ConfigurationLearningScreen(
+    state:ConfigurationLearningState,
+    onEvent:(ConfigurationLearningEvent) -> Unit,
     onBackClick: () -> Unit
-) {
-    var imageCount by remember { mutableStateOf(3) }
-    var repetitionCount by remember { mutableStateOf(2) }
-    var timeCount by remember { mutableStateOf(3) }
+){
+    //val state by viewModel.state.collectAsState()
+
+    var expanded by remember { mutableStateOf(false) }
+    var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
+    val options = listOf("{Słowo}", "Gdzie jest {Słowo}", "Pokaż gdzie jest {Słowo}")
+
 
     Column(
         modifier = Modifier
@@ -58,8 +64,8 @@ fun ConfigurationLearningScreen(
                     label = "Liczba obrazków wyświetlanych na ekranie:",
                     minValue = 1,
                     maxValue = 4,
-                    initialValue = 3,
-                    onValueChange = { newValue -> imageCount = newValue }
+                    value = state.imageCount,
+                    onValueChange = { onEvent(ConfigurationLearningEvent.SetImageCount(it)) }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -68,15 +74,9 @@ fun ConfigurationLearningScreen(
                     label = "Liczba powtórzeń dla każdego słowa:",
                     minValue = 1,
                     maxValue = 5,
-                    initialValue = 2,
-                    onValueChange = { newValue -> repetitionCount = newValue }
+                    value = state.repetitionCount,
+                    onValueChange = { onEvent(ConfigurationLearningEvent.SetRepetitionCount(it)) }
                 )
-
-                var expanded by remember { mutableStateOf(false) }
-                var selectedOption by remember { mutableStateOf("{Słowo}") }
-                val options = listOf("{Słowo}", "Gdzie jest {Słowo}", "Pokaż gdzie jest {Słowo}")
-                var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
-
 
                 Column {
                     Text(
@@ -94,7 +94,7 @@ fun ConfigurationLearningScreen(
                             .clickable { expanded = !expanded }
                     ) {
                         OutlinedTextField(
-                            value = selectedOption,
+                            value = state.selectedPrompt,
                             onValueChange = {},
                             readOnly = true,
                             enabled = false,
@@ -124,7 +124,7 @@ fun ConfigurationLearningScreen(
                             options.forEach { selectionOption ->
                                 DropdownMenuItem(
                                     onClick = {
-                                        selectedOption = selectionOption
+                                        onEvent(ConfigurationLearningEvent.SetPrompt(selectionOption))
                                         expanded = false
                                     }
                                 ) {
@@ -158,8 +158,6 @@ fun ConfigurationLearningScreen(
                     textAlign = TextAlign.Center
                 )
 
-                var captionsEnabled by remember { mutableStateOf(true) }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -174,8 +172,8 @@ fun ConfigurationLearningScreen(
                     )
 
                     Switch(
-                        checked = captionsEnabled,
-                        onCheckedChange = { captionsEnabled = it },
+                        checked = state.captionsEnabled,
+                        onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleCaptions(it)) },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = DarkBlue,
                             checkedTrackColor = DarkBlue.copy(alpha = 0.5f),
@@ -184,7 +182,6 @@ fun ConfigurationLearningScreen(
                         )
                     )
                 }
-                var readingEnabled by remember { mutableStateOf(true) }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -199,8 +196,10 @@ fun ConfigurationLearningScreen(
                     )
 
                     Switch(
-                        checked = readingEnabled,
-                        onCheckedChange = { readingEnabled = it },
+                        checked = state.readingEnabled,
+                        onCheckedChange = {
+                            onEvent(ConfigurationLearningEvent.ToggleReading(it))
+                        },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = DarkBlue,
                             checkedTrackColor = DarkBlue.copy(alpha = 0.5f),
@@ -214,8 +213,8 @@ fun ConfigurationLearningScreen(
                     label = "Pokaż podpowiedź po (sekundach):",
                     minValue = 3,
                     maxValue = 9,
-                    initialValue = 3,
-                    onValueChange = { newValue -> timeCount = newValue }
+                    value = state.timeCount,
+                    onValueChange = { onEvent(ConfigurationLearningEvent.SetTimeCount(it)) }
                 )
 
                 Text(
@@ -225,10 +224,6 @@ fun ConfigurationLearningScreen(
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
-                var outlineCorrect by remember { mutableStateOf(false) }
-                var animateCorrect by remember { mutableStateOf(false) }
-                var scaleCorrect by remember { mutableStateOf(false) }
-                var dimIncorrect by remember { mutableStateOf(false) }
 
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -236,8 +231,8 @@ fun ConfigurationLearningScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = outlineCorrect,
-                            onCheckedChange = { outlineCorrect = it },
+                            checked = state.outlineCorrect,
+                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleOutlineCorrect(it)) },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Obramuj poprawną", fontSize = 18.sp)
@@ -245,8 +240,8 @@ fun ConfigurationLearningScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = animateCorrect,
-                            onCheckedChange = { animateCorrect = it },
+                            checked = state.animateCorrect,
+                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleAnimateCorrect(it)) },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Porusz poprawną", fontSize = 18.sp)
@@ -254,8 +249,8 @@ fun ConfigurationLearningScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = scaleCorrect,
-                            onCheckedChange = { scaleCorrect = it },
+                            checked = state.scaleCorrect,
+                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleScaleCorrect(it)) },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Powiększ poprawną", fontSize = 18.sp)
@@ -263,8 +258,8 @@ fun ConfigurationLearningScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = dimIncorrect,
-                            onCheckedChange = { dimIncorrect = it },
+                            checked = state.dimIncorrect,
+                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleDimIncorrect(it)) },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Wyszarz niepoprawne", fontSize = 18.sp)
@@ -275,6 +270,3 @@ fun ConfigurationLearningScreen(
         }
     }
 }
-
-
-

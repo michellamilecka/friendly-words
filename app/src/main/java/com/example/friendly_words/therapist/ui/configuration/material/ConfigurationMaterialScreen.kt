@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
@@ -157,25 +158,13 @@ fun ImageSelectionWithCheckbox(
 }
 
 @Composable
-fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
-    var vocabItems by remember {
-        mutableStateOf(
-            listOf(
-                VocabularyItem.create("Misiu"),
-                VocabularyItem.create("Tablet"),
-                VocabularyItem.create("But")
-            )
-        )
-    }
-    val configuration = LocalConfiguration.current
+fun ConfigurationMaterialScreen(
+    state: ConfigurationMaterialState,
+    onEvent: (ConfigurationMaterialEvent) -> Unit,
+    onBackClick: () -> Unit
+) {
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var selectedWordIndex by remember { mutableStateOf(0) }
-    var wordIndexToDelete by remember { mutableStateOf<Int?>(null) } // Nowy stan dla indeksu do usunięcia
-
-    // Nowe stany do dodawania słowa
-    var showAddDialog by remember { mutableStateOf(false) }
-    var availableWordsToAdd by remember { mutableStateOf(listOf("Kredka", "Parasol")) }
+    //val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
@@ -211,9 +200,9 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                     }
 
                     LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                        items(vocabItems) { item ->
-                            val index = vocabItems.indexOf(item)
-                            val isSelected = selectedWordIndex == index
+                        items(state.vocabItems) { item ->
+                            val index = state.vocabItems.indexOf(item)
+                            val isSelected = state.selectedWordIndex == index
 
                             val hasLearning = item.selectedImages.zip(item.inLearningStates).any { it.first && it.second }
                             val hasTest = item.selectedImages.zip(item.inTestStates).any { it.first && it.second }
@@ -224,7 +213,9 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                                     .fillMaxWidth()
                                     .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
                                     .padding(horizontal = 4.dp, vertical = 8.dp)
-                                    .clickable { selectedWordIndex = index }
+                                    .clickable {
+                                        onEvent(ConfigurationMaterialEvent.WordSelected(index))
+                                    }
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
                                     Text(
@@ -276,8 +267,7 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
                                     IconButton(onClick = {
-                                        wordIndexToDelete = index // Ustaw indeks elementu do usunięcia
-                                        showDeleteDialog = true
+                                        onEvent(ConfigurationMaterialEvent.WordDeleted(index))
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
@@ -292,32 +282,22 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                     }
 
                     // Dialog przeniesiony poza pętlę LazyColumn
-                    if (showDeleteDialog && wordIndexToDelete != null && wordIndexToDelete!! in vocabItems.indices) {
+                    if (state.showDeleteDialog && state.wordIndexToDelete != null && state.wordIndexToDelete!! in state.vocabItems.indices) {
                         YesNoDialog(
-                            show = showDeleteDialog,
-                            message = "Czy chcesz usunąć z konfiguracji materiał:\n${vocabItems[wordIndexToDelete!!].word}?",
+                            show = true,
+                            message = "Czy chcesz usunąć z konfiguracji materiał:\n${state.vocabItems[state.wordIndexToDelete!!].word}?",
                             onConfirm = {
-                                vocabItems = vocabItems.toMutableList().also { it.removeAt(wordIndexToDelete!!) }
-                                selectedWordIndex = when {
-                                    selectedWordIndex == wordIndexToDelete -> -1
-                                    selectedWordIndex > wordIndexToDelete!! -> selectedWordIndex - 1
-                                    else -> selectedWordIndex
-                                }
-                                showDeleteDialog = false
-                                wordIndexToDelete = null // Resetuj indeks po usunięciu
+                                onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
                             },
                             onDismiss = {
-                                showDeleteDialog = false
-                                wordIndexToDelete = null // Resetuj indeks po zamknięciu dialogu
+                                onEvent(ConfigurationMaterialEvent.CancelDelete)
                             }
                         )
                     }
 
                     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                         Button(
-                            onClick = {
-                                showAddDialog = true
-                            },
+                            onClick = { onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
                             colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                             modifier = Modifier.width(200.dp).height(48.dp)
                         ) {
@@ -336,32 +316,22 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                 contentAlignment = Alignment.TopCenter
             ) {
                 Column {
-                    if (selectedWordIndex in vocabItems.indices) {
-                        val selectedWord = vocabItems[selectedWordIndex]
-                        val images = getImageResourcesForWord(selectedWord.word)
+                    val selectedIndex = state.selectedWordIndex
+                    if (selectedIndex in state.vocabItems.indices) {
+                        val item = state.vocabItems[selectedIndex]
+                        val images = getImageResourcesForWord(item.word)
 
                         ImageSelectionWithCheckbox(
                             images = images,
-                            selectedImages = selectedWord.selectedImages,
-                            onImageSelectionChanged = { newSelectedImages ->
-                                vocabItems = vocabItems.mapIndexed { i, item ->
-                                    if (i == selectedWordIndex)
-                                        item.copy(selectedImages = newSelectedImages)
-                                    else item
-                                }
+                            selectedImages = item.selectedImages,
+                            inLearningStates = item.inLearningStates,
+                            inTestStates = item.inTestStates,
+                            onImageSelectionChanged = {
+                                onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
                             },
-                            onLearningTestChanged = { idx, newInLearning, newInTest ->
-                                vocabItems = vocabItems.mapIndexed { i, item ->
-                                    if (i == selectedWordIndex)
-                                        item.copy(
-                                            inLearningStates = item.inLearningStates.toMutableList().also { it[idx] = newInLearning },
-                                            inTestStates = item.inTestStates.toMutableList().also { it[idx] = newInTest }
-                                        )
-                                    else item
-                                }
-                            },
-                            inLearningStates = selectedWord.inLearningStates,
-                            inTestStates = selectedWord.inTestStates
+                            onLearningTestChanged = { i, learning, test ->
+                                onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
+                            }
                         )
                     } else {
                         Text("Wybierz słowo z listy po lewej.", fontSize = 20.sp)
@@ -371,29 +341,24 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
         }
 
         // Dialog dodawania słowa
-        if (showAddDialog) {
+        if (state.showAddDialog) {
             AlertDialog(
-                onDismissRequest = { showAddDialog = false },
+                onDismissRequest = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                 title = {
                     Text("Wybierz słowo, które chcesz dodać do konfiguracji:")
                 },
                 text = {
-                    if (availableWordsToAdd.isEmpty()) {
+                    if (state.availableWordsToAdd.isEmpty()) {
                         Text("BRAK")
                     } else {
                         Column {
-                            availableWordsToAdd.forEach { word ->
+                            state.availableWordsToAdd.forEach { word ->
                                 Text(
                                     text = word,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            // Dodaj słowo
-                                            vocabItems = vocabItems + VocabularyItem.create(word)
-                                            // Usuń słowo z dostępnych
-                                            availableWordsToAdd = availableWordsToAdd.filterNot { it == word }
-                                            // Zamknij dialog
-                                            showAddDialog = false
+                                            onEvent(ConfigurationMaterialEvent.AddWord(word))
                                         }
                                         .padding(vertical = 8.dp),
                                     fontSize = 18.sp
@@ -404,7 +369,7 @@ fun ConfigurationMaterialScreen(onBackClick: () -> Unit) {
                 },
                 confirmButton = {
                     Button(
-                        onClick = { showAddDialog = false },
+                        onClick = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = DarkBlue,
                             contentColor = Color.White

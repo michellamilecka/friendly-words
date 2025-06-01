@@ -50,6 +50,8 @@ dependencies {
     ksp("androidx.room:room-compiler:$room_version")
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.compiler)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation("io.coil-kt:coil-compose:2.3.0")
     implementation(libs.androidx.core.ktx)
