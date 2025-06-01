@@ -30,6 +30,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 )  : ViewModel() {
 
     private val resourceIdToEdit = savedStateHandle.get<Long?>("resourceId")
+    private val imagesToDelete = mutableListOf<Image>()
 
     private val _state = MutableStateFlow(
         MaterialsCreatingNewMaterialState(
@@ -81,23 +82,20 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 
                     val image = Image(
                         path = localPath,
-                        resourceId = resourceIdToEdit // może być null podczas tworzenia
+                        resourceId = null // jeszcze nie przypisujemy — dopiero po SaveClicked
                     )
 
-                    if (resourceIdToEdit == null) {
-                        _state.update {
-                            it.copy(images = it.images + image)
-                        }
-                    } else {
-                        imageRepository.insert(image)
-                        reloadImages()
+                    _state.update {
+                        it.copy(images = it.images + image)
                     }
                 }
             }
             is MaterialsCreatingNewMaterialEvent.RemoveImage -> {
-                viewModelScope.launch {
-                    imageRepository.delete(event.image)
-                    reloadImages()
+                if (resourceIdToEdit != null && event.image.id != 0L) {
+                    imagesToDelete.add(event.image) // dodaj do usunięcia przy zapisie
+                }
+                _state.update {
+                    it.copy(images = it.images.filterNot { img -> img.path == event.image.path })
                 }
             }
             is MaterialsCreatingNewMaterialEvent.ShowExitDialog -> {
@@ -135,13 +133,15 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                         resourceIdToEdit
                     }
 
-                    _state.update { it.copy(saveCompleted = true, newlySavedResourceId = resourceId) }
-
-                    // Ustaw resourceId dla obrazków i zapisz
                     state.value.images.forEach { image ->
                         val updated = image.copy(resourceId = resourceId)
                         imageRepository.insert(updated)
                     }
+
+                    imagesToDelete.forEach { imageRepository.delete(it) }
+                    imagesToDelete.clear()
+
+                    _state.update { it.copy(saveCompleted = true, newlySavedResourceId = resourceId) }
 
 
                 }
