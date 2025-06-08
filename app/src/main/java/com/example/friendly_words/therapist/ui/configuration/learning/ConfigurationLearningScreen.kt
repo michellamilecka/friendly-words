@@ -1,6 +1,7 @@
 package com.example.friendly_words.therapist.ui.configuration.learning
 
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -19,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.therapist.ui.components.NumberSelector
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
-
+import com.example.friendly_words.therapist.ui.theme.White
 
 @Composable
 fun ConfigurationLearningScreen(
@@ -33,10 +34,12 @@ fun ConfigurationLearningScreen(
     var textFieldSize by remember { mutableStateOf(IntSize.Zero) }
     val options = listOf("{Słowo}", "Gdzie jest {Słowo}", "Pokaż gdzie jest {Słowo}")
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(
+                color= White
+            )
     ){
         Row(
             modifier = Modifier
@@ -63,7 +66,7 @@ fun ConfigurationLearningScreen(
                 NumberSelector(
                     label = "Liczba obrazków wyświetlanych na ekranie:",
                     minValue = 1,
-                    maxValue = 4,
+                    maxValue = 6,
                     value = state.imageCount,
                     onValueChange = { onEvent(ConfigurationLearningEvent.SetImageCount(it)) }
                 )
@@ -73,7 +76,7 @@ fun ConfigurationLearningScreen(
                 NumberSelector(
                     label = "Liczba powtórzeń dla każdego słowa:",
                     minValue = 1,
-                    maxValue = 5,
+                    maxValue = 3,
                     value = state.repetitionCount,
                     onValueChange = { onEvent(ConfigurationLearningEvent.SetRepetitionCount(it)) }
                 )
@@ -232,7 +235,9 @@ fun ConfigurationLearningScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = state.outlineCorrect,
-                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleOutlineCorrect(it)) },
+                            onCheckedChange = { newValue ->
+                                onEvent(ConfigurationLearningEvent.ToggleOutlineCorrect(newValue))
+                            },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Obramuj poprawną", fontSize = 18.sp)
@@ -241,7 +246,9 @@ fun ConfigurationLearningScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = state.animateCorrect,
-                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleAnimateCorrect(it)) },
+                            onCheckedChange = { newValue ->
+                                onEvent(ConfigurationLearningEvent.ToggleAnimateCorrect(newValue))
+                            },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Porusz poprawną", fontSize = 18.sp)
@@ -250,7 +257,9 @@ fun ConfigurationLearningScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = state.scaleCorrect,
-                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleScaleCorrect(it)) },
+                            onCheckedChange = { newValue ->
+                                onEvent(ConfigurationLearningEvent.ToggleScaleCorrect(newValue))
+                            },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Powiększ poprawną", fontSize = 18.sp)
@@ -259,7 +268,9 @@ fun ConfigurationLearningScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = state.dimIncorrect,
-                            onCheckedChange = { onEvent(ConfigurationLearningEvent.ToggleDimIncorrect(it)) },
+                            onCheckedChange = { newValue ->
+                                onEvent(ConfigurationLearningEvent.ToggleDimIncorrect(newValue))
+                            },
                             colors = CheckboxDefaults.colors(checkedColor = DarkBlue)
                         )
                         Text("Wyszarz niepoprawne", fontSize = 18.sp)

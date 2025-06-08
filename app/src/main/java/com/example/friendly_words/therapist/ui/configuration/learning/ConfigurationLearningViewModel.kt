@@ -22,6 +22,13 @@ class ConfigurationLearningViewModel @Inject constructor() : ViewModel() {
             state: ConfigurationLearningState,
             event: ConfigurationLearningEvent
         ): ConfigurationLearningState {
+            val selectedCount = listOf(
+                state.outlineCorrect,
+                state.animateCorrect,
+                state.scaleCorrect,
+                state.dimIncorrect
+            ).count { it }
+
             return when (event) {
                 is ConfigurationLearningEvent.SetImageCount -> state.copy(imageCount = event.count)
                 is ConfigurationLearningEvent.SetRepetitionCount -> state.copy(repetitionCount = event.count)
@@ -29,11 +36,20 @@ class ConfigurationLearningViewModel @Inject constructor() : ViewModel() {
                 is ConfigurationLearningEvent.SetPrompt -> state.copy(selectedPrompt = event.prompt)
                 is ConfigurationLearningEvent.ToggleCaptions -> state.copy(captionsEnabled = event.enabled)
                 is ConfigurationLearningEvent.ToggleReading -> state.copy(readingEnabled = event.enabled)
-                is ConfigurationLearningEvent.ToggleOutlineCorrect -> state.copy(outlineCorrect = event.enabled)
-                is ConfigurationLearningEvent.ToggleAnimateCorrect -> state.copy(animateCorrect = event.enabled)
-                is ConfigurationLearningEvent.ToggleScaleCorrect -> state.copy(scaleCorrect = event.enabled)
-                is ConfigurationLearningEvent.ToggleDimIncorrect -> state.copy(dimIncorrect = event.enabled)
+
+                is ConfigurationLearningEvent.ToggleOutlineCorrect ->
+                    if (event.enabled || selectedCount > 1) state.copy(outlineCorrect = event.enabled) else state
+
+                is ConfigurationLearningEvent.ToggleAnimateCorrect ->
+                    if (event.enabled || selectedCount > 1) state.copy(animateCorrect = event.enabled) else state
+
+                is ConfigurationLearningEvent.ToggleScaleCorrect ->
+                    if (event.enabled || selectedCount > 1) state.copy(scaleCorrect = event.enabled) else state
+
+                is ConfigurationLearningEvent.ToggleDimIncorrect ->
+                    if (event.enabled || selectedCount > 1) state.copy(dimIncorrect = event.enabled) else state
             }
         }
     }
 }
+

@@ -1,5 +1,6 @@
 package com.example.friendly_words.therapist.ui.configuration.reinforcement
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -10,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
+import com.example.friendly_words.therapist.ui.theme.White
 
 
 @Composable
@@ -22,6 +24,9 @@ fun ConfigurationReinforcementScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .background(
+                color= White
+            )
     ) {
         Text(
             text = "Pochwały słowne:",

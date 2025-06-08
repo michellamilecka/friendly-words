@@ -20,9 +20,9 @@ fun NumberSelector(
     minValue: Int,
     maxValue: Int,
     value: Int,
-    onValueChange: (Int) -> Unit = {}
+    onValueChange: (Int) -> Unit = {},
+    enabled: Boolean = true // <- nowy parametr
 ) {
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -42,11 +42,12 @@ fun NumberSelector(
         ) {
             Button(
                 onClick = {
-                    if (value > minValue) {
+                    if (enabled && value > minValue) {
                         onValueChange(value - 1)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue)
+                colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
+                enabled = enabled // <- dezaktywuje przycisk
             ) {
                 Text("-", fontSize = 24.sp, color = Color.White)
             }
@@ -63,17 +64,19 @@ fun NumberSelector(
 
             Button(
                 onClick = {
-                    if (value < maxValue) {
+                    if (enabled && value < maxValue) {
                         onValueChange(value + 1)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue)
+                colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
+                enabled = enabled // <- dezaktywuje przycisk
             ) {
                 Text("+", fontSize = 24.sp, color = Color.White)
             }
         }
     }
 }
+
 
 @Preview
 @Composable

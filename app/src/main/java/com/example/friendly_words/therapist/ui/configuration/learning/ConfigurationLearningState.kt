@@ -10,5 +10,5 @@ data class ConfigurationLearningState(
     val outlineCorrect: Boolean = false,
     val animateCorrect: Boolean = false,
     val scaleCorrect: Boolean = false,
-    val dimIncorrect: Boolean = false
+    val dimIncorrect: Boolean = true
 )
