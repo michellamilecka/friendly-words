@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
+import com.example.friendly_words.therapist.ui.theme.White
 import kotlinx.coroutines.launch
 
 @Composable
@@ -32,7 +33,7 @@ fun ConfigurationSaveScreen(
                         snackbarHostState.showSnackbar("Konfiguracja została zapisana")
                     }
                 },
-                backgroundColor = MaterialTheme.colors.primary
+                backgroundColor = White
             ) {
                 Text("Zapisz")
             }
@@ -73,58 +74,105 @@ fun ConfigurationSaveScreen(
                     .weight(0.7f)
                     .verticalScroll(rememberScrollState())
             ) {
-                Text(
-                    text = "Informacje o kroku",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    textAlign = TextAlign.Center
-                )
 
-                Text(text = "TRYB NAUKI", fontWeight = FontWeight.Bold, color = DarkBlue)
-                Spacer(modifier = Modifier.height(8.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Informacje o kroku",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            textAlign = TextAlign.Left
+                        )
 
-                InfoLine("Liczba uczonych słów:", "3")
-                InfoLine("Uczone słowa:", "misiu, tablet, but")
-                InfoLine("Liczba zdjęć wyświetlanych na ekranie:", "3")
-                InfoLine("Liczba powtórzeń dla każdego słowa:", "2")
-                InfoLine("Rodzaj polecenia:", "{Słowo}")
-                InfoLine("Podpisy pod obrazkami:", "Tak")
-                InfoLine("Czytanie polecenia:", "Tak")
-                InfoLine("Pokaż podpowiedź po:", "5 sekundach")
-                InfoLine("Podpowiedzi:", "Obramuj poprawną; Wyszarz niepoprawne")
-                InfoLine("Pochwały słowne:", "dobrze, super, świetnie, ekstra, rewelacja, brawo")
-                InfoLine("Czytanie głosowe pochwał:", "Tak")
+                        InfoLabel("Liczba uczonych słów:")
+                        InfoLabel("Uczone słowa:")
+                        InfoLabel("Liczba wyświetlanych zdjęć:")
+                        InfoLabel("Liczba powtórzeń dla każdego słowa:")
+                        InfoLabel("Rodzaj polecenia:")
+                        InfoLabel("Podpisy pod obrazkami:")
+                        InfoLabel("Czytanie polecenia:")
+                        InfoLabel("Pokaż podpowiedź po:")
+                        InfoLabel("Podpowiedzi:")
+                        InfoLabel("Pochwały słowne:")
+                        InfoLabel("Czytanie głosowe pochwał:")
+                        InfoLabel("Łączna liczba prób:")
+                        InfoLabel("Czas na udzielenie odpowiedzi:")
+                    }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "TRYB NAUKI",
+                            fontWeight = FontWeight.Bold,
+                            color = DarkBlue,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        InfoValue("3")
+                        InfoValue("misiu, tablet, but")
+                        InfoValue("3")
+                        InfoValue("2")
+                        InfoValue("{Słowo}")
+                        InfoValue("Tak")
+                        InfoValue("Tak")
+                        InfoValue("5 sekundach")
+                        InfoValue("Obramuj poprawną; Wyszarz niepoprawne")
+                        InfoValue("dobrze, super, świetnie, ekstra, rewelacja, brawo")
+                        InfoValue("Tak")
+                        InfoValue("-")
+                    }
 
-                Text(text = "TRYB TESTU", fontWeight = FontWeight.Bold, color = DarkBlue)
-                Spacer(modifier = Modifier.height(8.dp))
-                InfoLine("Łączna liczba prób:", "2")
-                InfoLine("Czas na udzielenie odpowiedzi:", "3 sekundy")
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "TRYB TESTU",
+                            fontWeight = FontWeight.Bold,
+                            color = DarkBlue,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        InfoValue("-")
+                        InfoValue("-")
+                        InfoValue("3")
+                        InfoValue("-")
+                        InfoValue("{Słowo}")
+                        InfoValue("Tak")
+                        InfoValue("Tak")
+                        InfoValue("-")
+                        InfoValue("-")
+                        InfoValue("-")
+                        InfoValue("-")
+                        InfoValue("2")
+                        InfoValue("3 sekundy")
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(72.dp))
             }
+
         }
     }
 }
 
+
 @Composable
-fun InfoLine(label: String, value: String) {
-    Row(
+fun InfoLabel(label: String) {
+    Text(
+        text = label,
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 6.dp)
-    ) {
-        Text(
-            text = label,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(1f),
-            //textAlign = TextAlign.End
-        )
-    }
+            .padding(vertical = 4.dp)
+    )
 }
+
+@Composable
+fun InfoValue(value: String) {
+    Text(
+        text = value,
+        fontSize = 16.sp,
+        modifier = Modifier
+            .padding(vertical = 4.dp)
+    )
+}
+

@@ -26,6 +26,7 @@ import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue
+import com.example.friendly_words.therapist.ui.theme.White
 
 data class VocabularyItem(
     val word: String,
@@ -69,6 +70,9 @@ fun ImageSelectionWithCheckbox(
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
+            .background(
+                color= White
+            )
     ) {
         images.forEachIndexed { index, resId ->
             Column(
@@ -312,6 +316,9 @@ fun ConfigurationMaterialScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
+                    .background(
+                        color= White
+                    )
                     .padding(16.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
