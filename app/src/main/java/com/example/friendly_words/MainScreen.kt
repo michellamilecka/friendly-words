@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.ui.theme.DarkBlue
@@ -14,37 +15,45 @@ import com.example.friendly_words.ui.theme.LightBlue2
 @Composable
 fun MainScreen() {
     var currentScreen by remember { mutableStateOf("main") }
+    val activeConfiguration = remember { mutableStateOf<Pair<String, String>?>(Pair("1 konfiguracja NA STAŁE", "uczenie")) } // Domyślnie zaznaczona pierwsza konfiguracja
 
     when (currentScreen) {
         "main" -> MainContent(
+            activeConfiguration = activeConfiguration.value,
             onConfigClick = { currentScreen = "config" },
             onMaterialsClick = { currentScreen = "materials" }
         )
         "config" -> ConfigurationsListScreen(
             onBackClick = { currentScreen = "main" },
             onCreateClick = { currentScreen = "create" },
-            onEditClick={currentScreen="create"}
+            onEditClick = { currentScreen = "create" },
+            activeConfiguration = activeConfiguration.value,
+            onSetActiveConfiguration = { activeConfiguration.value = it }
         )
         "create" -> ConfigurationSettingsScreen(
-            onBackClick={currentScreen="config"}
+            onBackClick = { currentScreen = "config" }
         )
         "materials" -> MaterialsListScreen(
             onBackClick = { currentScreen = "main" },
             onCreateClick = { currentScreen = "createMaterial" }
         )
         "createMaterial" -> MaterialsCreatingNewMaterialScreen(
-            onBackClick = { currentScreen = "materials"}
+            onBackClick = { currentScreen = "materials" },
+            onSaveClick = { currentScreen = "materials" }
         )
-
     }
 }
 
 @Composable
-fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
+fun MainContent(
+    activeConfiguration: Pair<String, String>?,
+    onConfigClick: () -> Unit,
+    onMaterialsClick: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
-                modifier = Modifier.height(95.dp),
+                //modifier = Modifier.height(95.dp),
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -62,47 +71,50 @@ fun MainContent(onConfigClick: () -> Unit, onMaterialsClick: () -> Unit) {
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(padding),
+            contentAlignment = Alignment.Center
         ) {
-            Spacer(modifier = Modifier.height(200.dp))
-            Button(
-                onClick =  onConfigClick,
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = LightBlue2,
-                    contentColor = Color.Black
-                ),
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(24.dp),
                 modifier = Modifier
-                    .width(360.dp)
-                    .height(70.dp)
+                    .fillMaxWidth(0.9f)
             ) {
                 Text(
-                    text = "KONFIGURACJE",
-                    fontSize = 15.sp,
-
+                    text = activeConfiguration?.let {
+                        "Aktywna konfiguracja: ${it.first} (tryb: ${it.second})"
+                    } ?: "Brak aktywnej konfiguracji",
+                    fontSize = 20.sp
                 )
-            }
 
-            Button(
-                onClick = { onMaterialsClick() },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = LightBlue2,
-                    contentColor = Color.Black
-                ),
-                modifier = Modifier
-                    .width(360.dp)
-                    .height(70.dp)
-            ) {
-                Text(
-                    text = "MATERIAŁY",
-                    fontSize = 15.sp,
+                Button(
+                    onClick = onMaterialsClick,
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = LightBlue2,
+                        contentColor = Color.Black
+                    ),
+                    modifier = Modifier
+                        .width((LocalConfiguration.current.screenWidthDp/2).dp)
+                        .height(70.dp)
+                ) {
+                    Text("MATERIAŁY", fontSize = 16.sp)
+                }
 
-                )
+                Button(
+                    onClick = onConfigClick,
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = LightBlue2,
+                        contentColor = Color.Black
+                    ),
+                    modifier = Modifier
+                        .width(((LocalConfiguration.current.screenWidthDp/2).dp))
+                        .height(70.dp)
+                ) {
+                    Text("KONFIGURACJE", fontSize = 16.sp)
+                }
             }
         }
     }
