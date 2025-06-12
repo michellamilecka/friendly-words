@@ -24,7 +24,7 @@ import java.io.IOException
 @HiltViewModel
 class MaterialsCreatingNewMaterialViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val imageRepository: ImageRepository,
     private val resourceRepository: ResourceRepository
 )  : ViewModel() {
@@ -34,7 +34,8 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(
         MaterialsCreatingNewMaterialState(
-            resourceName = if (resourceIdToEdit == null) "Nowy zasób" else "",
+            resourceName = if (resourceIdToEdit == null) "Nowy materiał" else "",
+            learnedWord = if (resourceIdToEdit == null) "Nowy materiał" else "",
             images = emptyList(),
             isEditing = resourceIdToEdit != null
         )
@@ -64,6 +65,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         resourceName = resource.name,
+                        learnedWord = resource.learnedWord,
                         images = images
                     )
                 }
@@ -113,23 +115,25 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             is MaterialsCreatingNewMaterialEvent.SaveClicked -> {
                 viewModelScope.launch {
                     val name = state.value.resourceName.trim()
+                    //val learnedWord = state.value.learnedWord.trim()
+
                     if (name.isBlank()) {
                         // Możesz też mieć osobne pole: showBlankNameError
                         return@launch
                     }
 
-                    val allResources = resourceRepository.getAllOnce()
-                    val alreadyExists = allResources.any { it.name.equals(name, ignoreCase = true) && it.id != resourceIdToEdit }
-
-                    if (alreadyExists) {
-                        _state.update { it.copy(showNameConflictDialog = true) }
-                        return@launch
-                    }
+//                    val allResources = resourceRepository.getAllOnce()
+//                    val alreadyExists = allResources.any { it.name.equals(name, ignoreCase = true) && it.id != resourceIdToEdit }
+//
+//                    if (alreadyExists) {
+//                        _state.update { it.copy(showNameConflictDialog = true) }
+//                        return@launch
+//                    }
 
                     val resourceId = if (resourceIdToEdit == null) {
-                        resourceRepository.insert(Resource(name = state.value.resourceName))
+                        resourceRepository.insert(Resource(name = state.value.resourceName, learnedWord = state.value.learnedWord))
                     } else {
-                        resourceRepository.update(Resource(id = resourceIdToEdit, name = state.value.resourceName))
+                        resourceRepository.update(Resource(id = resourceIdToEdit, name = state.value.resourceName, learnedWord = state.value.learnedWord))
                         resourceIdToEdit
                     }
 
@@ -143,6 +147,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 
                     _state.update { it.copy(saveCompleted = true, newlySavedResourceId = resourceId) }
 
+                    savedStateHandle["newlySavedResourceId"] = resourceId
 
                 }
             }
@@ -160,8 +165,25 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     )
                 }
             }
-
-
+            is MaterialsCreatingNewMaterialEvent.LearnedWordChanged -> {
+                _state.update {
+                    val newWord = event.word
+                    val newName = if (!it.allowEditingResourceName) newWord else it.resourceName
+                    it.copy(learnedWord = newWord, resourceName = newName)
+                }
+            }
+            is MaterialsCreatingNewMaterialEvent.ToggleAllowEditingResourceName -> {
+                _state.update {
+                    val allowed = event.allowed
+                    val newName = if (!allowed) it.learnedWord else it.resourceName
+                    it.copy(allowEditingResourceName = allowed, resourceName = newName)
+                }
+            }
+            is MaterialsCreatingNewMaterialEvent.ImageTakenFromCamera -> {
+                _state.update {
+                    it.copy(images = it.images + event.image)
+                }
+            }
 
         }
     }

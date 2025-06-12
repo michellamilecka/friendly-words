@@ -11,5 +11,7 @@ data class MaterialsCreatingNewMaterialState (
     val showNameConflictDialog: Boolean = false,
     val saveCompleted: Boolean = false,
     val exitWithoutSaving: Boolean = false,
-    val newlySavedResourceId: Long? = null
+    val newlySavedResourceId: Long? = null,
+    val learnedWord: String = "",
+    val allowEditingResourceName: Boolean = false
 )

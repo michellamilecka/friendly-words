@@ -15,7 +15,7 @@ import com.example.friendly_words.data.entities.Resource
         //ResourceImage::class,
         // todo dodanie reszty encji jak juz dao beda zrobione
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase(){

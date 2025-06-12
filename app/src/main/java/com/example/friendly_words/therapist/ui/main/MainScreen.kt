@@ -67,10 +67,10 @@ fun MainScreen() {
             MaterialsCreatingNewMaterialScreen(
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = { savedResourceId ->
-                    navController.popBackStack()
-                    navController.currentBackStackEntry
+                    navController.previousBackStackEntry
                         ?.savedStateHandle
                         ?.set("newlySavedResourceId", savedResourceId)
+                    navController.popBackStack()
                 }
 
             )
@@ -85,10 +85,10 @@ fun MainScreen() {
             MaterialsCreatingNewMaterialScreen(
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = { savedResourceId ->
-                    navController.popBackStack()
-                    navController.currentBackStackEntry
+                    navController.previousBackStackEntry
                         ?.savedStateHandle
                         ?.set("newlySavedResourceId", savedResourceId)
+                    navController.popBackStack()
                 }
 
             )

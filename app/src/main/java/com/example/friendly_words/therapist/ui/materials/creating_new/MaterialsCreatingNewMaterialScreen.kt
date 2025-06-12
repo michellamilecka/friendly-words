@@ -2,6 +2,7 @@ package com.example.friendly_words.therapist.ui.materials.creating_new
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -38,7 +40,12 @@ import com.example.friendly_words.therapist.ui.theme.LightBlue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.friendly_words.therapist.ui.components.InfoDialog
-
+import java.io.File
+import androidx.compose.ui.platform.LocalContext
+import java.io.IOException
+import android.graphics.Bitmap
+import java.io.FileOutputStream
+import com.example.friendly_words.data.entities.Image
 
 @Composable
 fun MaterialsCreatingNewMaterialScreen(
@@ -48,12 +55,14 @@ fun MaterialsCreatingNewMaterialScreen(
     //resourceId: Long?
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(state.saveCompleted) {
     val savedId = state.newlySavedResourceId
         if (state.saveCompleted && savedId != null) {
             onSaveClick(savedId)
             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetSaveCompleted)
+
         }
     }
 
@@ -76,29 +85,43 @@ fun MaterialsCreatingNewMaterialScreen(
         }
     )
 
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+        onResult = { bitmap ->
+            bitmap?.let {
+                val filename = "photo_${System.currentTimeMillis()}.jpg"
+                val file = File(context.filesDir, filename)
+
+                try {
+                    FileOutputStream(file).use { out ->
+                        it.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                    }
+
+                    val image = Image(
+                        path = file.absolutePath,
+                        resourceId = null
+                    )
+
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ImageTakenFromCamera(image))
+
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    // Możesz dodać tu komunikat o błędzie
+                }
+            }
+        }
+    )
+
     Scaffold(
         topBar = {
             NewConfigurationTopBar(
                 title = if (state.isEditing) {
-                    if (state.resourceName.isBlank()) "Edycja zasobu:" else "Edycja: ${state.resourceName}"
+                    if (state.resourceName.isBlank()) "Edycja materiału:" else "Edycja: ${state.resourceName}"
                 } else {
-                    if (state.resourceName.isBlank()) "Tworzenie zasobu:" else "Nowy zasób: ${state.resourceName}"
+                    if (state.resourceName.isBlank()) "Tworzenie materiału:" else "Nowy materiał: ${state.resourceName}"
                 },
                 onBackClick = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ShowExitDialog) }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.SaveClicked)
-                    //onSaveClick()
-                },
-                backgroundColor = DarkBlue,
-                contentColor = Color.White,
-                modifier = Modifier.size(72.dp)
-            ) {
-                Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(32.dp))
-            }
         }
     ) { padding ->
         Column(
@@ -115,13 +138,17 @@ fun MaterialsCreatingNewMaterialScreen(
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(200.dp))
-                    Text("Nazwa zasobu", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                    Spacer(modifier = Modifier.height(110.dp))
+
+                    // 🔹 Pole "Uczone słowo"
+                    Text("Uczone słowo", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
-                        value = state.resourceName,
-                        onValueChange = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResourceNameChanged(it)) },
-                        placeholder = { Text("Wpisz nazwę...") },
+                        value = state.learnedWord,
+                        onValueChange = {
+                            viewModel.onEvent(MaterialsCreatingNewMaterialEvent.LearnedWordChanged(it))
+                        },
+                        placeholder = { Text("Wpisz uczone słowo...") },
                         modifier = Modifier.fillMaxWidth(0.8f),
                         colors = TextFieldDefaults.textFieldColors(
                             backgroundColor = Color.White,
@@ -129,10 +156,60 @@ fun MaterialsCreatingNewMaterialScreen(
                             unfocusedIndicatorColor = Color.Gray
                         )
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 🔹 Checkbox: czy zezwolić na edycję "Nazwa zasobu"
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    ) {
+                        androidx.compose.material.Checkbox(
+                            checked = state.allowEditingResourceName,
+                            onCheckedChange = {
+                                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ToggleAllowEditingResourceName(it))
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = DarkBlue,
+                                uncheckedColor = Color.Gray,
+                                checkmarkColor = Color.White
+                            )
+
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Chcę edytować nazwę materiału", fontSize = 16.sp)
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        "Nazwa materiału",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (state.allowEditingResourceName) DarkBlue else Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = state.resourceName,
+                        onValueChange = {
+                            if (state.allowEditingResourceName) {
+                                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResourceNameChanged(it))
+                            }
+                        },
+                        placeholder = { Text("Wpisz nazwę...") },
+                        enabled = state.allowEditingResourceName,
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.White,
+                            disabledTextColor = Color.DarkGray,
+                            disabledIndicatorColor = Color.Gray,
+                            focusedIndicatorColor = DarkBlue,
+                            unfocusedIndicatorColor = Color.Gray
+                        )
+                    )
                     if (state.showNameConflictDialog) {
                         InfoDialog(
                             show = true,
-                            message = "Zasób o tej nazwie już istnieje.",
+                            message = "Materiał o tej nazwie już istnieje.",
                             onDismiss = {
                                 viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog)
                             }
@@ -141,81 +218,115 @@ fun MaterialsCreatingNewMaterialScreen(
                     Spacer(modifier = Modifier.height(80.dp))
                     Button(
                         onClick = {
-                            galleryLauncher.launch("image/*")
+                            viewModel.onEvent(MaterialsCreatingNewMaterialEvent.SaveClicked)
                         },
                         colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
-                        modifier = Modifier.fillMaxWidth(0.3f).height(48.dp)
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(48.dp)
                     ) {
-                        Text("Dodaj obrazek", color = Color.White, fontSize = 16.sp)
+                        Text("Zapisz", color = Color.White, fontSize = 16.sp)
                     }
+
                 }
 
                 // Prawa kolumna
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Top,
+                    verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text("Dodane obrazki", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    val groupedImages = state.images.chunked(3)
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(500.dp)
-                            .padding(horizontal = 8.dp)
+                    Column(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            items(groupedImages) { group ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    group.forEach { image ->
-                                        Box(
-                                            modifier = Modifier.weight(1f).aspectRatio(1f).padding(top = 8.dp),
-                                            contentAlignment = Alignment.TopEnd
-                                        ) {
-                                            val painter = rememberAsyncImagePainter(model = image.path)
-                                            Image(
-                                                painter = painter,
-                                                contentDescription = null,
-                                                contentScale = ContentScale.Fit,
-                                                modifier = Modifier.fillMaxSize()
-                                            )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Text("Dodane obrazki", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        val groupedImages = state.images.chunked(3)
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(500.dp)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                items(groupedImages) { group ->
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        group.forEach { image ->
                                             Box(
-                                                modifier = Modifier
-                                                    .align(Alignment.TopEnd)
-                                                    .padding(6.dp)
-                                                    .size(38.dp)
-                                                    .background(LightBlue, shape = MaterialTheme.shapes.small),
-                                                contentAlignment = Alignment.Center
+                                                modifier = Modifier.weight(1f).aspectRatio(1f).padding(top = 8.dp),
+                                                contentAlignment = Alignment.TopEnd
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Filled.Clear,
-                                                    contentDescription = "Usuń zdjęcie",
-                                                    tint = Color.White,
-                                                    modifier = Modifier
-                                                        .size(14.dp)
-                                                        .clickable {
-                                                            viewModel.onEvent(
-                                                                MaterialsCreatingNewMaterialEvent.RemoveImage(image)
-                                                            )
-                                                        }
+                                                val painter = rememberAsyncImagePainter(model = image.path)
+                                                Image(
+                                                    painter = painter,
+                                                    contentDescription = null,
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier.fillMaxSize()
                                                 )
+                                                Box(
+                                                    modifier = Modifier
+                                                        .align(Alignment.TopEnd)
+                                                        .padding(6.dp)
+                                                        .size(38.dp)
+                                                        .background(LightBlue, shape = MaterialTheme.shapes.small),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Clear,
+                                                        contentDescription = "Usuń zdjęcie",
+                                                        tint = Color.White,
+                                                        modifier = Modifier
+                                                            .size(14.dp)
+                                                            .clickable {
+                                                                viewModel.onEvent(
+                                                                    MaterialsCreatingNewMaterialEvent.RemoveImage(image)
+                                                                )
+                                                            }
+                                                    )
+                                                }
                                             }
                                         }
-                                    }
-                                    repeat(3 - group.size) {
-                                        Spacer(modifier = Modifier.weight(1f))
+                                        repeat(3 - group.size) {
+                                            Spacer(modifier = Modifier.weight(1f))
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+
+                    // 🔽 Przyciski na dole
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = { galleryLauncher.launch("image/*") },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
+                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp).height(48.dp)
+                        ) {
+                            Text("Z galerii", color = Color.White)
+                        }
+
+                        Button(
+                            onClick = { cameraLauncher.launch() },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
+                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp).height(48.dp)
+                        ) {
+                            Text("Zrób zdjęcie", color = Color.White)
+                        }
+                    }
                 }
+
             }
         }
 
