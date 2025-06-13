@@ -2,8 +2,10 @@ package com.example.friendly_words.data.database
 
 import android.content.Context
 import androidx.room.Room
+import com.example.friendly_words.data.daos.ConfigurationDao
 import com.example.friendly_words.data.daos.ImageDao
 import com.example.friendly_words.data.daos.ResourceDao
+import com.example.friendly_words.data.repositories.ConfigurationRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +25,7 @@ object AppModule {
             AppDatabase::class.java,
             "friendly_words"
         )
-            //.fallbackToDestructiveMigration(true)
+            .fallbackToDestructiveMigration(true)
             .build()
 
     @Provides
@@ -31,6 +33,13 @@ object AppModule {
 
     @Provides
     fun provideImageDao(db: AppDatabase): ImageDao = db.imageDao()
+
+    @Provides
+    fun provideConfigurationDao(db: AppDatabase): ConfigurationDao =
+        db.configurationDao()
+    @Provides
+    fun provideConfigurationRepository(dao: ConfigurationDao): ConfigurationRepository =
+        ConfigurationRepository(dao)
 
 //    @Provides
 //    fun provideResourceImageDao(db: AppDatabase): ResourceImageDao = db.resourceImageDao()
