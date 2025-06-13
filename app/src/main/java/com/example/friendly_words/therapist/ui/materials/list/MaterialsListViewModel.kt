@@ -9,6 +9,9 @@ import com.example.friendly_words.data.entities.Resource
 import com.example.friendly_words.data.repositories.ImageRepository
 import com.example.friendly_words.data.repositories.ResourceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,14 +22,19 @@ class MaterialsListViewModel @Inject constructor(
     private val imageRepository: ImageRepository,
 ) : ViewModel() {
 
-    var uiState = mutableStateOf(MaterialsListState())
+//    var uiState = mutableStateOf(MaterialsListState())
+    private val _uiState = MutableStateFlow(MaterialsListState())
+    val uiState: StateFlow<MaterialsListState> = _uiState
+
 
     init {
         // 1. Nasłuchiwanie ID nowo zapisanego zasobu z SavedStateHandle
         viewModelScope.launch {
             savedStateHandle.getStateFlow<Long?>("newlySavedResourceId", null).collect { id ->
-                id?.let {
-                    uiState.value = uiState.value.copy(pendingSelectId = it)
+                id?.let { newId ->
+                    _uiState.update {
+                        it.copy(pendingSelectId = newId)
+                    }
                     savedStateHandle["newlySavedResourceId"] = null
                 }
             }
@@ -35,22 +43,35 @@ class MaterialsListViewModel @Inject constructor(
         // 2. Nasłuchiwanie zmian w bazie zasobów
         viewModelScope.launch {
             resourceRepository.getAll().collect { resources ->
-                val imagesById = resources.associate { resource ->
-                    resource.id to imageRepository.getByResourceId(resource.id)
+//                val imagesById = resources.associate { resource ->
+//                    resource.id to imageRepository.getByResourceId(resource.id)
+//                }
+                val imagesById = buildMap {
+                    for (resource in resources) {
+                        put(resource.id, imageRepository.getByResourceId(resource.id))
+                    }
                 }
 
                 // Jeśli jest ID zasobu do zaznaczenia, szukamy jego indeksu
-                val pendingId = uiState.value.pendingSelectId
+                val pendingId = _uiState.value.pendingSelectId
                 val indexToSelect = pendingId?.let { id ->
                     resources.indexOfFirst { it.id == id }.takeIf { it != -1 }
                 }
 
-                uiState.value = uiState.value.copy(
-                    materials = resources,
-                    imagesForSelected = imagesById,
-                    selectedIndex = indexToSelect ?: uiState.value.selectedIndex,
-                    pendingSelectId = null // Resetujemy, użyte
-                )
+//                uiState.value = uiState.value.copy(
+//                    materials = resources,
+//                    imagesForSelected = imagesById,
+//                    selectedIndex = indexToSelect ?: uiState.value.selectedIndex,
+//                    pendingSelectId = null // Resetujemy, użyte
+//                )
+                _uiState.update {
+                    it.copy(
+                        materials = resources,
+                        imagesForSelected = imagesById,
+                        selectedIndex = indexToSelect ?: it.selectedIndex?.coerceAtMost(resources.lastIndex),
+                        pendingSelectId = null // Resetujemy
+                    )
+                }
             }
         }
     }
@@ -59,20 +80,20 @@ class MaterialsListViewModel @Inject constructor(
         when (event) {
             is MaterialsListEvent.SelectMaterial -> {
                 val selected = event.index
-                val selectedResource = uiState.value.materials.getOrNull(selected) ?: return
+                val selectedResource = _uiState.value.materials.getOrNull(selected) ?: return
 
                 viewModelScope.launch {
                     //val allImages = imageRepository.getAll()
                     val relatedImages = imageRepository.getByResourceId(selectedResource.id)
 
-                    val updatedMap = uiState.value.imagesForSelected.toMutableMap().apply {
+                    val updatedMap = _uiState.value.imagesForSelected.toMutableMap().apply {
                         this[selectedResource.id] = relatedImages
                     }
 
-                    uiState.value = uiState.value.copy(
+                    _uiState.update  {it.copy(
                         selectedIndex = selected,
                         imagesForSelected = updatedMap
-                    )
+                    )}
 
 
                 }
@@ -80,19 +101,19 @@ class MaterialsListViewModel @Inject constructor(
 
 
             is MaterialsListEvent.RequestDelete -> {
-                uiState.value = uiState.value.copy(
+                _uiState.update {it.copy(
                     showDeleteDialog = true,
                     materialToDelete = event.index to event.resource
-                )
+                )}
             }
 
             MaterialsListEvent.ConfirmDelete -> {
-                val (index, resource) = uiState.value.materialToDelete ?: return
-                val currentSelected = uiState.value.selectedIndex
+                val (index, resource) = _uiState.value.materialToDelete ?: return
+                val currentSelected = _uiState.value.selectedIndex
                 viewModelScope.launch {
                     resourceRepository.delete(resource)
 
-                    val updatedMaterials = uiState.value.materials.filter { it.id != resource.id }
+                    val updatedMaterials = _uiState.value.materials.filter { it.id != resource.id }
 
                     val newSelectedIndex = when {
                         currentSelected == index -> updatedMaterials.indices.firstOrNull()
@@ -100,20 +121,21 @@ class MaterialsListViewModel @Inject constructor(
                         else -> currentSelected
                     }
 
-                    uiState.value = uiState.value.copy(
+                    _uiState.update {
+                        it.copy(
                         selectedIndex = newSelectedIndex,
                         showDeleteDialog = false,
                         materialToDelete = null
-                    )
+                    )}
                 }
 
             }
 
             MaterialsListEvent.DismissDeleteDialog -> {
-                uiState.value = uiState.value.copy(
+                _uiState.update {it.copy(
                     showDeleteDialog = false,
                     materialToDelete = null
-                )
+                )}
             }
         }
     }

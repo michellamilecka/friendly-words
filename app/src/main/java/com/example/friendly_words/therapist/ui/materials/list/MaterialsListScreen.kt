@@ -38,7 +38,7 @@ fun MaterialsListScreen(
     onEditClick: (Long) -> Unit,
     viewModel: MaterialsListViewModel = hiltViewModel()
 ) {
-    val state by viewModel.uiState
+    val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -65,7 +65,7 @@ fun MaterialsListScreen(
                         )
 
                         Text(
-                            "UTWÓRZ",
+                            "DODAJ",
                             fontSize = 30.sp,
                             color = Color.White,
                             modifier = Modifier.clickable { onCreateClick() }
@@ -94,7 +94,7 @@ fun MaterialsListScreen(
                         .fillMaxWidth()
                         .padding(12.dp)
                 ) {
-                    Text("NAZWA ZASOBU", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text("NAZWA MATERIAŁU", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     Text("AKCJE", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                 }
 

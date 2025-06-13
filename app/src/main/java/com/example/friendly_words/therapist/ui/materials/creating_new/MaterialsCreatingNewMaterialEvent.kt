@@ -14,6 +14,9 @@ sealed class MaterialsCreatingNewMaterialEvent {
     object DismissNameConflictDialog : MaterialsCreatingNewMaterialEvent()
     object ResetSaveCompleted : MaterialsCreatingNewMaterialEvent()
     object ResetExitWithoutSaving : MaterialsCreatingNewMaterialEvent()
+    data class LearnedWordChanged(val word: String) : MaterialsCreatingNewMaterialEvent()
+    data class ToggleAllowEditingResourceName(val allowed: Boolean) : MaterialsCreatingNewMaterialEvent()
+    data class ImageTakenFromCamera(val image: Image) : MaterialsCreatingNewMaterialEvent()
 
 
 }
