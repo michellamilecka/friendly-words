@@ -12,5 +12,8 @@ sealed class ConfigurationSettingsEvent {
     data class Reinforcement(val event: ConfigurationReinforcementEvent) : ConfigurationSettingsEvent()
     data class Test(val event: ConfigurationTestEvent) : ConfigurationSettingsEvent()
     data class Save(val event: ConfigurationSaveEvent) : ConfigurationSettingsEvent()
+    data object ShowExitDialog : ConfigurationSettingsEvent()
+    data object CancelExitDialog : ConfigurationSettingsEvent()
+    data object ConfirmExitDialog : ConfigurationSettingsEvent()
 
 }

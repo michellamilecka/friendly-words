@@ -86,7 +86,7 @@ fun ConfigurationsListScreen(
                 var showTooltipName by remember { mutableStateOf(false) }
                 var showTooltipActions by remember { mutableStateOf(false) }
 
-                Text("NAZWA KONFIGURACJI", fontSize = 25.sp, color = Color.Gray)
+                Text("NAZWA KROKU UCZENIA", fontSize = 25.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(6.dp))
                 Box {
                     Icon(Icons.Default.Info, contentDescription = "Info", tint = Color.Gray,
@@ -160,7 +160,7 @@ fun ConfigurationsListScreen(
             state.showDeleteDialogFor?.let { configToDelete ->
                 YesNoDialog(
                     show = true,
-                    message = "Czy chcesz usunąć konfigurację:\n$configToDelete?",
+                    message = "Czy chcesz usunąć krok uczenia:\n$configToDelete?",
                     onConfirm = {
                         viewModel.onEvent(ConfigurationEvent.ConfirmDelete(configToDelete))
                     },
@@ -171,7 +171,7 @@ fun ConfigurationsListScreen(
             state.showActivateDialogFor?.let { configToActivate ->
                 YesNoDialog(
                     show = true,
-                    message = "Czy chcesz aktywować konfigurację:\n$configToActivate?",
+                    message = "Czy chcesz aktywować krok uczenia:\n$configToActivate?",
                     onConfirm = {
                         viewModel.onEvent(ConfigurationEvent.ConfirmActivate(configToActivate))
                     },
@@ -232,8 +232,8 @@ fun ConfigurationItem(
                         Text(title, fontSize = 30.sp)
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            if (isActive) "(aktywna konfiguracja w trybie: $activeMode)"
-                            else "(konfiguracja nieaktywna)",
+                            if (isActive) "(aktywny krok w trybie: $activeMode)"
+                            else "(krok nieaktywny)",
                             fontSize = 20.sp
                         )
                     }

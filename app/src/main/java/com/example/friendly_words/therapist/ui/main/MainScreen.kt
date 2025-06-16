@@ -164,8 +164,8 @@ fun MainContent(
             ) {
                 Text(
                     text = activeConfiguration?.let {
-                        "Aktywna konfiguracja: ${it.first} (tryb: ${it.second})"
-                    } ?: "Brak aktywnej konfiguracji",
+                        "Aktywny krok uczenia: ${it.first} (tryb: ${it.second})"
+                    } ?: "Brak aktywnego kroku uczenia",
                     fontSize = 20.sp
                 )
 
@@ -192,7 +192,7 @@ fun MainContent(
                         .width(((LocalConfiguration.current.screenWidthDp/2).dp))
                         .height(70.dp)
                 ) {
-                    Text("KONFIGURACJE", fontSize = 16.sp)
+                    Text("KROKI UCZENIA", fontSize = 16.sp)
                 }
             }
         }

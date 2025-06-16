@@ -73,6 +73,16 @@ class ConfigurationSettingsViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+            is ConfigurationSettingsEvent.ShowExitDialog -> {
+                _state.update { it.copy(showExitDialog = true) }
+            }
+            is ConfigurationSettingsEvent.CancelExitDialog -> {
+                _state.update { it.copy(showExitDialog = false) }
+            }
+            is ConfigurationSettingsEvent.ConfirmExitDialog -> {
+                _state.value = ConfigurationSettingsState()
+            }
+
 
         }
     }
