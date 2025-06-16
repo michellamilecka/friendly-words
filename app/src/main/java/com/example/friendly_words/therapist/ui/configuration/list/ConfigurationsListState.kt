@@ -1,10 +1,12 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
+import com.example.friendly_words.data.entities.Configuration
+
 data class ConfigurationState(
     val searchQuery: String = "",
-    val configurations: List<String> = emptyList(),
-    val activeConfiguration: Pair<String, String>? = null,
-    val showDeleteDialogFor: String? = null,
-    val showActivateDialogFor: String? = null
+    val configurations: List<Configuration> = emptyList(),
+    val activeConfiguration: Configuration? = null,
+    val showDeleteDialogFor: Configuration? = null,
+    val showActivateDialogFor: Configuration? = null
 )
 

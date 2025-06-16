@@ -9,6 +9,9 @@ data class Configuration(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
 
+    val isActive: Boolean = false,
+    val activeMode: String? = null,
+
 //    @Embedded(prefix = "learning_")
 //    val learningSettings: LearningSettings = LearningSettings(),
 //

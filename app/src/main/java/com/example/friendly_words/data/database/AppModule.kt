@@ -48,9 +48,4 @@ object AppModule {
     @Provides
     fun provideConfigurationRepository(dao: ConfigurationDao): ConfigurationRepository =
         ConfigurationRepository(dao)
-
-//    @Provides
-//    fun provideResourceImageDao(db: AppDatabase): ResourceImageDao = db.resourceImageDao()
-
-    //todo dodac reszte klas
 }

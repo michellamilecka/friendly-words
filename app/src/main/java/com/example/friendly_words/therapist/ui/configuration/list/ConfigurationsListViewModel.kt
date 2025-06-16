@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.friendly_words.data.repositories.ConfigurationRepository
+import kotlinx.coroutines.flow.first
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
@@ -27,12 +28,17 @@ class ConfigurationViewModel @Inject constructor(
                     configurationRepository.insert(Configuration(name = "Przykładowa konfiguracja 1"))
                     configurationRepository.insert(Configuration(name = "Przykładowa konfiguracja 2"))
                 }
+                val active = configurations.find { it.isActive }
                 _state.update {
-                    it.copy(configurations = configurations.map { config -> config.name })
+                    it.copy(
+                        configurations = configurations,
+                        activeConfiguration = active
+                    )
                 }
             }
         }
     }
+
     fun onEvent(event: ConfigurationEvent) {
         when (event) {
             is ConfigurationEvent.SearchChanged -> _state.update {
@@ -40,38 +46,44 @@ class ConfigurationViewModel @Inject constructor(
             }
 
             is ConfigurationEvent.DeleteRequested -> _state.update {
-                it.copy(showDeleteDialogFor = event.name)
+                it.copy(showDeleteDialogFor = event.configuration)
             }
 
-            is ConfigurationEvent.ConfirmDelete -> _state.update {
-                val newList = it.configurations.filter { name -> name != event.name }
-                val newActive = if (it.activeConfiguration?.first == event.name)
-                    "1 konfiguracja NA STAŁE" to "uczenie" else it.activeConfiguration
-                it.copy(
-                    configurations = newList,
-                    activeConfiguration = newActive,
-                    showDeleteDialogFor = null
-                )
+            is ConfigurationEvent.ConfirmDelete -> viewModelScope.launch {
+                configurationRepository.delete(event.configuration)
+                _state.update { it.copy(showDeleteDialogFor = null) }
             }
 
             is ConfigurationEvent.ActivateRequested -> _state.update {
-                it.copy(showActivateDialogFor = event.name)
+                it.copy(showActivateDialogFor = event.configuration)
             }
 
-            is ConfigurationEvent.ConfirmActivate -> _state.update {
-                it.copy(
-                    activeConfiguration = event.name to "uczenie",
-                    showActivateDialogFor = null
-                )
+            is ConfigurationEvent.ConfirmActivate -> {
+                viewModelScope.launch {
+                    configurationRepository.setActiveConfiguration(event.configuration, "uczenie")
+                    refreshConfigurations()
+                    _state.update {
+                        it.copy(showActivateDialogFor = null)
+                    }
+                }
             }
 
-            is ConfigurationEvent.CopyRequested -> _state.update {
-                val newName = generateCopyName(event.name, it.configurations)
-                it.copy(configurations = it.configurations + newName)
+
+            is ConfigurationEvent.CopyRequested -> {
+                val newName = generateCopyName(event.configuration.name, _state.value.configurations.map { it.name })
+                val copied = event.configuration.copy(id = 0, name = newName)
+                viewModelScope.launch { configurationRepository.insert(copied) }
             }
 
             is ConfigurationEvent.EditRequested -> {
                 // Obsługiwane w UI
+            }
+
+            is ConfigurationEvent.SetActiveMode -> {
+                viewModelScope.launch {
+                    configurationRepository.setActiveConfiguration(event.configuration, event.mode)
+                    refreshConfigurations()
+                }
             }
 
             ConfigurationEvent.CreateRequested -> {
@@ -83,6 +95,18 @@ class ConfigurationViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun refreshConfigurations() {
+        val configurations = configurationRepository.getAll().first()
+        val active = configurations.find { it.isActive }
+        _state.update {
+            it.copy(
+                configurations = configurations,
+                activeConfiguration = active
+            )
+        }
+    }
+
 
     private fun generateCopyName(original: String, existing: List<String>): String {
         var copyIndex = 1
