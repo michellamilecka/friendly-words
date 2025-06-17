@@ -138,7 +138,7 @@ fun MaterialsCreatingNewMaterialScreen(
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(110.dp))
+                    Spacer(modifier = Modifier.height(40.dp))//bylo 110
 
                     // 🔹 Pole "Uczone słowo"
                     Text("Uczone słowo", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)

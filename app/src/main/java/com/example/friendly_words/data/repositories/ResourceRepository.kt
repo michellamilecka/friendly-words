@@ -16,4 +16,7 @@ class ResourceRepository @Inject constructor(
     suspend fun update(resource: Resource) = resourceDao.update(resource)
     suspend fun getById(resourceId: Long) = resourceDao.getById(resourceId)
     suspend fun getAllOnce(): List<Resource> = resourceDao.getAllOnce()
+    suspend fun getByName(name: String): Resource {
+        return resourceDao.getByName(name) ?: throw IllegalArgumentException("Resource '$name' not found")
+    }
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
@@ -33,19 +34,9 @@ data class VocabularyItem(
     val word: String,
     val selectedImages: List<Boolean>,
     val inLearningStates: List<Boolean>,
-    val inTestStates: List<Boolean>
+    val inTestStates: List<Boolean>,
+    val imagePaths: List<String>
 ) {
-    companion object {
-        fun create(word: String): VocabularyItem {
-            val size = getImageResourcesForWord(word).size
-            return VocabularyItem(
-                word = word,
-                selectedImages = List(size) { it == 0 }, // tylko pierwsze zdjęcie = true
-                inLearningStates = List(size) { it == 0 }, // tylko pierwsze = true
-                inTestStates = List(size) { it == 0 } // tylko pierwsze = true
-            )
-        }
-    }
 }
 
 fun getImageResourcesForWord(word: String): List<Int> {
@@ -61,7 +52,7 @@ fun getImageResourcesForWord(word: String): List<Int> {
 
 @Composable
 fun ImageSelectionWithCheckbox(
-    images: List<Int>,
+    images: List<String>,
     selectedImages: List<Boolean>,
     onImageSelectionChanged: (List<Boolean>) -> Unit,
     onLearningTestChanged: (index: Int, inLearning: Boolean, inTest: Boolean) -> Unit,
@@ -98,7 +89,7 @@ fun ImageSelectionWithCheckbox(
                 )
                 Box(modifier = Modifier.height(200.dp).aspectRatio(1f)) {
                     Image(
-                        painter = painterResource(id = resId),
+                        painter = rememberAsyncImagePainter(model = resId), // teraz resId to String = ścieżka do pliku
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -164,10 +155,10 @@ fun ImageSelectionWithCheckbox(
 
 @Composable
 fun ConfigurationMaterialScreen(
-    state: ConfigurationMaterialState,
-    onEvent: (ConfigurationMaterialEvent) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: ConfigurationMaterialViewModel = hiltViewModel()
 ) {
+    val state by viewModel.state.collectAsState()
 
     //val state by viewModel.state.collectAsState()
 
@@ -219,7 +210,7 @@ fun ConfigurationMaterialScreen(
                                     .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
                                     .padding(horizontal = 4.dp, vertical = 8.dp)
                                     .clickable {
-                                        onEvent(ConfigurationMaterialEvent.WordSelected(index))
+                                        viewModel.onEvent(ConfigurationMaterialEvent.WordSelected(index))
                                     }
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
@@ -272,7 +263,7 @@ fun ConfigurationMaterialScreen(
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
                                     IconButton(onClick = {
-                                        onEvent(ConfigurationMaterialEvent.WordDeleted(index))
+                                        viewModel.onEvent(ConfigurationMaterialEvent.WordDeleted(index))
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
@@ -292,17 +283,17 @@ fun ConfigurationMaterialScreen(
                             show = true,
                             message = "Czy chcesz usunąć z konfiguracji materiał:\n${state.vocabItems[state.wordIndexToDelete!!].word}?",
                             onConfirm = {
-                                onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
+                                viewModel.onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
                             },
                             onDismiss = {
-                                onEvent(ConfigurationMaterialEvent.CancelDelete)
+                                viewModel.onEvent(ConfigurationMaterialEvent.CancelDelete)
                             }
                         )
                     }
 
                     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                         Button(
-                            onClick = { onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
+                            onClick = { viewModel.onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
                             colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                             modifier = Modifier.width(200.dp).height(48.dp)
                         ) {
@@ -327,7 +318,7 @@ fun ConfigurationMaterialScreen(
                     val selectedIndex = state.selectedWordIndex
                     if (selectedIndex in state.vocabItems.indices) {
                         val item = state.vocabItems[selectedIndex]
-                        val images = getImageResourcesForWord(item.word)
+                        val images = item.imagePaths
 
                         ImageSelectionWithCheckbox(
                             images = images,
@@ -335,10 +326,10 @@ fun ConfigurationMaterialScreen(
                             inLearningStates = item.inLearningStates,
                             inTestStates = item.inTestStates,
                             onImageSelectionChanged = {
-                                onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
+                                viewModel.onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
                             },
                             onLearningTestChanged = { i, learning, test ->
-                                onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
+                                viewModel.onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
                             }
                         )
                     } else {
@@ -351,7 +342,7 @@ fun ConfigurationMaterialScreen(
         // Dialog dodawania słowa
         if (state.showAddDialog) {
             AlertDialog(
-                onDismissRequest = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
+                onDismissRequest = { viewModel.onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                 title = {
                     Text(text="Wybierz materiał, które chcesz dodać do konfiguracji:", fontSize = 26.sp,
                     fontStyle = FontStyle.Italic)
@@ -368,7 +359,7 @@ fun ConfigurationMaterialScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            onEvent(ConfigurationMaterialEvent.AddWord(word))
+                                            viewModel.onEvent(ConfigurationMaterialEvent.AddWord(word))
                                         }
                                         .padding(vertical = 8.dp),
                                     fontSize = 18.sp
@@ -379,7 +370,7 @@ fun ConfigurationMaterialScreen(
                 },
                 confirmButton = {
                     Button(
-                        onClick = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
+                        onClick = { viewModel.onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = DarkBlue,
                             contentColor = Color.White

@@ -7,6 +7,7 @@ data class ConfigurationState(
     val configurations: List<Configuration> = emptyList(),
     val activeConfiguration: Configuration? = null,
     val showDeleteDialogFor: Configuration? = null,
-    val showActivateDialogFor: Configuration? = null
+    val showActivateDialogFor: Configuration? = null,
+    val shouldScrollToBottom: Boolean=false
 )
 

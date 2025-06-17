@@ -46,15 +46,17 @@ fun ConfigurationsListScreen(
     val lazyListState = rememberLazyListState()
     val stateForScroll=rememberScrollAreaState(lazyListState)
 
+
     val filteredConfigurations = remember(state.searchQuery, state.configurations, hideExamples) {
         state.configurations
             .filter { it.name.contains(state.searchQuery, ignoreCase = true) }
             .filter { if (hideExamples) !it.isExample else true }
     }
 
-    LaunchedEffect(filteredConfigurations.size) {
-        if (filteredConfigurations.isNotEmpty()) {
+    LaunchedEffect(state.shouldScrollToBottom) {
+        if (state.shouldScrollToBottom && filteredConfigurations.isNotEmpty()) {
             lazyListState.animateScrollToItem(filteredConfigurations.size - 1)
+            viewModel.onEvent(ConfigurationEvent.ScrollHandled)
         }
     }
 
