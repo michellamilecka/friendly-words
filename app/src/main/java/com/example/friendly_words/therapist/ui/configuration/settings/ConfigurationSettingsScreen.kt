@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.therapist.ui.components.NewConfigurationTopBar
 import com.example.friendly_words.therapist.ui.components.NewConfigurationTopTabs
+import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestScreen
 import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningScreen
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialScreen
@@ -20,10 +21,30 @@ fun ConfigurationSettingsScreen(
     viewModel: ConfigurationSettingsViewModel = hiltViewModel()
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
+    val state by viewModel.state.collectAsState()
+
+    if (state.showExitDialog) {
+        YesNoDialog(
+            show = true,
+            message = "Czy chcesz wyjść bez zapisywania?",
+            onConfirm = {
+                viewModel.onEvent(ConfigurationSettingsEvent.ConfirmExitDialog)
+                onBackClick()
+            },
+            onDismiss = {
+                viewModel.onEvent(ConfigurationSettingsEvent.CancelExitDialog)
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
-            NewConfigurationTopBar(title = "Nowa konfiguracja", onBackClick = onBackClick)
+            NewConfigurationTopBar(
+                title = "Nowa konfiguracja",
+                onBackClick = {
+                    viewModel.onEvent(ConfigurationSettingsEvent.ShowExitDialog)
+                }
+            )
         }
     ) { padding ->
         Column(

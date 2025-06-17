@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.friendly_words.data.entities.Configuration
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
@@ -33,7 +34,7 @@ fun ConfigurationsListScreen(
     val scrollState = rememberScrollState()
 
     val filteredConfigurations = remember(state.searchQuery, state.configurations) {
-        state.configurations.filter { it.contains(state.searchQuery, ignoreCase = true) }
+        state.configurations.filter { it.name.contains(state.searchQuery, ignoreCase = true) }
     }
 
     Scaffold(
@@ -86,7 +87,7 @@ fun ConfigurationsListScreen(
                 var showTooltipName by remember { mutableStateOf(false) }
                 var showTooltipActions by remember { mutableStateOf(false) }
 
-                Text("NAZWA KONFIGURACJI", fontSize = 25.sp, color = Color.Gray)
+                Text("NAZWA KROKU UCZENIA", fontSize = 25.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(6.dp))
                 Box {
                     Icon(Icons.Default.Info, contentDescription = "Info", tint = Color.Gray,
@@ -138,21 +139,22 @@ fun ConfigurationsListScreen(
             ) {
                 filteredConfigurations.forEach { config ->
                     val activeConfig = state.activeConfiguration
-                    val activeMode = if (activeConfig?.first == config) activeConfig.second else null
+                    val activeMode = if (activeConfig?.id == config.id) activeConfig.activeMode else null
 
                     ConfigurationItem(
-                        title = config,
-                        isActive = state.activeConfiguration?.first == config,
+                        configuration = config,
+                        isActive = config.isActive,
                         activeMode = activeMode,
-                        onActivate = { mode -> viewModel.onEvent(ConfigurationEvent.ConfirmActivate(config)) },
+                        onActivate = { mode -> viewModel.onEvent(ConfigurationEvent.SetActiveMode(config, mode)) },
                         onActivateRequest = { viewModel.onEvent(ConfigurationEvent.ActivateRequested(config)) },
                         onDeleteRequest = { viewModel.onEvent(ConfigurationEvent.DeleteRequested(config)) },
                         onEdit = {
                             viewModel.onEvent(ConfigurationEvent.EditRequested(config))
-                            onEditClick(config)
+                            onEditClick(config.name)
                         },
                         onCopy = { viewModel.onEvent(ConfigurationEvent.CopyRequested(config)) }
                     )
+
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
@@ -160,7 +162,7 @@ fun ConfigurationsListScreen(
             state.showDeleteDialogFor?.let { configToDelete ->
                 YesNoDialog(
                     show = true,
-                    message = "Czy chcesz usunąć konfigurację:\n$configToDelete?",
+                    message = "Czy chcesz usunąć krok uczenia:\n${configToDelete.name}?",
                     onConfirm = {
                         viewModel.onEvent(ConfigurationEvent.ConfirmDelete(configToDelete))
                     },
@@ -171,7 +173,7 @@ fun ConfigurationsListScreen(
             state.showActivateDialogFor?.let { configToActivate ->
                 YesNoDialog(
                     show = true,
-                    message = "Czy chcesz aktywować konfigurację:\n$configToActivate?",
+                    message = "Czy chcesz aktywować krok uczenia:\n${configToActivate.name}?",
                     onConfirm = {
                         viewModel.onEvent(ConfigurationEvent.ConfirmActivate(configToActivate))
                     },
@@ -184,7 +186,7 @@ fun ConfigurationsListScreen(
 
 @Composable
 fun ConfigurationItem(
-    title: String,
+    configuration: Configuration,
     isActive: Boolean,
     activeMode: String?,
     onActivate: (String) -> Unit,
@@ -194,7 +196,7 @@ fun ConfigurationItem(
     onCopy: () -> Unit
 ) {
     var switchChecked by remember { mutableStateOf(activeMode == "test") }
-    val isSpecialConfig = title == "1 konfiguracja NA STAŁE"
+    val isSpecialConfig = configuration.name == "1 konfiguracja NA STAŁE"
 
     LaunchedEffect(activeMode) {
         switchChecked = activeMode == "test"
@@ -229,11 +231,11 @@ fun ConfigurationItem(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Spacer(modifier = Modifier.height(13.dp))
-                        Text(title, fontSize = 30.sp)
+                        Text(configuration.name, fontSize = 30.sp)
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            if (isActive) "(aktywna konfiguracja w trybie: $activeMode)"
-                            else "(konfiguracja nieaktywna)",
+                            if (isActive) "(aktywny krok w trybie: $activeMode)"
+                            else "(krok nieaktywny)",
                             fontSize = 20.sp
                         )
                     }

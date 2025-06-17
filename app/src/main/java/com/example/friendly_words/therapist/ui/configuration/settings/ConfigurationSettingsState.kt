@@ -12,5 +12,7 @@ data class ConfigurationSettingsState (
     val learningState: ConfigurationLearningState = ConfigurationLearningState(),
     val reinforcementState: ConfigurationReinforcementState = ConfigurationReinforcementState(),
     val testState: ConfigurationTestState = ConfigurationTestState(),
-    val saveState: ConfigurationSaveState = ConfigurationSaveState()
+    val saveState: ConfigurationSaveState = ConfigurationSaveState(),
+    val showExitDialog: Boolean = false
+
 )

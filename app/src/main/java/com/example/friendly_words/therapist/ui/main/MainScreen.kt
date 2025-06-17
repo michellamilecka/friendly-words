@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,6 +40,8 @@ object NavRoutes {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
+    val viewModel: MainScreenViewModel = hiltViewModel()
+    val activeConfig by viewModel.activeConfiguration.collectAsState()
 
     NavHost(
         navController = navController,
@@ -48,7 +51,9 @@ fun MainScreen() {
             MainContent(
                 onConfigClick = { navController.navigate(NavRoutes.CONFIG_LIST) },
                 onMaterialsClick = { navController.navigate(NavRoutes.MATERIALS) },
-                activeConfiguration = Pair("1 konfiguracja NA STAŁE", "uczenie")
+                activeConfiguration = activeConfig?.let {
+                    it.name to (it.activeMode ?: "uczenie")
+                }
             )
         }
 
@@ -164,8 +169,8 @@ fun MainContent(
             ) {
                 Text(
                     text = activeConfiguration?.let {
-                        "Aktywna konfiguracja: ${it.first} (tryb: ${it.second})"
-                    } ?: "Brak aktywnej konfiguracji",
+                        "Aktywny krok uczenia: ${it.first} (tryb: ${it.second})"
+                    } ?: "Brak aktywnego kroku uczenia",
                     fontSize = 20.sp
                 )
 
@@ -192,7 +197,7 @@ fun MainContent(
                         .width(((LocalConfiguration.current.screenWidthDp/2).dp))
                         .height(70.dp)
                 ) {
-                    Text("KONFIGURACJE", fontSize = 16.sp)
+                    Text("KROKI UCZENIA", fontSize = 16.sp)
                 }
             }
         }

@@ -25,11 +25,11 @@ import com.example.friendly_words.therapist.ui.theme.LightBlue
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.ui.platform.LocalContext
-import com.example.friendly_words.therapist.ui.configuration.material.getImageResourcesForWord
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+
 
 @Composable
 fun MaterialsListScreen(
@@ -98,37 +98,69 @@ fun MaterialsListScreen(
                     Text("AKCJE", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                 }
 
-                LazyColumn {
-                    itemsIndexed(state.materials) { index, material ->
-                        val isSelected = state.selectedIndex == index
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
-                                .clickable { viewModel.onEvent(MaterialsListEvent.SelectMaterial(index)) }
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+
+                val listState = rememberLazyListState()
+
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        itemsIndexed(state.materials) { index, material ->
+                            val isSelected = state.selectedIndex == index
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp, horizontal = 12.dp)
-                                    .height(55.dp)
+                                    .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
+                                    .clickable {
+                                        viewModel.onEvent(
+                                            MaterialsListEvent.SelectMaterial(
+                                                index
+                                            )
+                                        )
+                                    }
                             ) {
-                                Text(material.name, fontSize = 28.sp, fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal, modifier = Modifier.weight(1f))
-                                IconButton(onClick = {
-                                    onEditClick(material.id)
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edytuj", tint = DarkBlue, modifier = Modifier.size(35.dp))
-                                }
-                                IconButton(onClick = {
-                                    viewModel.onEvent(MaterialsListEvent.RequestDelete(index, material))
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Usuń", tint = DarkBlue, modifier = Modifier.size(35.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp, horizontal = 12.dp)
+                                        .height(55.dp)
+                                ) {
+                                    Text(
+                                        material.name,
+                                        fontSize = 28.sp,
+                                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(onClick = {
+                                        onEditClick(material.id)
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = "Edytuj",
+                                            tint = DarkBlue,
+                                            modifier = Modifier.size(35.dp)
+                                        )
+                                    }
+                                    IconButton(onClick = {
+                                        viewModel.onEvent(
+                                            MaterialsListEvent.RequestDelete(
+                                                index,
+                                                material
+                                            )
+                                        )
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Usuń",
+                                            tint = DarkBlue,
+                                            modifier = Modifier.size(35.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
             }
 
             // Obrazki dla wybranego materiału

@@ -2,6 +2,8 @@ package com.example.friendly_words.data.database
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.friendly_words.data.daos.ConfigurationDao
 import com.example.friendly_words.data.daos.ImageDao
 import com.example.friendly_words.data.daos.ResourceDao
@@ -26,6 +28,12 @@ object AppModule {
             "friendly_words"
         )
             .fallbackToDestructiveMigration(true)
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    db.execSQL("PRAGMA foreign_keys=ON;") // to umozliwia dzialanie foreign keys
+                }
+            })
             .build()
 
     @Provides
@@ -40,9 +48,4 @@ object AppModule {
     @Provides
     fun provideConfigurationRepository(dao: ConfigurationDao): ConfigurationRepository =
         ConfigurationRepository(dao)
-
-//    @Provides
-//    fun provideResourceImageDao(db: AppDatabase): ResourceImageDao = db.resourceImageDao()
-
-    //todo dodac reszte klas
 }

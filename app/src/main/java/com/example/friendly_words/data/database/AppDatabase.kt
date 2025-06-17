@@ -8,17 +8,20 @@ import com.example.friendly_words.data.daos.ResourceDao
 import com.example.friendly_words.data.entities.Image
 import com.example.friendly_words.data.entities.Resource
 import com.example.friendly_words.data.entities.Configuration
+import com.example.friendly_words.data.entities.ConfigurationImageUsage
+import com.example.friendly_words.data.entities.ConfigurationResource
 
 
 @Database(
     entities = [
         Resource::class,
         Image::class,
-        Configuration::class
-        //ResourceImage::class,
+        Configuration::class,
+        ConfigurationResource::class,
+        ConfigurationImageUsage::class
         // todo dodanie reszty encji jak juz dao beda zrobione
     ],
-    version =5 ,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase(){
