@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -352,11 +353,13 @@ fun ConfigurationMaterialScreen(
             AlertDialog(
                 onDismissRequest = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                 title = {
-                    Text("Wybierz słowo, które chcesz dodać do konfiguracji:")
+                    Text(text="Wybierz materiał, które chcesz dodać do konfiguracji:", fontSize = 26.sp,
+                    fontStyle = FontStyle.Italic)
+
                 },
                 text = {
                     if (state.availableWordsToAdd.isEmpty()) {
-                        Text("BRAK")
+                        Text("BRAK, DODAJ W MATERIAŁACH")
                     } else {
                         Column {
                             state.availableWordsToAdd.forEach { word ->

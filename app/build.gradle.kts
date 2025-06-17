@@ -72,7 +72,7 @@ dependencies {
     implementation("androidx.compose.material:material:1.5.4")
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
-
+    implementation("com.composables:core:1.32.0")
 
 
 }
