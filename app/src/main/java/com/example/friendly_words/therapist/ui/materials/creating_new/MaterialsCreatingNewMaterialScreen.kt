@@ -44,6 +44,10 @@ import java.io.File
 import androidx.compose.ui.platform.LocalContext
 import java.io.IOException
 import android.graphics.Bitmap
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import java.io.FileOutputStream
 import com.example.friendly_words.data.entities.Image
 
@@ -56,6 +60,7 @@ fun MaterialsCreatingNewMaterialScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(state.saveCompleted) {
     val savedId = state.newlySavedResourceId
@@ -154,6 +159,12 @@ fun MaterialsCreatingNewMaterialScreen(
                             backgroundColor = Color.White,
                             focusedIndicatorColor = DarkBlue,
                             unfocusedIndicatorColor = Color.Gray
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                keyboardController?.hide()
+                            }
                         )
                     )
 
@@ -204,6 +215,12 @@ fun MaterialsCreatingNewMaterialScreen(
                             disabledIndicatorColor = Color.Gray,
                             focusedIndicatorColor = DarkBlue,
                             unfocusedIndicatorColor = Color.Gray
+                        ),
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                keyboardController?.hide()
+                            }
                         )
                     )
                     if (state.showNameConflictDialog) {

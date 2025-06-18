@@ -56,6 +56,7 @@ fun ConfigurationSettingsScreen(
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it }
             )
+            val settingsState = viewModel.state.collectAsState().value
 
             when (selectedTabIndex) {
                 0 -> ConfigurationMaterialScreen(
@@ -77,8 +78,13 @@ fun ConfigurationSettingsScreen(
                     onBackClick = onBackClick
                 )
                 4 -> ConfigurationSaveScreen(
-                    state = viewModel.state.collectAsState().value.saveState,
+                    materialState = settingsState.materialState,
+                    learningState = settingsState.learningState,
+                    reinforcementState = settingsState.reinforcementState,
+                    testState = settingsState.testState,
+                    saveState = settingsState.saveState,
                     onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Save(it)) },
+                    onSettingsEvent = { viewModel.onEvent(it) },
                     onBackClick = onBackClick
                 )
             }

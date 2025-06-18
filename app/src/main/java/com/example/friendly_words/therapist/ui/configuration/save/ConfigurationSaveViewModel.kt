@@ -23,7 +23,7 @@ class ConfigurationSaveViewModel @Inject constructor() : ViewModel() {
         fun reduce(state: ConfigurationSaveState, event: ConfigurationSaveEvent): ConfigurationSaveState {
             return when (event) {
                 is ConfigurationSaveEvent.SetStepName -> state.copy(stepName = event.name)
-                ConfigurationSaveEvent.SaveClicked -> state // można dodać efekt zapisu później
+                is ConfigurationSaveEvent.SaveConfiguration -> state // nic nie zmieniamy, ale wymagane
             }
         }
     }

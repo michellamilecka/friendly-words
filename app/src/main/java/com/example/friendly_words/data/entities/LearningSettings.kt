@@ -2,7 +2,7 @@ package com.example.friendly_words.data.entities
 
 data class LearningSettings (
     val numberOfWords: Int = 0,
-    val materials: List<Resource> = emptyList(),
+    //val materials: List<Resource> = emptyList(),
     val displayedImagesCount: Int = 0,
     val repetitionPerWord: Int = 2,
     val commandType: String = "", //idk czy tu ustawiac cos docelowo czy dopiero wewnatrz logiki aplikacji

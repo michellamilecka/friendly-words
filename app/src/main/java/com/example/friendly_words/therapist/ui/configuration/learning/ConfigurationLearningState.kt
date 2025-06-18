@@ -1,5 +1,9 @@
 package com.example.friendly_words.therapist.ui.configuration.learning
 
+import com.example.friendly_words.data.entities.LearningSettings
+import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
+import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
+
 data class ConfigurationLearningState(
     val imageCount: Int = 3,
     val repetitionCount: Int = 2,
@@ -12,3 +16,30 @@ data class ConfigurationLearningState(
     val scaleCorrect: Boolean = false,
     val dimIncorrect: Boolean = true
 )
+
+fun ConfigurationLearningState.toLearningSettings(
+    materialState: ConfigurationMaterialState,
+    reinforcementState: ConfigurationReinforcementState
+): LearningSettings {
+    return LearningSettings(
+        numberOfWords = materialState.vocabItems.size,
+        //materials = emptyList(), // jeśli chcesz później dodać obrazy — tu je podstawisz
+        displayedImagesCount = this.imageCount,
+        repetitionPerWord = this.repetitionCount,
+        commandType = this.selectedPrompt,
+        showLabelsUnderImages = this.captionsEnabled,
+        readCommand = this.readingEnabled,
+        hintAfterSeconds = this.timeCount,
+        typesOfHints = buildList {
+            if (outlineCorrect) add("Obramuj poprawną")
+            if (animateCorrect) add("Animuj poprawną")
+            if (scaleCorrect) add("Powiększ poprawną")
+            if (dimIncorrect) add("Wyszarz niepoprawne")
+        },
+        typesOfPraises = reinforcementState.praiseStates
+            .filterValues { it }
+            .keys
+            .toList(),
+        verbalPraiseEnabled = reinforcementState.praiseReadingEnabled
+    )
+}

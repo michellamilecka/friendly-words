@@ -13,9 +13,9 @@ data class Configuration(
     val activeMode: String? = null,
     val isExample:Boolean=false,
 
-//    @Embedded(prefix = "learning_")
-//    val learningSettings: LearningSettings = LearningSettings(),
-//
-//    @Embedded(prefix = "test_")
-//    val testSettings: TestSettings = TestSettings()
+    @Embedded(prefix = "learning_")
+    val learningSettings: LearningSettings = LearningSettings(),
+
+    @Embedded(prefix = "test_")
+    val testSettings: TestSettings = TestSettings()
 )

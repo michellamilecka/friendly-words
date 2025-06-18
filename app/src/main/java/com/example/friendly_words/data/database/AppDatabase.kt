@@ -2,6 +2,8 @@ package com.example.friendly_words.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.friendly_words.data.another.Converters
 import com.example.friendly_words.data.daos.ConfigurationDao
 import com.example.friendly_words.data.daos.ImageDao
 import com.example.friendly_words.data.daos.ResourceDao
@@ -21,9 +23,10 @@ import com.example.friendly_words.data.entities.ConfigurationResource
         ConfigurationImageUsage::class
         // todo dodanie reszty encji jak juz dao beda zrobione
     ],
-    version = 9,
+    version = 12,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase(){
     abstract fun resourceDao(): ResourceDao
     abstract fun imageDao() : ImageDao
