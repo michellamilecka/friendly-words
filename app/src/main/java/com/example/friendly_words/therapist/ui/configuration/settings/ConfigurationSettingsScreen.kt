@@ -59,8 +59,6 @@ fun ConfigurationSettingsScreen(
 
             when (selectedTabIndex) {
                 0 -> ConfigurationMaterialScreen(
-                    state = viewModel.state.collectAsState().value.materialState,
-                    onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Material(it)) },
                     onBackClick = onBackClick
                 )
                 1 -> ConfigurationLearningScreen(

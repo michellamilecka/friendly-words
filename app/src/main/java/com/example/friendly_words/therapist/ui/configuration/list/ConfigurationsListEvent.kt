@@ -12,6 +12,7 @@ sealed class ConfigurationEvent {
     data class EditRequested(val configuration: Configuration) : ConfigurationEvent()
     object CreateRequested : ConfigurationEvent()
     object DismissDialogs : ConfigurationEvent()
+    object ScrollHandled : ConfigurationEvent()
     data class SetActiveMode(val configuration: Configuration, val mode: String) : ConfigurationEvent()
 
 }

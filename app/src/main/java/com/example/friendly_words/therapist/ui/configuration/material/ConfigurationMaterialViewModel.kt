@@ -1,20 +1,117 @@
 package com.example.friendly_words.therapist.ui.configuration.material
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.friendly_words.data.repositories.ImageRepository
+import com.example.friendly_words.data.repositories.ResourceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.util.Log
+
 
 @HiltViewModel
-class ConfigurationMaterialViewModel @Inject constructor() : ViewModel() {
+class ConfigurationMaterialViewModel @Inject constructor(
+    private val resourceRepository: ResourceRepository,
+    private val imageRepository: ImageRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(ConfigurationMaterialState())
     val state: StateFlow<ConfigurationMaterialState> = _state
+    private suspend fun updateAvailableWordsToAdd() {
+        val allResources = resourceRepository.getAllOnce()
+        Log.d("ConfigurationMaterial", "Wszystkie zasoby z bazy: ${allResources.map { it.name }}")
 
-    fun onEvent(event: ConfigurationMaterialEvent) {
-        _state.update { reduce(it, event) }
+        val usedWords = _state.value.vocabItems.map { it.word }
+        Log.d("ConfigurationMaterial", "Słowa już użyte w konfiguracji: $usedWords")
+
+        val available = allResources.map { it.name }.filter { it !in usedWords }
+        Log.d("ConfigurationMaterial", "Dostępne do dodania: $available")
+
+        _state.update {
+            it.copy(availableWordsToAdd = available)
+        }
     }
+
+    init {
+        viewModelScope.launch {
+            Log.i("ConfigurationMaterial", "Wywołano init w ViewModelu")
+            println("<<< ConfigurationMaterialViewModel INIT >>>")
+
+            updateAvailableWordsToAdd()
+        }
+    }
+    fun onEvent(event: ConfigurationMaterialEvent) {
+        when (event) {
+            is ConfigurationMaterialEvent.AddWord -> {
+                viewModelScope.launch {
+                    Log.d("ConfigurationMaterial", "Dodajemy słowo: ${event.word}")
+
+                    val resource = resourceRepository.getByName(event.word)
+                    Log.d("ConfigurationMaterial", "Zasób z bazy: ${resource?.name}, id: ${resource?.id}")
+
+                    val images = imageRepository.getByResourceId(resource.id)
+                    Log.d("ConfigurationMaterial", "Zdjęcia dla ${resource.name}: ${images.map { it.path }}")
+
+                    val newVocabularyItem = VocabularyItem(
+                        word = resource.name,
+                        selectedImages = List(images.size) { it == 0 },
+                        inLearningStates = List(images.size) { it == 0 },
+                        inTestStates = List(images.size) { it == 0 },
+                        imagePaths = images.map { it.path }
+                    )
+
+                    _state.update {
+                        it.copy(
+                            vocabItems = it.vocabItems + newVocabularyItem,
+                            showAddDialog = false
+                        )
+                    }
+
+                    updateAvailableWordsToAdd()
+                }
+            }
+            is ConfigurationMaterialEvent.WordDeleted -> {
+                _state.update {
+                    it.copy(
+                        wordIndexToDelete = event.index,
+                        showDeleteDialog = true
+                    )
+                }
+            }
+
+            is ConfigurationMaterialEvent.ConfirmDelete -> {
+                viewModelScope.launch {
+                    val updatedList = _state.value.vocabItems.toMutableList().apply { removeAt(event.index) }
+                    val newIndex = when {
+                        _state.value.selectedWordIndex == event.index -> -1
+                        _state.value.selectedWordIndex > event.index -> _state.value.selectedWordIndex - 1
+                        else -> _state.value.selectedWordIndex
+                    }
+
+                    _state.update {
+                        it.copy(
+                            vocabItems = updatedList,
+                            selectedWordIndex = newIndex,
+                            wordIndexToDelete = null,
+                            showDeleteDialog = false
+                        )
+                    }
+
+                    updateAvailableWordsToAdd() // <-- ważne!
+                }
+            }
+
+
+
+            else -> {
+                _state.update { reduce(it, event) }
+            }
+        }
+    }
+
 
     companion object {
         fun reduce(
@@ -24,25 +121,9 @@ class ConfigurationMaterialViewModel @Inject constructor() : ViewModel() {
             return when (event) {
                 is ConfigurationMaterialEvent.WordSelected -> state.copy(selectedWordIndex = event.index)
 
-                is ConfigurationMaterialEvent.WordDeleted -> state.copy(
-                    wordIndexToDelete = event.index,
-                    showDeleteDialog = true
-                )
 
-                is ConfigurationMaterialEvent.ConfirmDelete -> {
-                    val updatedList = state.vocabItems.toMutableList().apply { removeAt(event.index) }
-                    val newIndex = when {
-                        state.selectedWordIndex == event.index -> -1
-                        state.selectedWordIndex > event.index -> state.selectedWordIndex - 1
-                        else -> state.selectedWordIndex
-                    }
-                    state.copy(
-                        vocabItems = updatedList,
-                        selectedWordIndex = newIndex,
-                        wordIndexToDelete = null,
-                        showDeleteDialog = false
-                    )
-                }
+
+
 
                 ConfigurationMaterialEvent.CancelDelete -> state.copy(
                     wordIndexToDelete = null,
@@ -53,11 +134,7 @@ class ConfigurationMaterialViewModel @Inject constructor() : ViewModel() {
 
                 ConfigurationMaterialEvent.HideAddDialog -> state.copy(showAddDialog = false)
 
-                is ConfigurationMaterialEvent.AddWord -> state.copy(
-                    vocabItems = state.vocabItems + VocabularyItem.create(event.word),
-                    availableWordsToAdd = state.availableWordsToAdd - event.word,
-                    showAddDialog = false
-                )
+
 
                 is ConfigurationMaterialEvent.ImageSelectionChanged -> {
                     val updatedItems = state.vocabItems.mapIndexed { index, item ->

@@ -27,6 +27,9 @@ interface ResourceDao {
     @Query("SELECT * FROM resources WHERE id = :resourceId")
     suspend fun getById(resourceId: Long): Resource
 
+    @Query("SELECT * FROM resources WHERE name = :name LIMIT 1")
+    suspend fun getByName(name: String): Resource?
+
     @Delete
     suspend fun delete(resource: Resource)
 

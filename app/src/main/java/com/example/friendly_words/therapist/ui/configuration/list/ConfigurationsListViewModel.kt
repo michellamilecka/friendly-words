@@ -25,8 +25,9 @@ class ConfigurationViewModel @Inject constructor(
         viewModelScope.launch {
             configurationRepository.getAll().collect { configurations ->
                 if (configurations.isEmpty()) {
-                    configurationRepository.insert(Configuration(name = "Przykładowa konfiguracja 1"))
-                    configurationRepository.insert(Configuration(name = "Przykładowa konfiguracja 2"))
+                    configurationRepository.insert(Configuration(name = "Krok przykładowy 1",isActive = true, activeMode = "uczenie", isExample = true))
+                    configurationRepository.insert(Configuration(name = "Krok przykładowy 2", isExample = true))
+                    configurationRepository.insert(Configuration(name = "Krok przykładowy 3", isExample = true))
                 }
                 val active = configurations.find { it.isActive }
                 _state.update {
@@ -50,6 +51,15 @@ class ConfigurationViewModel @Inject constructor(
             }
 
             is ConfigurationEvent.ConfirmDelete -> viewModelScope.launch {
+                val deletingConfig = event.configuration
+                val isCurrentlyActive = deletingConfig.isActive
+                if (isCurrentlyActive) {
+                    val exampleConfig = _state.value.configurations.firstOrNull { it.isExample }
+                    if (exampleConfig != null) {
+                        val updatedExample = exampleConfig.copy(isActive = true, activeMode = "uczenie")
+                        configurationRepository.update(updatedExample)
+                    }
+                }
                 configurationRepository.delete(event.configuration)
                 _state.update { it.copy(showDeleteDialogFor = null) }
             }
@@ -70,15 +80,19 @@ class ConfigurationViewModel @Inject constructor(
 
 
             is ConfigurationEvent.CopyRequested -> {
+
                 val newName = generateCopyName(event.configuration.name, _state.value.configurations.map { it.name })
-                val copied = event.configuration.copy(id = 0, name = newName)
-                viewModelScope.launch { configurationRepository.insert(copied) }
+                val copied = event.configuration.copy(id = 0, name = newName,isActive = false,activeMode = null, isExample = false)
+                viewModelScope.launch { configurationRepository.insert(copied)
+                    _state.update { it.copy(shouldScrollToBottom = true)} }
             }
 
             is ConfigurationEvent.EditRequested -> {
                 // Obsługiwane w UI
             }
-
+            is ConfigurationEvent.ScrollHandled -> {
+                _state.update { it.copy(shouldScrollToBottom = false) }
+            }
             is ConfigurationEvent.SetActiveMode -> {
                 viewModelScope.launch {
                     configurationRepository.setActiveConfiguration(event.configuration, event.mode)

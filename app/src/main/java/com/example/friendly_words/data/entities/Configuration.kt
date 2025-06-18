@@ -11,6 +11,7 @@ data class Configuration(
 
     val isActive: Boolean = false,
     val activeMode: String? = null,
+    val isExample:Boolean=false,
 
 //    @Embedded(prefix = "learning_")
 //    val learningSettings: LearningSettings = LearningSettings(),

@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -15,12 +18,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.composables.core.ScrollArea
+import com.composables.core.Thumb
+import com.composables.core.VerticalScrollbar
+import com.composables.core.rememberScrollAreaState
 import com.example.friendly_words.data.entities.Configuration
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
+import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
+import com.example.friendly_words.therapist.ui.main.calculateResponsiveFontSize
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
 @Composable
@@ -31,10 +41,23 @@ fun ConfigurationsListScreen(
     viewModel: ConfigurationViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val scrollState = rememberScrollState()
 
-    val filteredConfigurations = remember(state.searchQuery, state.configurations) {
-        state.configurations.filter { it.name.contains(state.searchQuery, ignoreCase = true) }
+    var hideExamples by remember { mutableStateOf(false) }
+    val lazyListState = rememberLazyListState()
+    val stateForScroll=rememberScrollAreaState(lazyListState)
+
+
+    val filteredConfigurations = remember(state.searchQuery, state.configurations, hideExamples) {
+        state.configurations
+            .filter { it.name.contains(state.searchQuery, ignoreCase = true) }
+            .filter { if (hideExamples) !it.isExample else true }
+    }
+
+    LaunchedEffect(state.shouldScrollToBottom) {
+        if (state.shouldScrollToBottom && filteredConfigurations.isNotEmpty()) {
+            lazyListState.animateScrollToItem(filteredConfigurations.size - 1)
+            viewModel.onEvent(ConfigurationEvent.ScrollHandled)
+        }
     }
 
     Scaffold(
@@ -69,7 +92,7 @@ fun ConfigurationsListScreen(
                     .fillMaxWidth()
                     .fillMaxHeight(0.2f)
                     .padding(16.dp),
-                placeholder = { Text("Wyszukaj", fontSize = 35.sp) },
+                placeholder = { Text("Wyszukaj", fontSize =calculateResponsiveFontSize(35.sp)) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = "Search Icon", tint = Color.Gray)
                 },
@@ -107,6 +130,23 @@ fun ConfigurationsListScreen(
                     }
                 }
 
+                Spacer(modifier = Modifier.weight(0.7f))
+                Text(
+                    "UKRYJ\nPRZYKŁADOWE KROKI",
+                    fontSize = 20.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    //modifier = Modifier.fillMaxWidth()
+                )
+                Checkbox(
+                    checked = hideExamples,
+                    onCheckedChange = { hideExamples = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = DarkBlue,
+                        uncheckedColor = Color.Gray,
+                        checkmarkColor = Color.White
+                    )
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 Text("AKCJE", fontSize = 25.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.width(15.dp))
@@ -122,7 +162,7 @@ fun ConfigurationsListScreen(
                                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                                     .padding(8.dp)
                             ) {
-                                Text("Skopiuj, Edytuj, Usuń", fontSize = 30.sp)
+                                Text("Edytuj, Skopiuj, Usuń", fontSize = 30.sp)
                             }
                         }
                     }
@@ -130,24 +170,44 @@ fun ConfigurationsListScreen(
             }
 
             Spacer(modifier = Modifier.fillMaxHeight(0.03f))
-
-            Column(
+        ScrollArea(state=stateForScroll) {
+            LazyColumn(
+                state = lazyListState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height((100.dp + 20.dp) * 4)
-                    .verticalScroll(scrollState)
+                    .weight(1f)
             ) {
-                filteredConfigurations.forEach { config ->
+                items(filteredConfigurations) { config ->
                     val activeConfig = state.activeConfiguration
-                    val activeMode = if (activeConfig?.id == config.id) activeConfig.activeMode else null
+                    val activeMode =
+                        if (activeConfig?.id == config.id) activeConfig.activeMode else null
 
                     ConfigurationItem(
                         configuration = config,
                         isActive = config.isActive,
                         activeMode = activeMode,
-                        onActivate = { mode -> viewModel.onEvent(ConfigurationEvent.SetActiveMode(config, mode)) },
-                        onActivateRequest = { viewModel.onEvent(ConfigurationEvent.ActivateRequested(config)) },
-                        onDeleteRequest = { viewModel.onEvent(ConfigurationEvent.DeleteRequested(config)) },
+                        onActivate = { mode ->
+                            viewModel.onEvent(
+                                ConfigurationEvent.SetActiveMode(
+                                    config,
+                                    mode
+                                )
+                            )
+                        },
+                        onActivateRequest = {
+                            viewModel.onEvent(
+                                ConfigurationEvent.ActivateRequested(
+                                    config
+                                )
+                            )
+                        },
+                        onDeleteRequest = {
+                            viewModel.onEvent(
+                                ConfigurationEvent.DeleteRequested(
+                                    config
+                                )
+                            )
+                        },
                         onEdit = {
                             viewModel.onEvent(ConfigurationEvent.EditRequested(config))
                             onEditClick(config.name)
@@ -158,11 +218,19 @@ fun ConfigurationsListScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
-
+            VerticalScrollbar(
+                modifier=Modifier.align(Alignment.TopEnd)
+                    .fillMaxHeight()
+                    .width(4.dp)
+            ){
+                Thumb(Modifier.background(Color.Gray))
+            }
+        }
             state.showDeleteDialogFor?.let { configToDelete ->
-                YesNoDialog(
+                YesNoDialogWithName (
                     show = true,
-                    message = "Czy chcesz usunąć krok uczenia:\n${configToDelete.name}?",
+                    message = "Czy chcesz usunąć krok uczenia:",
+                    name="${configToDelete.name}?",
                     onConfirm = {
                         viewModel.onEvent(ConfigurationEvent.ConfirmDelete(configToDelete))
                     },
@@ -171,9 +239,10 @@ fun ConfigurationsListScreen(
             }
 
             state.showActivateDialogFor?.let { configToActivate ->
-                YesNoDialog(
+                YesNoDialogWithName (
                     show = true,
-                    message = "Czy chcesz aktywować krok uczenia:\n${configToActivate.name}?",
+                    message = "Czy chcesz aktywować krok uczenia:",
+                    name="${configToActivate.name}?",
                     onConfirm = {
                         viewModel.onEvent(ConfigurationEvent.ConfirmActivate(configToActivate))
                     },
@@ -196,7 +265,6 @@ fun ConfigurationItem(
     onCopy: () -> Unit
 ) {
     var switchChecked by remember { mutableStateOf(activeMode == "test") }
-    val isSpecialConfig = configuration.name == "1 konfiguracja NA STAŁE"
 
     LaunchedEffect(activeMode) {
         switchChecked = activeMode == "test"
@@ -268,16 +336,9 @@ fun ConfigurationItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(onClick = onCopy) {
-                    Icon(
-                        imageVector = Icons.Default.FileCopy,
-                        contentDescription = "Copy",
-                        tint = DarkBlue,
-                        modifier = Modifier.size(65.dp)
-                    )
-                }
 
-                if (!isSpecialConfig) {
+
+                if (!configuration.isExample) {
                     Spacer(modifier = Modifier.width(20.dp))
                     IconButton(onClick = onEdit) {
                         Icon(
@@ -287,7 +348,18 @@ fun ConfigurationItem(
                             modifier = Modifier.size(65.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(20.dp))
+                    Spacer(modifier = Modifier.width(15.dp))
+                }
+                    IconButton(onClick = onCopy) {
+                        Icon(
+                            imageVector = Icons.Default.FileCopy,
+                            contentDescription = "Copy",
+                            tint = DarkBlue,
+                            modifier = Modifier.size(65.dp)
+                        )
+                    }
+                if(!configuration.isExample) {
+                    Spacer(modifier = Modifier.width(10.dp))
                     IconButton(onClick = onDeleteRequest) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -301,4 +373,3 @@ fun ConfigurationItem(
         }
     }
 }
-
