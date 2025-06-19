@@ -9,6 +9,9 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -16,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.therapist.ui.components.InfoDialog
 import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
@@ -52,7 +56,13 @@ fun ConfigurationSaveScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -84,12 +94,18 @@ fun ConfigurationSaveScreen(
                     value = saveState.stepName,
                     onValueChange = { onEvent(ConfigurationSaveEvent.SetStepName(it)) },
                     label = { Text("Wpisz nazwę kroku") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = {
                             keyboardController?.hide()
                         }
+                    ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = DarkBlue,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedLabelColor = DarkBlue,
+                        cursorColor = Color.Black
                     )
                 )
 
@@ -97,11 +113,15 @@ fun ConfigurationSaveScreen(
 
                 Button(
                     onClick = {
-                        onSettingsEvent(
-                            ConfigurationSettingsEvent.Save(
-                                ConfigurationSaveEvent.SaveConfiguration(name = saveState.stepName)
+                        onEvent(ConfigurationSaveEvent.ValidateName)
+
+                        if (saveState.stepName.trim().isNotBlank()) {
+                            onSettingsEvent(
+                                ConfigurationSettingsEvent.Save(
+                                    ConfigurationSaveEvent.SaveConfiguration(name = saveState.stepName.trim())
+                                )
                             )
-                        )
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                     modifier = Modifier
@@ -163,7 +183,7 @@ fun ConfigurationSaveScreen(
                                 learnedWords to testWords
                                 ),
                         "Liczba wyświetlanych zdjęć" to (
-                                learningState.imageCount.toString() to learningState.imageCount.toString()
+                                learningState.imageCount.toString() to testState.imageCount.toString()
                                 ),
                         "Liczba powtórzeń dla każdego słowa" to (
                                 learningState.repetitionCount.toString() to "X"
@@ -172,10 +192,10 @@ fun ConfigurationSaveScreen(
                                 learningState.selectedPrompt to testState.selectedPrompt
                                 ),
                         "Podpisy pod obrazkami" to (
-                                learningState.captionsEnabled.toYesNo() to testState.captionsEnabled
+                                learningState.captionsEnabled.toYesNo() to testState.captionsEnabled.toYesNo()
                                 ),
                         "Czytanie polecenia" to (
-                                learningState.readingEnabled.toYesNo() to testState.readingEnabled
+                                learningState.readingEnabled.toYesNo() to testState.readingEnabled.toYesNo()
                                 ),
                         "Pokaż podpowiedź po" to (
                                 "${learningState.timeCount} s" to "X"
@@ -188,7 +208,7 @@ fun ConfigurationSaveScreen(
                                     .filterValues { it }
                                     .keys
                                     .joinToString(", ")
-                                    .ifEmpty { "-" } to "-"
+                                    .ifEmpty { "-" } to "X"
                                 ),
 
                         "Czytanie głosowe pochwał" to (
@@ -222,6 +242,13 @@ fun ConfigurationSaveScreen(
 
         }
     }
+
+    InfoDialog(
+        show = saveState.showEmptyNameDialog,
+        message = "Nazwa kroku nie może być pusta",
+        onDismiss = { onEvent(ConfigurationSaveEvent.DismissEmptyNameDialog) }
+    )
+
 }
 
 

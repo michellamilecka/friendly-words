@@ -22,8 +22,29 @@ class ConfigurationSaveViewModel @Inject constructor() : ViewModel() {
     companion object {
         fun reduce(state: ConfigurationSaveState, event: ConfigurationSaveEvent): ConfigurationSaveState {
             return when (event) {
-                is ConfigurationSaveEvent.SetStepName -> state.copy(stepName = event.name)
-                is ConfigurationSaveEvent.SaveConfiguration -> state // nic nie zmieniamy, ale wymagane
+                is ConfigurationSaveEvent.SetStepName -> {
+                    state.copy(stepName = event.name, showNameError = false)
+                }
+                is ConfigurationSaveEvent.ValidateName -> {
+                    val isBlank = state.stepName.trim().isBlank()
+                    if (isBlank) {
+                        state.copy(
+                            showNameError = true,
+                            showEmptyNameDialog = true
+                        )
+                    } else {
+                        state
+                    }
+                }
+
+                is ConfigurationSaveEvent.ShowEmptyNameDialog -> {
+                    state.copy(showEmptyNameDialog = true)
+                }
+
+                is ConfigurationSaveEvent.DismissEmptyNameDialog -> {
+                    state.copy(showEmptyNameDialog = false)
+                }
+                is ConfigurationSaveEvent.SaveConfiguration -> state
             }
         }
     }

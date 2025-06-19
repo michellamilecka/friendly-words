@@ -46,6 +46,8 @@ import java.io.IOException
 import android.graphics.Bitmap
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import java.io.FileOutputStream
@@ -60,6 +62,7 @@ fun MaterialsCreatingNewMaterialScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(state.saveCompleted) {
@@ -76,6 +79,11 @@ fun MaterialsCreatingNewMaterialScreen(
             onBackClick()
             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetExitWithoutSaving)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
     }
 
 
@@ -111,7 +119,6 @@ fun MaterialsCreatingNewMaterialScreen(
 
                 } catch (e: IOException) {
                     e.printStackTrace()
-                    // Możesz dodać tu komunikat o błędzie
                 }
             }
         }
@@ -145,7 +152,6 @@ fun MaterialsCreatingNewMaterialScreen(
                 ) {
                     Spacer(modifier = Modifier.height(40.dp))//bylo 110
 
-                    // 🔹 Pole "Uczone słowo"
                     Text("Uczone słowo", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
@@ -154,7 +160,7 @@ fun MaterialsCreatingNewMaterialScreen(
                             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.LearnedWordChanged(it))
                         },
                         placeholder = { Text("Wpisz uczone słowo...") },
-                        modifier = Modifier.fillMaxWidth(0.8f),
+                        modifier = Modifier.fillMaxWidth(0.8f).focusRequester(focusRequester),
                         colors = TextFieldDefaults.textFieldColors(
                             backgroundColor = Color.White,
                             focusedIndicatorColor = DarkBlue,
@@ -170,7 +176,7 @@ fun MaterialsCreatingNewMaterialScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 🔹 Checkbox: czy zezwolić na edycję "Nazwa zasobu"
+                    // Checkbox: czy zezwolić na edycję "Nazwa zasobu"
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(0.8f)
@@ -303,7 +309,7 @@ fun MaterialsCreatingNewMaterialScreen(
                                                             .size(14.dp)
                                                             .clickable {
                                                                 viewModel.onEvent(
-                                                                    MaterialsCreatingNewMaterialEvent.RemoveImage(image)
+                                                                    MaterialsCreatingNewMaterialEvent.RequestImageDeletion(image)
                                                                 )
                                                             }
                                                     )
@@ -350,7 +356,7 @@ fun MaterialsCreatingNewMaterialScreen(
         if (state.showExitConfirmation) {
             YesNoDialog(
                 show = true,
-                message = "Wyjść bez zapisywania?",
+                message = "Czy na pewno chcesz wyjść bez zapisania zmian?",
                 onConfirm = {
                     viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissExitDialog)
                     onBackClick()
@@ -360,5 +366,18 @@ fun MaterialsCreatingNewMaterialScreen(
                 }
             )
         }
+        if (state.imageToConfirmDelete != null) {
+            YesNoDialog(
+                show = true,
+                message = "Czy na pewno chcesz usunąć wybrane zdjęcie?",
+                onConfirm = {
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ConfirmImageDeletion)
+                },
+                onDismiss = {
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.CancelImageDeletion)
+                }
+            )
+        }
+
     }
 }

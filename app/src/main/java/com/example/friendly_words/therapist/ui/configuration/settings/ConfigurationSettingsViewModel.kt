@@ -9,6 +9,7 @@ import com.example.friendly_words.therapist.ui.configuration.material.*
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementViewModel
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveEvent
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveViewModel
+import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestViewModel
 import com.example.friendly_words.therapist.ui.configuration.test.toTestSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,14 +62,19 @@ class ConfigurationSettingsViewModel @Inject constructor(
             }
             is ConfigurationSettingsEvent.Test -> {
                 _state.update { current ->
-                    current.copy(
-                        testState = ConfigurationTestViewModel.reduce(
-                            current.testState,
-                            event.event
-                        )
+                    val learning = current.learningState
+                    val updatedTest = ConfigurationTestViewModel.reduce(
+                        current.testState,
+                        event.event,
+                        if (
+                            event.event is ConfigurationTestEvent.SetEditEnabled ||
+                            event.event is ConfigurationTestEvent.ToggleTestEdit
+                        ) learning else null
                     )
+                    current.copy(testState = updatedTest)
                 }
             }
+
             is ConfigurationSettingsEvent.Save -> {
                 when (val saveEvent = event.event) {
                     is ConfigurationSaveEvent.SaveConfiguration -> {

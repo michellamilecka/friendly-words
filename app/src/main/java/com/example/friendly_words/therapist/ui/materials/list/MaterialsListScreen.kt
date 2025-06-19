@@ -29,6 +29,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import com.composables.core.ScrollArea
+import com.composables.core.Thumb
+import com.composables.core.VerticalScrollbar
+import com.composables.core.rememberScrollAreaState
 
 
 @Composable
@@ -100,67 +104,80 @@ fun MaterialsListScreen(
 
 
                 val listState = rememberLazyListState()
+                val scrollAreaState = rememberScrollAreaState(listState)
 
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        itemsIndexed(state.materials) { index, material ->
-                            val isSelected = state.selectedIndex == index
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
-                                    .clickable {
-                                        viewModel.onEvent(
-                                            MaterialsListEvent.SelectMaterial(
-                                                index
-                                            )
-                                        )
-                                    }
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
+                ScrollArea(state = scrollAreaState) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            itemsIndexed(state.materials) { index, material ->
+                                val isSelected = state.selectedIndex == index
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp, horizontal = 12.dp)
-                                        .height(55.dp)
-                                ) {
-                                    Text(
-                                        material.name,
-                                        fontSize = 28.sp,
-                                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    IconButton(onClick = {
-                                        onEditClick(material.id)
-                                    }) {
-                                        Icon(
-                                            Icons.Default.Edit,
-                                            contentDescription = "Edytuj",
-                                            tint = DarkBlue,
-                                            modifier = Modifier.size(35.dp)
-                                        )
-                                    }
-                                    IconButton(onClick = {
-                                        viewModel.onEvent(
-                                            MaterialsListEvent.RequestDelete(
-                                                index,
-                                                material
+                                        .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
+                                        .clickable {
+                                            viewModel.onEvent(
+                                                MaterialsListEvent.SelectMaterial(
+                                                    index
+                                                )
                                             )
+                                        }
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp, horizontal = 12.dp)
+                                            .height(55.dp)
+                                    ) {
+                                        Text(
+                                            material.name,
+                                            fontSize = 28.sp,
+                                            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                                            modifier = Modifier.weight(1f)
                                         )
-                                    }) {
-                                        Icon(
-                                            Icons.Default.Delete,
-                                            contentDescription = "Usuń",
-                                            tint = DarkBlue,
-                                            modifier = Modifier.size(35.dp)
-                                        )
+                                        IconButton(onClick = {
+                                            onEditClick(material.id)
+                                        }) {
+                                            Icon(
+                                                Icons.Default.Edit,
+                                                contentDescription = "Edytuj",
+                                                tint = DarkBlue,
+                                                modifier = Modifier.size(35.dp)
+                                            )
+                                        }
+                                        IconButton(onClick = {
+                                            viewModel.onEvent(
+                                                MaterialsListEvent.RequestDelete(
+                                                    index,
+                                                    material
+                                                )
+                                            )
+                                        }) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Usuń",
+                                                tint = DarkBlue,
+                                                modifier = Modifier.size(35.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
+                        VerticalScrollbar(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .fillMaxHeight()
+                                .width(4.dp)
+                        ) {
+                            Thumb(Modifier.background(Color.Gray))
+                        }
                     }
+                }
             }
 
             // Obrazki dla wybranego materiału

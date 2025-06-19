@@ -13,6 +13,7 @@ import com.example.friendly_words.therapist.ui.configuration.learning.Configurat
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialScreen
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementScreen
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveScreen
+import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 
 
 @Composable
@@ -72,11 +73,27 @@ fun ConfigurationSettingsScreen(
                     onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Reinforcement(it)) },
                     onBackClick = onBackClick
                 )
-                3 -> ConfigurationTestScreen(
-                    state = viewModel.state.collectAsState().value.testState,
-                    onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Test(it)) },
-                    onBackClick = onBackClick
-                )
+                3 -> {
+                    val currentState = viewModel.state.collectAsState().value
+                    val testState = currentState.testState
+
+                    LaunchedEffect(Unit) {
+                        if (!testState.testEditEnabled) {
+                            viewModel.onEvent(
+                                ConfigurationSettingsEvent.Test(
+                                    ConfigurationTestEvent.SetEditEnabled(false)
+                                )
+                            )
+                        }
+                    }
+
+                    ConfigurationTestScreen(
+                        state = testState,
+                        onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Test(it)) },
+                        onBackClick = onBackClick
+                    )
+                }
+
                 4 -> ConfigurationSaveScreen(
                     materialState = settingsState.materialState,
                     learningState = settingsState.learningState,
