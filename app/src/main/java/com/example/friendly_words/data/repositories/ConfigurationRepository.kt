@@ -15,6 +15,7 @@ class ConfigurationRepository @Inject constructor(
 
     // metody dla konfiguracji
     fun getAll(): Flow<List<Configuration>> = dao.getAll()
+    suspend fun getAllOnce(): List<Configuration> = dao.getAllOnce()
 
     suspend fun getById(id: Long): Configuration = dao.getById(id)
 

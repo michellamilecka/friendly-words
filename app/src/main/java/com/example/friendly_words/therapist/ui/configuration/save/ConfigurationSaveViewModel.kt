@@ -36,7 +36,9 @@ class ConfigurationSaveViewModel @Inject constructor() : ViewModel() {
                         state
                     }
                 }
-
+                is ConfigurationSaveEvent.DismissDuplicateNameDialog -> {
+                    state.copy(showDuplicateNameDialog = false)
+                }
                 is ConfigurationSaveEvent.ShowEmptyNameDialog -> {
                     state.copy(showEmptyNameDialog = true)
                 }

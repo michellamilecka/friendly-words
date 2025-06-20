@@ -46,6 +46,7 @@ import java.io.IOException
 import android.graphics.Bitmap
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -128,9 +129,9 @@ fun MaterialsCreatingNewMaterialScreen(
         topBar = {
             NewConfigurationTopBar(
                 title = if (state.isEditing) {
-                    if (state.resourceName.isBlank()) "Edycja materiału:" else "Edycja: ${state.resourceName}"
+                   "Edycja: ${state.resourceName}"
                 } else {
-                    if (state.resourceName.isBlank()) "Tworzenie materiału:" else "Nowy materiał: ${state.resourceName}"
+                     "Nowy materiał: ${state.resourceName}"
                 },
                 onBackClick = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ShowExitDialog) }
             )
@@ -154,25 +155,33 @@ fun MaterialsCreatingNewMaterialScreen(
 
                     Text("Uczone słowo", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = state.learnedWord,
                         onValueChange = {
                             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.LearnedWordChanged(it))
                         },
-                        placeholder = { Text("Wpisz uczone słowo...") },
-                        modifier = Modifier.fillMaxWidth(0.8f).focusRequester(focusRequester),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color.White,
-                            focusedIndicatorColor = DarkBlue,
-                            unfocusedIndicatorColor = Color.Gray
-                        ),
+                        label = { Text("Wpisz uczone słowo") },
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .focusRequester(focusRequester),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 keyboardController?.hide()
                             }
+                        ),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            backgroundColor = Color.White,
+                            disabledTextColor = Color.DarkGray,
+                            disabledBorderColor = Color.Gray,
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = DarkBlue,
+                            unfocusedLabelColor = Color.DarkGray,
+                            cursorColor = Color.Black
                         )
                     )
+
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -205,30 +214,34 @@ fun MaterialsCreatingNewMaterialScreen(
                         color = if (state.allowEditingResourceName) DarkBlue else Color.Gray
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = state.resourceName,
                         onValueChange = {
                             if (state.allowEditingResourceName) {
                                 viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResourceNameChanged(it))
                             }
                         },
-                        placeholder = { Text("Wpisz nazwę...") },
+                        label = { Text("Wpisz nazwę") },
                         enabled = state.allowEditingResourceName,
                         modifier = Modifier.fillMaxWidth(0.8f),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color.White,
-                            disabledTextColor = Color.DarkGray,
-                            disabledIndicatorColor = Color.Gray,
-                            focusedIndicatorColor = DarkBlue,
-                            unfocusedIndicatorColor = Color.Gray
-                        ),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 keyboardController?.hide()
                             }
+                        ),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            backgroundColor = Color.White,
+                            disabledTextColor = Color.DarkGray,
+                            disabledBorderColor = Color.Gray,
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = DarkBlue,
+                            unfocusedLabelColor = Color.DarkGray,
+                            cursorColor = Color.Black
                         )
                     )
+
                     if (state.showNameConflictDialog) {
                         InfoDialog(
                             show = true,
@@ -363,6 +376,18 @@ fun MaterialsCreatingNewMaterialScreen(
                 },
                 onDismiss = {
                     viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissExitDialog)
+                }
+            )
+        }
+        if (state.showDuplicateNameConfirmation) {
+            YesNoDialog(
+                show = true,
+                message = "Materiał o tej nazwie już istnieje. Czy chcesz mimo to zapisać?",
+                onConfirm = {
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ConfirmSaveDespiteDuplicate)
+                },
+                onDismiss = {
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissDuplicateNameDialog)
                 }
             )
         }

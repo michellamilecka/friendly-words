@@ -12,6 +12,7 @@ import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationT
 import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningScreen
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialScreen
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementScreen
+import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveEvent
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveScreen
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 
@@ -23,6 +24,14 @@ fun ConfigurationSettingsScreen(
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val state by viewModel.state.collectAsState()
+    LaunchedEffect(state.navigateToList) {
+        if (state.navigateToList) {
+            onBackClick()
+            viewModel.onEvent(ConfigurationSettingsEvent.ResetNavigation)
+        }
+    }
+
+
 
     if (state.showExitDialog) {
         YesNoDialog(
@@ -40,8 +49,9 @@ fun ConfigurationSettingsScreen(
 
     Scaffold(
         topBar = {
+            val stepName = viewModel.state.collectAsState().value.saveState.stepName
             NewConfigurationTopBar(
-                title = "Nowa konfiguracja",
+                title = "Nowy krok uczenia: ${stepName}",
                 onBackClick = {
                     viewModel.onEvent(ConfigurationSettingsEvent.ShowExitDialog)
                 }
