@@ -81,7 +81,10 @@ fun ConfigurationLearningScreen(
                     onValueChange = { onEvent(ConfigurationLearningEvent.SetRepetitionCount(it)) }
                 )
 
-                Column {
+                Column (
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ){
                     Text(
                         text = "Rodzaj polecenia:",
                         fontSize = 20.sp,
@@ -89,6 +92,7 @@ fun ConfigurationLearningScreen(
                         color = Color.Black
                     )
 
+                    Spacer(modifier = Modifier.height(10.dp))
                     Box(
                         modifier = Modifier
                             .onGloballyPositioned { coordinates ->
@@ -154,7 +158,7 @@ fun ConfigurationLearningScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 Text(
-                    text = "Ustawienia kroku",
+                    text = "Ustawienia uczenia",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue,

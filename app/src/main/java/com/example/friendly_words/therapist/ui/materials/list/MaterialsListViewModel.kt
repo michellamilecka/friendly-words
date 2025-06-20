@@ -42,10 +42,11 @@ class MaterialsListViewModel @Inject constructor(
 
         // 2. Nasłuchiwanie zmian w bazie zasobów
         viewModelScope.launch {
-            resourceRepository.getAll().collect { resources ->
+            resourceRepository.getAll().collect { rawResources ->
 //                val imagesById = resources.associate { resource ->
 //                    resource.id to imageRepository.getByResourceId(resource.id)
 //                }
+                val resources = rawResources.sortedBy { it.name.lowercase() }
                 val imagesById = buildMap {
                     for (resource in resources) {
                         put(resource.id, imageRepository.getByResourceId(resource.id))

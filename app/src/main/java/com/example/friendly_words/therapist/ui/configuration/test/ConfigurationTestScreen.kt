@@ -16,7 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.friendly_words.therapist.ui.components.NumberSelector
+import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.White
 
@@ -29,6 +31,7 @@ fun ConfigurationTestScreen(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val options = listOf("{Słowo}", "Gdzie jest {Słowo}", "Pokaż gdzie jest {Słowo}")
+    val labelColor = if (state.testEditEnabled) Color.Black else Color.Gray
 
     Column(
         modifier = Modifier
@@ -69,7 +72,8 @@ fun ConfigurationTestScreen(
                             onEvent(ConfigurationTestEvent.SetImageCount(it))
                         }
                     },
-                    enabled = state.testEditEnabled
+                    enabled = state.testEditEnabled,
+                    labelColor = labelColor
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -84,7 +88,8 @@ fun ConfigurationTestScreen(
                             onEvent(ConfigurationTestEvent.SetAttemptsCount(it))
                         }
                     },
-                    enabled = state.testEditEnabled
+                    enabled = state.testEditEnabled,
+                    labelColor = labelColor
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -96,7 +101,7 @@ fun ConfigurationTestScreen(
                         text = "Rodzaj polecenia:",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                        color = labelColor
                     )
 
                     ExposedDropdownMenuBox(
@@ -119,10 +124,13 @@ fun ConfigurationTestScreen(
                             enabled = state.testEditEnabled,
                             textStyle = LocalTextStyle.current.copy(fontSize = 18.sp),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
-                                disabledTextColor = Color.Black,
-                                disabledBorderColor = DarkBlue,
-                                disabledLabelColor = DarkBlue,
-                                disabledTrailingIconColor = DarkBlue
+                                textColor = labelColor,
+                                focusedBorderColor = DarkBlue,
+                                unfocusedBorderColor = DarkBlue,
+                                disabledTextColor = Color.Gray,
+                                disabledBorderColor = Color.Gray,
+                                disabledLabelColor = Color.Gray,
+                                disabledTrailingIconColor = Color.Gray
                             )
                         )
 
@@ -168,7 +176,7 @@ fun ConfigurationTestScreen(
                         text = "Podpisy pod obrazkami",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                        color = if (state.testEditEnabled) Color.Black else Color.Gray
                     )
 
                     Switch(
@@ -198,7 +206,7 @@ fun ConfigurationTestScreen(
                         text = "Czytanie polecenia",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.Black
+                        color = if (state.testEditEnabled) Color.Black else Color.Gray
                     )
 
                     Switch(

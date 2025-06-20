@@ -21,7 +21,8 @@ fun NumberSelector(
     maxValue: Int,
     value: Int,
     onValueChange: (Int) -> Unit = {},
-    enabled: Boolean = true // <- nowy parametr
+    enabled: Boolean = true,
+    labelColor: Color = Color.Black
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -32,7 +33,7 @@ fun NumberSelector(
             text = label,
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.Black,
+            color = labelColor,
             textAlign = TextAlign.Center
         )
 
@@ -47,7 +48,7 @@ fun NumberSelector(
                     }
                 },
                 colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
-                enabled = enabled // <- dezaktywuje przycisk
+                enabled = enabled
             ) {
                 Text("-", fontSize = 24.sp, color = Color.White)
             }
@@ -57,7 +58,8 @@ fun NumberSelector(
             Text(
                 text = value.toString(),
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = labelColor
             )
 
             Spacer(modifier = Modifier.width(24.dp))
@@ -69,7 +71,7 @@ fun NumberSelector(
                     }
                 },
                 colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
-                enabled = enabled // <- dezaktywuje przycisk
+                enabled = enabled
             ) {
                 Text("+", fontSize = 24.sp, color = Color.White)
             }
@@ -87,7 +89,8 @@ fun NumberSelectorPreview(){
                 label = "sth",
                 minValue = 1,
                 maxValue = 10,
-                value = 5
+                value = 5,
+                labelColor = Color.Black
             )
         }
     }

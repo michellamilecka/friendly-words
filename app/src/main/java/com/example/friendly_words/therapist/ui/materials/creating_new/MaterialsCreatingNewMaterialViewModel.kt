@@ -2,6 +2,8 @@ package com.example.friendly_words.therapist.ui.materials.creating_new
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +37,11 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         MaterialsCreatingNewMaterialState(
             resourceName = if (resourceIdToEdit == null) "Nowy materiał" else "",
-            learnedWord = if (resourceIdToEdit == null) "Nowy materiał" else "",
+            learnedWord = if (resourceIdToEdit == null) {
+                TextFieldValue("Nowy materiał", selection = TextRange("Nowy materiał".length))
+            } else {
+                TextFieldValue("")
+            },
             images = emptyList(),
             isEditing = resourceIdToEdit != null
         )
@@ -65,7 +71,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         resourceName = resource.name,
-                        learnedWord = resource.learnedWord,
+                        learnedWord = TextFieldValue(resource.learnedWord, selection = TextRange(resource.learnedWord.length)),
                         images = images
                     )
                 }
@@ -131,9 +137,9 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 //                    }
 
                     val resourceId = if (resourceIdToEdit == null) {
-                        resourceRepository.insert(Resource(name = state.value.resourceName, learnedWord = state.value.learnedWord))
+                        resourceRepository.insert(Resource(name = state.value.resourceName, learnedWord = state.value.learnedWord.text))
                     } else {
-                        resourceRepository.update(Resource(id = resourceIdToEdit, name = state.value.resourceName, learnedWord = state.value.learnedWord))
+                        resourceRepository.update(Resource(id = resourceIdToEdit, name = state.value.resourceName, learnedWord = state.value.learnedWord.text))
                         resourceIdToEdit
                     }
 
@@ -168,14 +174,14 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             is MaterialsCreatingNewMaterialEvent.LearnedWordChanged -> {
                 _state.update {
                     val newWord = event.word
-                    val newName = if (!it.allowEditingResourceName) newWord else it.resourceName
+                    val newName = if (!it.allowEditingResourceName) newWord.text else it.resourceName
                     it.copy(learnedWord = newWord, resourceName = newName)
                 }
             }
             is MaterialsCreatingNewMaterialEvent.ToggleAllowEditingResourceName -> {
                 _state.update {
                     val allowed = event.allowed
-                    val newName = if (!allowed) it.learnedWord else it.resourceName
+                    val newName = if (!allowed) it.learnedWord.text else it.resourceName
                     it.copy(allowEditingResourceName = allowed, resourceName = newName)
                 }
             }
@@ -184,6 +190,27 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     it.copy(images = it.images + event.image)
                 }
             }
+            is MaterialsCreatingNewMaterialEvent.RequestImageDeletion -> {
+                _state.update { it.copy(imageToConfirmDelete = event.image) }
+            }
+            is MaterialsCreatingNewMaterialEvent.CancelImageDeletion -> {
+                _state.update { it.copy(imageToConfirmDelete = null) }
+            }
+            is MaterialsCreatingNewMaterialEvent.ConfirmImageDeletion -> {
+                val image = state.value.imageToConfirmDelete
+                if (image != null) {
+                    if (resourceIdToEdit != null && image.id != 0L) {
+                        imagesToDelete.add(image)
+                    }
+                    _state.update {
+                        it.copy(
+                            images = it.images.filterNot { img -> img.path == image.path },
+                            imageToConfirmDelete = null
+                        )
+                    }
+                }
+            }
+
 
         }
     }

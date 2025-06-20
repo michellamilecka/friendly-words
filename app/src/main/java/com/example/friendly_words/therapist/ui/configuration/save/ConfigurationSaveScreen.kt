@@ -2,42 +2,70 @@ package com.example.friendly_words.therapist.ui.configuration.save
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.therapist.ui.components.InfoDialog
+import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
+import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
+import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
+import com.example.friendly_words.therapist.ui.configuration.settings.ConfigurationSettingsEvent
+import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestState
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.White
 import kotlinx.coroutines.launch
 
+
+fun Boolean.toYesNo(): String = if (this) "Tak" else "Nie"
+
+fun ConfigurationLearningState.hintsSummary(): String {
+    val hints = listOfNotNull(
+        if (outlineCorrect) "Obramuj poprawną" else null,
+        if (animateCorrect) "Animuj poprawną" else null,
+        if (scaleCorrect) "Powiększ poprawną" else null,
+        if (dimIncorrect) "Wyszarz niepoprawne" else null
+    )
+    return hints.joinToString("; ").ifEmpty { "-" }
+}
+
+
 @Composable
 fun ConfigurationSaveScreen(
-    state: ConfigurationSaveState,
+    materialState: ConfigurationMaterialState,
+    learningState: ConfigurationLearningState,
+    reinforcementState: ConfigurationReinforcementState,
+    testState: ConfigurationTestState,
+    saveState: ConfigurationSaveState,
     onEvent: (ConfigurationSaveEvent) -> Unit,
+    onSettingsEvent: (ConfigurationSettingsEvent) -> Unit,
     onBackClick: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("Konfiguracja została zapisana")
-                    }
-                },
-                backgroundColor = White
-            ) {
-                Text("Zapisz")
-            }
-        }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Row(
             modifier = Modifier
@@ -55,18 +83,53 @@ fun ConfigurationSaveScreen(
 
             ) {
                 Text(
-                    text = "Nazwa kroku:",
+                    text = "Zapisz jako:",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    color = DarkBlue
                 )
 
                 OutlinedTextField(
-                    value = state.stepName,
+                    value = saveState.stepName,
                     onValueChange = { onEvent(ConfigurationSaveEvent.SetStepName(it)) },
                     label = { Text("Wpisz nazwę kroku") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardController?.hide()
+                        }
+                    ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = DarkBlue,
+                        unfocusedLabelColor = Color.Gray,
+                        focusedLabelColor = DarkBlue,
+                        cursorColor = Color.Black
+                    )
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        onEvent(ConfigurationSaveEvent.ValidateName)
+
+                        if (saveState.stepName.trim().isNotBlank()) {
+                            onSettingsEvent(
+                                ConfigurationSettingsEvent.Save(
+                                    ConfigurationSaveEvent.SaveConfiguration(name = saveState.stepName.trim())
+                                )
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(48.dp)
+                ) {
+                    Text("Zapisz", color = White, fontSize = 16.sp)
+                }
             }
 
             Column(
@@ -74,84 +137,118 @@ fun ConfigurationSaveScreen(
                     .weight(0.7f)
                     .verticalScroll(rememberScrollState())
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 55.dp, end = 15.dp)
+                ) {
+                    // Nagłówki
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(text = "INFORMACJE O KROKU", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = DarkBlue)
+                        Spacer(modifier = Modifier.width(250.dp))
+                        Text(text = "TRYB NAUKI", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = DarkBlue)
+                        Text(text = "TRYB TESTU", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = DarkBlue)
+                    }
 
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Informacje o kroku",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
+                    val learnedWordsCount = materialState.vocabItems.count { item ->
+                        item.selectedImages.zip(item.inLearningStates).any { (selected, inLearning) -> selected && inLearning }
+                    }
+
+                    val learnedWords = materialState.vocabItems
+                        .filter { item ->
+                            item.selectedImages.zip(item.inLearningStates).any { (selected, inLearning) -> selected && inLearning }
+                        }
+                        .joinToString(", ") { it.word }
+                        .ifEmpty { "-" }
+
+                    val testWordsCount = materialState.vocabItems.count { item ->
+                        item.selectedImages.zip(item.inTestStates).any { (selected, inTest) -> selected && inTest }
+                    }
+
+                    val testWords = materialState.vocabItems
+                        .filter { item ->
+                            item.selectedImages.zip(item.inTestStates).any { (selected, inTest) -> selected && inTest }
+                        }
+                        .joinToString(", ") { it.word }
+                        .ifEmpty { "-" }
+
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val fields = listOf(
+                        "Liczba uczonych słów" to (
+                                learnedWordsCount.toString() to testWordsCount.toString()
+                                ),
+                        "Uczone słowa" to (
+                                learnedWords to testWords
+                                ),
+                        "Liczba wyświetlanych zdjęć" to (
+                                learningState.imageCount.toString() to testState.imageCount.toString()
+                                ),
+                        "Liczba powtórzeń dla każdego słowa" to (
+                                learningState.repetitionCount.toString() to "X"
+                                ),
+                        "Rodzaj polecenia" to (
+                                learningState.selectedPrompt to testState.selectedPrompt
+                                ),
+                        "Podpisy pod obrazkami" to (
+                                learningState.captionsEnabled.toYesNo() to testState.captionsEnabled.toYesNo()
+                                ),
+                        "Czytanie polecenia" to (
+                                learningState.readingEnabled.toYesNo() to testState.readingEnabled.toYesNo()
+                                ),
+                        "Pokaż podpowiedź po" to (
+                                "${learningState.timeCount} s" to "X"
+                                ),
+                        "Podpowiedzi" to (
+                                learningState.hintsSummary() to "X"
+                                ),
+                        "Pochwały słowne" to (
+                                reinforcementState.praiseStates
+                                    .filterValues { it }
+                                    .keys
+                                    .joinToString(", ")
+                                    .ifEmpty { "-" } to "X"
+                                ),
+
+                        "Czytanie głosowe pochwał" to (
+                                reinforcementState.praiseReadingEnabled.toYesNo() to "X"
+                                ),
+                        "Łączna liczba prób" to (
+                                "X" to testState.attemptsCount.toString()
+                                )
+//                        "Czas na udzielenie odpowiedzi" to (
+//                                "-" to "${testState.timePerTask} s"
+//                                )
+                    )
+
+                    fields.forEach { (label, values) ->
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            textAlign = TextAlign.Left
-                        )
-
-                        InfoLabel("Liczba uczonych słów:")
-                        InfoLabel("Uczone słowa:")
-                        InfoLabel("Liczba wyświetlanych zdjęć:")
-                        InfoLabel("Liczba powtórzeń dla każdego słowa:")
-                        InfoLabel("Rodzaj polecenia:")
-                        InfoLabel("Podpisy pod obrazkami:")
-                        InfoLabel("Czytanie polecenia:")
-                        InfoLabel("Pokaż podpowiedź po:")
-                        InfoLabel("Podpowiedzi:")
-                        InfoLabel("Pochwały słowne:")
-                        InfoLabel("Czytanie głosowe pochwał:")
-                        InfoLabel("Łączna liczba prób:")
-                        InfoLabel("Czas na udzielenie odpowiedzi:")
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "TRYB NAUKI",
-                            fontWeight = FontWeight.Bold,
-                            color = DarkBlue,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        InfoValue("3")
-                        InfoValue("misiu, tablet, but")
-                        InfoValue("3")
-                        InfoValue("2")
-                        InfoValue("{Słowo}")
-                        InfoValue("Tak")
-                        InfoValue("Tak")
-                        InfoValue("5 sekundach")
-                        InfoValue("Obramuj poprawną; Wyszarz niepoprawne")
-                        InfoValue("dobrze, super, świetnie, ekstra, rewelacja, brawo")
-                        InfoValue("Tak")
-                        InfoValue("-")
-                    }
-
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "TRYB TESTU",
-                            fontWeight = FontWeight.Bold,
-                            color = DarkBlue,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                        InfoValue("-")
-                        InfoValue("-")
-                        InfoValue("3")
-                        InfoValue("-")
-                        InfoValue("{Słowo}")
-                        InfoValue("Tak")
-                        InfoValue("Tak")
-                        InfoValue("-")
-                        InfoValue("-")
-                        InfoValue("-")
-                        InfoValue("-")
-                        InfoValue("2")
-                        InfoValue("3 sekundy")
+                                .padding(vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = label, modifier = Modifier.weight(1f))
+                            Spacer(modifier = Modifier.width(250.dp))
+                            Text(text = values.first, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                            Text(text = values.second.toString(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                        }
+                        Divider()
                     }
                 }
 
-                Spacer(modifier = Modifier.height(72.dp))
             }
 
         }
     }
+
+    InfoDialog(
+        show = saveState.showEmptyNameDialog,
+        message = "Nazwa kroku nie może być pusta",
+        onDismiss = { onEvent(ConfigurationSaveEvent.DismissEmptyNameDialog) }
+    )
+
 }
 
 

@@ -13,6 +13,7 @@ import com.example.friendly_words.therapist.ui.configuration.learning.Configurat
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialScreen
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementScreen
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveScreen
+import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 
 
 @Composable
@@ -56,6 +57,7 @@ fun ConfigurationSettingsScreen(
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it }
             )
+            val settingsState = viewModel.state.collectAsState().value
 
             when (selectedTabIndex) {
                 0 -> ConfigurationMaterialScreen(
@@ -71,14 +73,35 @@ fun ConfigurationSettingsScreen(
                     onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Reinforcement(it)) },
                     onBackClick = onBackClick
                 )
-                3 -> ConfigurationTestScreen(
-                    state = viewModel.state.collectAsState().value.testState,
-                    onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Test(it)) },
-                    onBackClick = onBackClick
-                )
+                3 -> {
+                    val currentState = viewModel.state.collectAsState().value
+                    val testState = currentState.testState
+
+                    LaunchedEffect(Unit) {
+                        if (!testState.testEditEnabled) {
+                            viewModel.onEvent(
+                                ConfigurationSettingsEvent.Test(
+                                    ConfigurationTestEvent.SetEditEnabled(false)
+                                )
+                            )
+                        }
+                    }
+
+                    ConfigurationTestScreen(
+                        state = testState,
+                        onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Test(it)) },
+                        onBackClick = onBackClick
+                    )
+                }
+
                 4 -> ConfigurationSaveScreen(
-                    state = viewModel.state.collectAsState().value.saveState,
+                    materialState = settingsState.materialState,
+                    learningState = settingsState.learningState,
+                    reinforcementState = settingsState.reinforcementState,
+                    testState = settingsState.testState,
+                    saveState = settingsState.saveState,
                     onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Save(it)) },
+                    onSettingsEvent = { viewModel.onEvent(it) },
                     onBackClick = onBackClick
                 )
             }

@@ -1,5 +1,6 @@
 package com.example.friendly_words.therapist.ui.materials.creating_new
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.example.friendly_words.data.entities.Image
 
 data class MaterialsCreatingNewMaterialState (
@@ -12,6 +13,8 @@ data class MaterialsCreatingNewMaterialState (
     val saveCompleted: Boolean = false,
     val exitWithoutSaving: Boolean = false,
     val newlySavedResourceId: Long? = null,
-    val learnedWord: String = "",
-    val allowEditingResourceName: Boolean = false
+    val learnedWord: TextFieldValue = TextFieldValue(""),
+    val allowEditingResourceName: Boolean = false,
+    val imageToConfirmDelete: Image? = null
+
 )

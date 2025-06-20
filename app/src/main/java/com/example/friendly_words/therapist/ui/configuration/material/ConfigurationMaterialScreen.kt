@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -59,94 +61,107 @@ fun ImageSelectionWithCheckbox(
     inLearningStates: List<Boolean>,
     inTestStates: List<Boolean>
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
-            .background(
-                color= White
-            )
+            .background(color = White)
     ) {
-        images.forEachIndexed { index, resId ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+        images.chunked(3).forEachIndexed { chunkIndex, chunk ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .background(
+                        color = White
+                    )
             ) {
-                Checkbox(
-                    checked = selectedImages[index],
-                    onCheckedChange = {
-                        val newSelectedImages = selectedImages.toMutableList().also { it[index] = it[index].not() }
-                        onImageSelectionChanged(newSelectedImages)
+                chunk.forEachIndexed { innerIndex, resId ->
+                    val index = chunkIndex * 3 + innerIndex
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Checkbox(
+                            checked = selectedImages[index],
+                            onCheckedChange = {
+                                val newSelectedImages =
+                                    selectedImages.toMutableList()
+                                        .also { it[index] = it[index].not() }
+                                onImageSelectionChanged(newSelectedImages)
 
-                        // Automatyczne ustawienie inLearning i inTest
-                        val checked = newSelectedImages[index]
-                        onLearningTestChanged(index, checked, checked)
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = DarkBlue,
-                        uncheckedColor = Color.Gray,
-                        checkmarkColor = Color.White
-                    )
-                )
-                Box(modifier = Modifier.height(200.dp).aspectRatio(1f)) {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = resId), // teraz resId to String = ścieżka do pliku
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    Checkbox(
-                        checked = inLearningStates[index],
-                        enabled = selectedImages[index],
-                        onCheckedChange = { newLearning ->
-                            val currentTest = inTestStates[index]
-                            val shouldSelectImage = newLearning || currentTest
-
-                            // Update stan obrazka (czy ma być wybrany)
-                            val newSelectedImages = selectedImages.toMutableList().also { it[index] = shouldSelectImage }
-                            onImageSelectionChanged(newSelectedImages)
-
-                            // Update stanu learning i test
-                            onLearningTestChanged(index, newLearning, currentTest)
-                        },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = LightBlue,
-                            uncheckedColor = Color.Gray,
-                            checkmarkColor = Color.White
+                                // Automatyczne ustawienie inLearning i inTest
+                                val checked = newSelectedImages[index]
+                                onLearningTestChanged(index, checked, checked)
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = DarkBlue,
+                                uncheckedColor = Color.Gray,
+                                checkmarkColor = Color.White
+                            )
                         )
-                    )
-                    Spacer(modifier = Modifier.width(35.dp))
-                    Checkbox(
-                        checked = inTestStates[index],
-                        enabled = selectedImages[index],
-                        onCheckedChange = { newTest ->
-                            val currentLearning = inLearningStates[index]
-                            val shouldSelectImage = newTest || currentLearning
+                        Box(modifier = Modifier.height(200.dp).aspectRatio(1f)) {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = resId), // teraz resId to String = ścieżka do pliku
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Checkbox(
+                                checked = inLearningStates[index],
+                                enabled = selectedImages[index],
+                                onCheckedChange = { newLearning ->
+                                    val currentTest = inTestStates[index]
+                                    val shouldSelectImage = newLearning || currentTest
 
-                            // Update stan obrazka
-                            val newSelectedImages = selectedImages.toMutableList().also { it[index] = shouldSelectImage }
-                            onImageSelectionChanged(newSelectedImages)
+                                    // Update stan obrazka (czy ma być wybrany)
+                                    val newSelectedImages = selectedImages.toMutableList()
+                                        .also { it[index] = shouldSelectImage }
+                                    onImageSelectionChanged(newSelectedImages)
 
-                            // Update stanu learning i test
-                            onLearningTestChanged(index, currentLearning, newTest)
-                        },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = LightBlue,
-                            uncheckedColor = Color.Gray,
-                            checkmarkColor = Color.White
-                        )
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text("Uczenie")
-                    Spacer(modifier = Modifier.width(35.dp))
-                    Text("Test")
-                    Spacer(modifier = Modifier.width(17.dp))
+                                    // Update stanu learning i test
+                                    onLearningTestChanged(index, newLearning, currentTest)
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = LightBlue,
+                                    uncheckedColor = Color.Gray,
+                                    checkmarkColor = Color.White
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(35.dp))
+                            Checkbox(
+                                checked = inTestStates[index],
+                                enabled = selectedImages[index],
+                                onCheckedChange = { newTest ->
+                                    val currentLearning = inLearningStates[index]
+                                    val shouldSelectImage = newTest || currentLearning
+
+                                    // Update stan obrazka
+                                    val newSelectedImages = selectedImages.toMutableList()
+                                        .also { it[index] = shouldSelectImage }
+                                    onImageSelectionChanged(newSelectedImages)
+
+                                    // Update stanu learning i test
+                                    onLearningTestChanged(index, currentLearning, newTest)
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = LightBlue,
+                                    uncheckedColor = Color.Gray,
+                                    checkmarkColor = Color.White
+                                )
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Uczenie")
+                            Spacer(modifier = Modifier.width(35.dp))
+                            Text("Test")
+                            Spacer(modifier = Modifier.width(17.dp))
+                        }
+                    }
                 }
             }
         }
@@ -159,8 +174,6 @@ fun ConfigurationMaterialScreen(
     viewModel: ConfigurationMaterialViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-
-    //val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
@@ -314,7 +327,11 @@ fun ConfigurationMaterialScreen(
                     .padding(16.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                Column {
+                Column (
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ){
                     val selectedIndex = state.selectedWordIndex
                     if (selectedIndex in state.vocabItems.indices) {
                         val item = state.vocabItems[selectedIndex]
