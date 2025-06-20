@@ -248,6 +248,11 @@ fun ConfigurationSaveScreen(
         message = "Nazwa kroku nie może być pusta",
         onDismiss = { onEvent(ConfigurationSaveEvent.DismissEmptyNameDialog) }
     )
+    InfoDialog(
+        show = saveState.showDuplicateNameDialog,
+        message = "Konfiguracja o takiej nazwie już istnieje.",
+        onDismiss = { onEvent(ConfigurationSaveEvent.DismissDuplicateNameDialog) }
+    )
 
 }
 
@@ -272,4 +277,3 @@ fun InfoValue(value: String) {
             .padding(vertical = 4.dp)
     )
 }
-

@@ -121,25 +121,25 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             is MaterialsCreatingNewMaterialEvent.SaveClicked -> {
                 viewModelScope.launch {
                     val name = state.value.resourceName.trim()
-                    //val learnedWord = state.value.learnedWord.trim()
+                    val learnedWord = state.value.learnedWord.text.trim()
 
-                    if (name.isBlank()) {
-                        // Możesz też mieć osobne pole: showBlankNameError
+                    if (name.isBlank()) return@launch
+
+                    val allResources = resourceRepository.getAllOnce()
+                    val alreadyExists = allResources.any {
+                        it.name.equals(name, ignoreCase = true) && it.id != resourceIdToEdit
+                    }
+
+                    if (alreadyExists && !state.value.confirmingDuplicateSave) {
+
+                        _state.update { it.copy(showDuplicateNameConfirmation = true) }
                         return@launch
                     }
 
-//                    val allResources = resourceRepository.getAllOnce()
-//                    val alreadyExists = allResources.any { it.name.equals(name, ignoreCase = true) && it.id != resourceIdToEdit }
-//
-//                    if (alreadyExists) {
-//                        _state.update { it.copy(showNameConflictDialog = true) }
-//                        return@launch
-//                    }
-
                     val resourceId = if (resourceIdToEdit == null) {
-                        resourceRepository.insert(Resource(name = state.value.resourceName, learnedWord = state.value.learnedWord.text))
+                        resourceRepository.insert(Resource(name = name, learnedWord = learnedWord))
                     } else {
-                        resourceRepository.update(Resource(id = resourceIdToEdit, name = state.value.resourceName, learnedWord = state.value.learnedWord.text))
+                        resourceRepository.update(Resource(id = resourceIdToEdit, name = name, learnedWord = learnedWord))
                         resourceIdToEdit
                     }
 
@@ -151,12 +151,27 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     imagesToDelete.forEach { imageRepository.delete(it) }
                     imagesToDelete.clear()
 
-                    _state.update { it.copy(saveCompleted = true, newlySavedResourceId = resourceId) }
+                    _state.update {
+                        it.copy(
+                            saveCompleted = true,
+                            newlySavedResourceId = resourceId,
+                            showDuplicateNameConfirmation = false // Resetuj flagę
+                        )
+                    }
 
                     savedStateHandle["newlySavedResourceId"] = resourceId
-
                 }
             }
+
+            is MaterialsCreatingNewMaterialEvent.DismissDuplicateNameDialog -> {
+                _state.update { it.copy(showDuplicateNameConfirmation = false) }
+            }
+            is MaterialsCreatingNewMaterialEvent.ConfirmSaveDespiteDuplicate -> {
+                _state.update { it.copy(showDuplicateNameConfirmation = false, confirmingDuplicateSave = true) }
+                onEvent(MaterialsCreatingNewMaterialEvent.SaveClicked)
+            }
+
+
             is MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog -> {
                 _state.update { it.copy(showNameConflictDialog = false) }
             }

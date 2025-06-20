@@ -6,5 +6,5 @@ sealed class ConfigurationSaveEvent {
     object ValidateName : ConfigurationSaveEvent()
     object ShowEmptyNameDialog : ConfigurationSaveEvent()
     object DismissEmptyNameDialog : ConfigurationSaveEvent()
-
+    object DismissDuplicateNameDialog : ConfigurationSaveEvent()
 }

@@ -21,6 +21,9 @@ sealed class MaterialsCreatingNewMaterialEvent {
     data class RequestImageDeletion(val image: Image) : MaterialsCreatingNewMaterialEvent()
     object CancelImageDeletion : MaterialsCreatingNewMaterialEvent()
     object ConfirmImageDeletion : MaterialsCreatingNewMaterialEvent()
+    object DismissDuplicateNameDialog : MaterialsCreatingNewMaterialEvent()
+    object ConfirmSaveDespiteDuplicate: MaterialsCreatingNewMaterialEvent()
+
 
 
 }

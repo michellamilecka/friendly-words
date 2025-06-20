@@ -18,7 +18,8 @@ interface ConfigurationDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(configuration: Configuration): Long
-
+    @Query("SELECT * FROM configurations")
+    suspend fun getAllOnce(): List<Configuration>
     @Delete
     suspend fun delete(configuration: Configuration)
 

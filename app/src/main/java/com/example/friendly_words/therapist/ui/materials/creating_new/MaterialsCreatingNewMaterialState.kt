@@ -10,11 +10,13 @@ data class MaterialsCreatingNewMaterialState (
     val isEditing: Boolean = false,
     //val nameExists: Boolean = false,
     val showNameConflictDialog: Boolean = false,
+    val showDuplicateNameConfirmation: Boolean = false,
     val saveCompleted: Boolean = false,
     val exitWithoutSaving: Boolean = false,
     val newlySavedResourceId: Long? = null,
     val learnedWord: TextFieldValue = TextFieldValue(""),
     val allowEditingResourceName: Boolean = false,
-    val imageToConfirmDelete: Image? = null
+    val imageToConfirmDelete: Image? = null,
+    val confirmingDuplicateSave: Boolean = false
 
 )

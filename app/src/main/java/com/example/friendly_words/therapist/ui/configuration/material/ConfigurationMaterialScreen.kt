@@ -28,12 +28,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
+import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue
 import com.example.friendly_words.therapist.ui.theme.White
 
 data class VocabularyItem(
+    val id:Long,
     val word: String,
+    val learnedWord:String,
     val selectedImages: List<Boolean>,
     val inLearningStates: List<Boolean>,
     val inTestStates: List<Boolean>,
@@ -228,7 +231,7 @@ fun ConfigurationMaterialScreen(
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        item.word,
+                                        item.learnedWord,
                                         fontSize = 30.sp,
                                         fontWeight = FontWeight.Bold,
                                     )
@@ -292,9 +295,10 @@ fun ConfigurationMaterialScreen(
 
                     // Dialog przeniesiony poza pętlę LazyColumn
                     if (state.showDeleteDialog && state.wordIndexToDelete != null && state.wordIndexToDelete!! in state.vocabItems.indices) {
-                        YesNoDialog(
+                        YesNoDialogWithName(
                             show = true,
-                            message = "Czy chcesz usunąć z konfiguracji materiał:\n${state.vocabItems[state.wordIndexToDelete!!].word}?",
+                            message = "Czy chcesz usunąć z kroku uczenia słowo:",
+                            name="${state.vocabItems[state.wordIndexToDelete!!].learnedWord}?",
                             onConfirm = {
                                 viewModel.onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
                             },
@@ -361,7 +365,7 @@ fun ConfigurationMaterialScreen(
             AlertDialog(
                 onDismissRequest = { viewModel.onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                 title = {
-                    Text(text="Wybierz materiał, które chcesz dodać do konfiguracji:", fontSize = 26.sp,
+                    Text(text="Wybierz materiał, które chcesz dodać do kroku uczenia:", fontSize = 26.sp,
                     fontStyle = FontStyle.Italic)
 
                 },
@@ -370,13 +374,13 @@ fun ConfigurationMaterialScreen(
                         Text("BRAK, DODAJ W MATERIAŁACH")
                     } else {
                         Column {
-                            state.availableWordsToAdd.forEach { word ->
+                            state.availableWordsToAdd.forEach { resource ->
                                 Text(
-                                    text = word,
+                                    text = resource.name,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            viewModel.onEvent(ConfigurationMaterialEvent.AddWord(word))
+                                            viewModel.onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
                                         }
                                         .padding(vertical = 8.dp),
                                     fontSize = 18.sp

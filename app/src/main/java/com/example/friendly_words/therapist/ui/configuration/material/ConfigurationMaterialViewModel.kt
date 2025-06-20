@@ -22,13 +22,13 @@ class ConfigurationMaterialViewModel @Inject constructor(
     val state: StateFlow<ConfigurationMaterialState> = _state
     private suspend fun updateAvailableWordsToAdd() {
         val allResources = resourceRepository.getAllOnce()
-        Log.d("ConfigurationMaterial", "Wszystkie zasoby z bazy: ${allResources.map { it.name }}")
+        //Log.d("ConfigurationMaterial", "Wszystkie zasoby z bazy: ${allResources.map { it.name }}")
 
-        val usedWords = _state.value.vocabItems.map { it.word }
-        Log.d("ConfigurationMaterial", "Słowa już użyte w konfiguracji: $usedWords")
+        val usedIds = _state.value.vocabItems.map { it.id }
+        //Log.d("ConfigurationMaterial", "Słowa już użyte w konfiguracji: $usedIds")
 
-        val available = allResources.map { it.name }.filter { it !in usedWords }
-        Log.d("ConfigurationMaterial", "Dostępne do dodania: $available")
+        val available = allResources.filter { it.id !in usedIds }
+        //Log.d("ConfigurationMaterial", "Dostępne do dodania: $available")
 
         _state.update {
             it.copy(availableWordsToAdd = available)
@@ -47,16 +47,18 @@ class ConfigurationMaterialViewModel @Inject constructor(
         when (event) {
             is ConfigurationMaterialEvent.AddWord -> {
                 viewModelScope.launch {
-                    Log.d("ConfigurationMaterial", "Dodajemy słowo: ${event.word}")
+                    Log.d("ConfigurationMaterial", "Dodajemy zasób o ID: ${event.id}")
 
-                    val resource = resourceRepository.getByName(event.word)
+                    val resource = resourceRepository.getById(event.id)
                     Log.d("ConfigurationMaterial", "Zasób z bazy: ${resource?.name}, id: ${resource?.id}")
 
                     val images = imageRepository.getByResourceId(resource.id)
                     Log.d("ConfigurationMaterial", "Zdjęcia dla ${resource.name}: ${images.map { it.path }}")
 
                     val newVocabularyItem = VocabularyItem(
+                        id = resource.id,
                         word = resource.name,
+                        learnedWord = resource.learnedWord,
                         selectedImages = List(images.size) { it == 0 },
                         inLearningStates = List(images.size) { it == 0 },
                         inTestStates = List(images.size) { it == 0 },
@@ -64,8 +66,10 @@ class ConfigurationMaterialViewModel @Inject constructor(
                     )
 
                     _state.update {
+                        val updatedItems = it.vocabItems + newVocabularyItem
                         it.copy(
                             vocabItems = it.vocabItems + newVocabularyItem,
+                            selectedWordIndex = updatedItems.lastIndex,
                             showAddDialog = false
                         )
                     }
@@ -73,6 +77,7 @@ class ConfigurationMaterialViewModel @Inject constructor(
                     updateAvailableWordsToAdd()
                 }
             }
+
             is ConfigurationMaterialEvent.WordDeleted -> {
                 _state.update {
                     it.copy(
@@ -86,10 +91,13 @@ class ConfigurationMaterialViewModel @Inject constructor(
                 viewModelScope.launch {
                     val updatedList = _state.value.vocabItems.toMutableList().apply { removeAt(event.index) }
                     val newIndex = when {
-                        _state.value.selectedWordIndex == event.index -> -1
+                        _state.value.selectedWordIndex == event.index -> {
+                            if (updatedList.isNotEmpty()) 0 else -1
+                        }
                         _state.value.selectedWordIndex > event.index -> _state.value.selectedWordIndex - 1
                         else -> _state.value.selectedWordIndex
                     }
+
 
                     _state.update {
                         it.copy(

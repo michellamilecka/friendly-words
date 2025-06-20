@@ -60,6 +60,11 @@ class ConfigurationSettingsViewModel @Inject constructor(
                     )
                 }
             }
+            is ConfigurationSettingsEvent.ResetNavigation -> {
+                _state.update {
+                    it.copy(navigateToList = false)
+                }
+            }
             is ConfigurationSettingsEvent.Test -> {
                 _state.update { current ->
                     val learning = current.learningState
@@ -90,17 +95,32 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 materialState = currentState.materialState
                             )
 
-                            val configuration = Configuration(
-                                name = saveEvent.name,
-                                isExample = false,
-                                learningSettings = learningSettings,
-                                testSettings = testSettings
-                            )
+                            val existing = configurationRepository.getAllOnce()
+                            val alreadyExists = existing.any { it.name.equals(saveEvent.name, ignoreCase = true) }
 
-                            configurationRepository.insert(configuration)
+                            if (alreadyExists) {
+                                _state.update {
+                                    it.copy(
+                                        saveState = it.saveState.copy(showDuplicateNameDialog = true)
+                                    )
+                                }
+                            } else {
+                                val configuration = Configuration(
+                                    name = saveEvent.name,
+                                    isExample = false,
+                                    learningSettings = learningSettings,
+                                    testSettings = testSettings
+                                )
+
+                                configurationRepository.insert(configuration)
+
+                                _state.update {
+                                    it.copy(navigateToList = true)
+                                }
+                            }
+
                         }
                     }
-
                     else -> {
                         _state.update {
                             it.copy(
@@ -110,6 +130,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                     }
                 }
             }
+
             is ConfigurationSettingsEvent.ShowExitDialog -> {
                 _state.update { it.copy(showExitDialog = true) }
             }
