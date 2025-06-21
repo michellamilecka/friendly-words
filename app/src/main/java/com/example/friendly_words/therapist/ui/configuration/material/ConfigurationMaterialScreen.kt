@@ -173,10 +173,10 @@ fun ImageSelectionWithCheckbox(
 
 @Composable
 fun ConfigurationMaterialScreen(
-    onBackClick: () -> Unit,
-    viewModel: ConfigurationMaterialViewModel = hiltViewModel()
+    state: ConfigurationMaterialState,
+    onEvent: (ConfigurationMaterialEvent) -> Unit,
+    onBackClick: () -> Unit
 ) {
-    val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
@@ -226,7 +226,7 @@ fun ConfigurationMaterialScreen(
                                     .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
                                     .padding(horizontal = 4.dp, vertical = 8.dp)
                                     .clickable {
-                                        viewModel.onEvent(ConfigurationMaterialEvent.WordSelected(index))
+                                        onEvent(ConfigurationMaterialEvent.WordSelected(index))
                                     }
                             ) {
                                 Box(modifier = Modifier.weight(1f)) {
@@ -279,7 +279,7 @@ fun ConfigurationMaterialScreen(
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
                                     IconButton(onClick = {
-                                        viewModel.onEvent(ConfigurationMaterialEvent.WordDeleted(index))
+                                        onEvent(ConfigurationMaterialEvent.WordDeleted(index))
                                     }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
@@ -300,17 +300,17 @@ fun ConfigurationMaterialScreen(
                             message = "Czy chcesz usunąć z kroku uczenia słowo:",
                             name="${state.vocabItems[state.wordIndexToDelete!!].learnedWord}?",
                             onConfirm = {
-                                viewModel.onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
+                                onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
                             },
                             onDismiss = {
-                                viewModel.onEvent(ConfigurationMaterialEvent.CancelDelete)
+                                onEvent(ConfigurationMaterialEvent.CancelDelete)
                             }
                         )
                     }
 
                     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                         Button(
-                            onClick = { viewModel.onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
+                            onClick = { onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
                             colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                             modifier = Modifier.width(200.dp).height(48.dp)
                         ) {
@@ -347,10 +347,10 @@ fun ConfigurationMaterialScreen(
                             inLearningStates = item.inLearningStates,
                             inTestStates = item.inTestStates,
                             onImageSelectionChanged = {
-                                viewModel.onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
+                                onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
                             },
                             onLearningTestChanged = { i, learning, test ->
-                                viewModel.onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
+                                onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
                             }
                         )
                     } else {
@@ -363,7 +363,7 @@ fun ConfigurationMaterialScreen(
         // Dialog dodawania słowa
         if (state.showAddDialog) {
             AlertDialog(
-                onDismissRequest = { viewModel.onEvent(ConfigurationMaterialEvent.HideAddDialog) },
+                onDismissRequest = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                 title = {
                     Text(text="Wybierz materiał, które chcesz dodać do kroku uczenia:", fontSize = 26.sp,
                     fontStyle = FontStyle.Italic)
@@ -380,7 +380,7 @@ fun ConfigurationMaterialScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            viewModel.onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
+                                            onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
                                         }
                                         .padding(vertical = 8.dp),
                                     fontSize = 18.sp
@@ -391,7 +391,7 @@ fun ConfigurationMaterialScreen(
                 },
                 confirmButton = {
                     Button(
-                        onClick = { viewModel.onEvent(ConfigurationMaterialEvent.HideAddDialog) },
+                        onClick = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = DarkBlue,
                             contentColor = Color.White

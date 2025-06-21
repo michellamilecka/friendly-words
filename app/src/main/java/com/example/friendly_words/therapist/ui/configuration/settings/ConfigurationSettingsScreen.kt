@@ -24,6 +24,7 @@ fun ConfigurationSettingsScreen(
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val state by viewModel.state.collectAsState()
+
     LaunchedEffect(state.navigateToList) {
         if (state.navigateToList) {
             onBackClick()
@@ -71,6 +72,8 @@ fun ConfigurationSettingsScreen(
 
             when (selectedTabIndex) {
                 0 -> ConfigurationMaterialScreen(
+                    state = viewModel.state.collectAsState().value.materialState,
+                    onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Material(it)) },
                     onBackClick = onBackClick
                 )
                 1 -> ConfigurationLearningScreen(
