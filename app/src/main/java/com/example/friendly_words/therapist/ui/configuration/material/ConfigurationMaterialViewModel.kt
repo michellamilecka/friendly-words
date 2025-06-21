@@ -2,6 +2,7 @@ package com.example.friendly_words.therapist.ui.configuration.material
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+
 import com.example.friendly_words.data.repositories.ImageRepository
 import com.example.friendly_words.data.repositories.ResourceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +13,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import android.util.Log
 
-
+data class ImageUsageInfo(
+    val word: String,
+    val imagePath: String,
+    val isSelected: Boolean,
+    val inLearning: Boolean,
+    val inTest: Boolean
+)
 @HiltViewModel
 class ConfigurationMaterialViewModel @Inject constructor(
     private val resourceRepository: ResourceRepository,
@@ -41,6 +48,19 @@ class ConfigurationMaterialViewModel @Inject constructor(
             println("<<< ConfigurationMaterialViewModel INIT >>>")
 
             updateAvailableWordsToAdd()
+        }
+    }
+    fun getDetailedImageUsage(): List<ImageUsageInfo> {
+        return _state.value.vocabItems.flatMap { item ->
+            item.imagePaths.mapIndexed { index, path ->
+                ImageUsageInfo(
+                    word = item.word,
+                    imagePath = path,
+                    isSelected = item.selectedImages.getOrNull(index) == true,
+                    inLearning = item.inLearningStates.getOrNull(index) == true,
+                    inTest = item.inTestStates.getOrNull(index) == true
+                )
+            }
         }
     }
     fun onEvent(event: ConfigurationMaterialEvent) {
@@ -73,6 +93,24 @@ class ConfigurationMaterialViewModel @Inject constructor(
                             showAddDialog = false
                         )
                     }
+                    val usedImages = getDetailedImageUsage().filter { it.isSelected }
+
+                    val logMessage = buildString {
+                        append("Użyte zdjęcia:\n")
+                        usedImages.forEach {
+                            val mode = when {
+                                it.inLearning && it.inTest -> "Learning + Test"
+                                it.inLearning -> "Learning"
+                                it.inTest -> "Test"
+                                else -> "brak"
+                            }
+
+                            append("- Słowo: ${it.word} | Zdjęcie: ${it.imagePath} | Tryb: $mode\n")
+                        }
+                    }
+
+                    Log.d("ImageUsageInfo", logMessage)
+
 
                     updateAvailableWordsToAdd()
                 }
