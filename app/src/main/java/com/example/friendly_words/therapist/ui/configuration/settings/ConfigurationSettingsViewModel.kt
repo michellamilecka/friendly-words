@@ -1,9 +1,12 @@
 package com.example.friendly_words.therapist.ui.configuration.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Configuration
 import com.example.friendly_words.data.repositories.ConfigurationRepository
+import com.example.friendly_words.data.repositories.ImageRepository
+import com.example.friendly_words.data.repositories.ResourceRepository
 import com.example.friendly_words.therapist.ui.configuration.learning.*
 import com.example.friendly_words.therapist.ui.configuration.material.*
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementViewModel
@@ -21,11 +24,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ConfigurationSettingsViewModel @Inject constructor(
-    private val configurationRepository: ConfigurationRepository
+    private val configurationRepository: ConfigurationRepository,
+    private val resourceRepository: ResourceRepository,
+    private val imageRepository: ImageRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationSettingsState())
     val state: StateFlow<ConfigurationSettingsState> = _state
+
+    init {
+        viewModelScope.launch {
+            updateAvailableWordsToAdd()
+        }
+    }
 
     fun onEvent(event: ConfigurationSettingsEvent) {
         when (event) {
@@ -41,15 +52,77 @@ class ConfigurationSettingsViewModel @Inject constructor(
             }
 
             is ConfigurationSettingsEvent.Material -> {
-                _state.update { current ->
-                    current.copy(
-                        materialState = ConfigurationMaterialViewModel.reduce(
-                            current.materialState,
-                            event.event
-                        )
-                    )
+                when (val materialEvent = event.event) {
+                    is ConfigurationMaterialEvent.AddWord -> {
+                        viewModelScope.launch {
+                            val resource = resourceRepository.getById(materialEvent.id) ?: return@launch
+                            val images = imageRepository.getByResourceId(resource.id)
+
+                            val newVocabularyItem = VocabularyItem(
+                                id = resource.id,
+                                word = resource.name,
+                                learnedWord = resource.learnedWord,
+                                selectedImages = List(images.size) { it == 0 },
+                                inLearningStates = List(images.size) { it == 0 },
+                                inTestStates = List(images.size) { it == 0 },
+                                imagePaths = images.map { it.path }
+                            )
+
+                            _state.update { current ->
+                                val updatedItems = current.materialState.vocabItems + newVocabularyItem
+                                current.copy(
+                                    materialState = current.materialState.copy(
+                                        vocabItems = updatedItems,
+                                        selectedWordIndex = updatedItems.lastIndex,
+                                        showAddDialog = false
+                                    )
+                                )
+                            }
+
+                            logUsedImages()
+                            updateAvailableWordsToAdd()
+                        }
+                    }
+
+                    is ConfigurationMaterialEvent.ConfirmDelete -> {
+                        viewModelScope.launch {
+                            val oldState = _state.value.materialState
+                            val updatedList = oldState.vocabItems.toMutableList().apply {
+                                removeAt(materialEvent.index)
+                            }
+                            val newIndex = when {
+                                oldState.selectedWordIndex == materialEvent.index -> if (updatedList.isNotEmpty()) 0 else -1
+                                oldState.selectedWordIndex > materialEvent.index -> oldState.selectedWordIndex - 1
+                                else -> oldState.selectedWordIndex
+                            }
+
+                            _state.update {
+                                it.copy(
+                                    materialState = it.materialState.copy(
+                                        vocabItems = updatedList,
+                                        selectedWordIndex = newIndex,
+                                        wordIndexToDelete = null,
+                                        showDeleteDialog = false
+                                    )
+                                )
+                            }
+                            updateAvailableWordsToAdd()
+                        }
+                    }
+
+                    else -> {
+                        _state.update { current ->
+                            current.copy(
+                                materialState = ConfigurationMaterialViewModel.reduce(
+                                    current.materialState,
+                                    materialEvent
+                                )
+                            )
+                        }
+                    }
                 }
             }
+
             is ConfigurationSettingsEvent.Reinforcement -> {
                 _state.update { current ->
                     current.copy(
@@ -140,8 +213,51 @@ class ConfigurationSettingsViewModel @Inject constructor(
             is ConfigurationSettingsEvent.ConfirmExitDialog -> {
                 _state.value = ConfigurationSettingsState()
             }
+        }
+    }
 
+    private suspend fun updateAvailableWordsToAdd() {
+        val allResources = resourceRepository.getAllOnce()
+        val usedIds = _state.value.materialState.vocabItems.map { it.id }
+        val available = allResources.filter { it.id !in usedIds }
 
+        _state.update {
+            it.copy(
+                materialState = it.materialState.copy(availableWordsToAdd = available)
+            )
+        }
+    }
+
+    private fun logUsedImages() {
+        val usedImages = getDetailedImageUsage().filter { it.isSelected }
+
+        val logMessage = buildString {
+            append("Użyte zdjęcia:\n")
+            usedImages.forEach {
+                val mode = when {
+                    it.inLearning && it.inTest -> "Learning + Test"
+                    it.inLearning -> "Learning"
+                    it.inTest -> "Test"
+                    else -> "brak"
+                }
+                append("- Słowo: ${it.word} | Zdjęcie: ${it.imagePath} | Tryb: $mode\n")
+            }
+        }
+
+        Log.d("ImageUsageInfo", logMessage)
+    }
+
+    fun getDetailedImageUsage(): List<ImageUsageInfo> {
+        return _state.value.materialState.vocabItems.flatMap { item ->
+            item.imagePaths.mapIndexed { index, path ->
+                ImageUsageInfo(
+                    word = item.word,
+                    imagePath = path,
+                    isSelected = item.selectedImages.getOrNull(index) == true,
+                    inLearning = item.inLearningStates.getOrNull(index) == true,
+                    inTest = item.inTestStates.getOrNull(index) == true
+                )
+            }
         }
     }
 
