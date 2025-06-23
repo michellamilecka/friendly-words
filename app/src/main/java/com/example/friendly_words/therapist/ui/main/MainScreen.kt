@@ -33,7 +33,7 @@ object NavRoutes {
     // Konfiguracje
     const val CONFIG_LIST = "config"
     const val CONFIG_CREATE = "config/create"
-    const val CONFIG_EDIT = "config/edit/{configId}" // opcjonalnie przyszłościowo
+    const val CONFIG_EDIT = "config/edit/{configId}"
 }
 
 
@@ -117,9 +117,15 @@ fun MainScreen() {
 
         composable(
             route = NavRoutes.CONFIG_EDIT,
-            arguments = listOf(navArgument("configId") { type = NavType.StringType })
-        ) {
-            ConfigurationSettingsScreen(onBackClick = { navController.popBackStack() })
+            arguments = listOf(navArgument("configId") { type = NavType.LongType })
+        ) { backStackEntry ->
+
+            val configId = backStackEntry.arguments?.getLong("configId")
+
+            ConfigurationSettingsScreen(
+                onBackClick = { navController.popBackStack() },
+                configId = configId
+            )
         }
 
     }

@@ -37,7 +37,7 @@ import com.example.friendly_words.therapist.ui.theme.DarkBlue
 fun ConfigurationsListScreen(
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
-    onEditClick: (String) -> Unit,
+    onEditClick: (Long) -> Unit,
     viewModel: ConfigurationViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -210,7 +210,7 @@ fun ConfigurationsListScreen(
                         },
                         onEdit = {
                             viewModel.onEvent(ConfigurationEvent.EditRequested(config))
-                            onEditClick(config.name)
+                            onEditClick(config.id)
                         },
                         onCopy = { viewModel.onEvent(ConfigurationEvent.CopyRequested(config)) }
                     )

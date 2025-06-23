@@ -50,6 +50,9 @@ interface ConfigurationDao {
     @Query("DELETE FROM configuration_resources WHERE configurationId = :configurationId AND resourceId = :resourceId")
     suspend fun deleteSingleConfigurationResource(configurationId: Long, resourceId: Long)
 
+    @Query("DELETE FROM configuration_resources WHERE configurationId = :configId")
+    suspend fun deleteConfigurationResourcesByConfigId(configId: Long)
+
 
 
     //crudy dla encji laczacej konfiguracje z obrazami dla zasobow znajdujacych sie w konfiguracji
@@ -68,4 +71,6 @@ interface ConfigurationDao {
     @Query("DELETE FROM configuration_image_usages WHERE configurationId = :configurationId AND imageId = :imageId")
     suspend fun deleteSingleConfigurationImageUsage(configurationId: Long, imageId: Long)
 
+    @Query("DELETE FROM configuration_image_usages WHERE configurationId = :configId")
+    suspend fun deleteConfigurationImageUsagesByConfigId(configId: Long)
 }
