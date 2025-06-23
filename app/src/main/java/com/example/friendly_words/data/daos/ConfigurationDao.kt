@@ -41,6 +41,9 @@ interface ConfigurationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConfigurationResource(link: ConfigurationResource)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertConfigurationResources(resources: List<ConfigurationResource>)
+
     @Query("SELECT * FROM configuration_resources WHERE configurationId = :configurationId")
     suspend fun getConfigurationResources(configurationId: Long): List<ConfigurationResource>
 
@@ -52,6 +55,9 @@ interface ConfigurationDao {
     //crudy dla encji laczacej konfiguracje z obrazami dla zasobow znajdujacych sie w konfiguracji
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertConfigurationImageUsage(usage: ConfigurationImageUsage)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertConfigurationImageUsages(usages: List<ConfigurationImageUsage>)
 
     @Query("SELECT * FROM configuration_image_usages WHERE configurationId = :configurationId")
     suspend fun getConfigurationImageUsages(configurationId: Long): List<ConfigurationImageUsage>

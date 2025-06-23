@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Configuration
+import com.example.friendly_words.data.entities.ConfigurationResource
 import com.example.friendly_words.data.repositories.ConfigurationRepository
 import com.example.friendly_words.data.repositories.ImageRepository
 import com.example.friendly_words.data.repositories.ResourceRepository
@@ -168,8 +169,8 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 materialState = currentState.materialState
                             )
 
-                            val existing = configurationRepository.getAllOnce()
-                            val alreadyExists = existing.any { it.name.equals(saveEvent.name, ignoreCase = true) }
+                            val existingConfigurations = configurationRepository.getAllOnce()
+                            val alreadyExists = existingConfigurations.any { it.name.equals(saveEvent.name, ignoreCase = true) }
 
                             if (alreadyExists) {
                                 _state.update {
@@ -185,7 +186,21 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                     testSettings = testSettings
                                 )
 
-                                configurationRepository.insert(configuration)
+                                val configurationId = configurationRepository.insert(configuration)
+
+                                // dodajemy informacje o tym ktore mateiraly zostaly dodane do konfiguracji
+                                val resourceIds = currentState.materialState.vocabItems.map { it.id }.distinct()
+                                val configurationResources = resourceIds.map {
+                                    ConfigurationResource(configurationId = configurationId, resourceId = it)
+                                }
+                                configurationRepository.insertResources(configurationResources)
+
+                                // dodajemy użycia obrazów w konfiguracji
+                                val imageUsages = currentState.materialState.toConfigurationImageUsages(
+                                    configurationId = configurationId,
+                                    imageRepository = imageRepository
+                                )
+                                configurationRepository.insertImageUsages(imageUsages)
 
                                 _state.update {
                                     it.copy(navigateToList = true)
