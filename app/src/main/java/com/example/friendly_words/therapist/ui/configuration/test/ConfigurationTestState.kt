@@ -1,6 +1,7 @@
 package com.example.friendly_words.therapist.ui.configuration.test
 
 import com.example.friendly_words.data.entities.TestSettings
+import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
 
 data class ConfigurationTestState(
@@ -29,3 +30,14 @@ fun ConfigurationTestState.toTestSettings(
         //todo: dodac miejsce na ustawienie czasu na odpowiedz (chyba)
     )
 }
+fun ConfigurationLearningState.toDerivedTestState(): ConfigurationTestState {
+    return ConfigurationTestState(
+        imageCount = this.imageCount,
+        attemptsCount = this.repetitionCount,
+        selectedPrompt = this.selectedPrompt,
+        captionsEnabled = this.captionsEnabled,
+        readingEnabled = this.readingEnabled,
+        testEditEnabled = false
+    )
+}
+
