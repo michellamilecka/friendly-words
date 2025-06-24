@@ -20,12 +20,17 @@ import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationT
 @Composable
 fun ConfigurationSettingsScreen(
     onBackClick: () -> Unit,
+    configId: Long? = null,
     viewModel: ConfigurationSettingsViewModel = hiltViewModel()
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(state.navigateToList) {
+        if (configId != null) {
+            viewModel.loadConfiguration(configId.toLong())
+        }
+
         if (state.navigateToList) {
             onBackClick()
             viewModel.onEvent(ConfigurationSettingsEvent.ResetNavigation)

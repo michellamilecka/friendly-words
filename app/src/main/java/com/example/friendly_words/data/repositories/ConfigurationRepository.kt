@@ -35,12 +35,18 @@ class ConfigurationRepository @Inject constructor(
     // metody dla encji laczacej konfiguracje z zasobami/materialami
     suspend fun addResource(link: ConfigurationResource) = dao.insertConfigurationResource(link)
 
+    suspend fun insertResources(resources: List<ConfigurationResource>) { dao.insertConfigurationResources(resources) }
+
     suspend fun removeSingleResource(configurationId: Long, resourceId: Long) = dao.deleteSingleConfigurationResource(configurationId, resourceId)
 
     suspend fun getResources(configurationId: Long): List<ConfigurationResource> = dao.getConfigurationResources(configurationId)
 
+    suspend fun deleteResourcesByConfigId(configId: Long) { dao.deleteConfigurationResourcesByConfigId(configId) }
+
     // metody dla encji laczacej konfiguracje z obrazami dla zasobow znajdujacych sie w konfiguracji
     suspend fun addImageUsage(usage: ConfigurationImageUsage) = dao.insertConfigurationImageUsage(usage)
+
+    suspend fun insertImageUsages(usages: List<ConfigurationImageUsage>) { dao.insertConfigurationImageUsages(usages) }
 
     suspend fun removeAllImageUsages(configurationId: Long) = dao.deleteConfigurationImageUsagesForConfiguration(configurationId)
 
@@ -48,5 +54,5 @@ class ConfigurationRepository @Inject constructor(
 
     suspend fun getImageUsages(configurationId: Long): List<ConfigurationImageUsage> = dao.getConfigurationImageUsages(configurationId)
 
-
+    suspend fun deleteImageUsagesByConfigId(configId: Long) { dao.deleteConfigurationImageUsagesByConfigId(configId) }
 }
