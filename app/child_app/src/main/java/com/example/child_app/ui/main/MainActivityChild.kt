@@ -1,4 +1,4 @@
-package com.example.child_app
+package com.example.child_app.ui.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,7 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.Dp
+import com.example.child_app.ui.game.GameScreen
+import com.example.child_app.R
+import com.example.child_app.ui.game.GameEndScreen
 import com.example.child_app.ui.theme.LightBlue
 import kotlinx.coroutines.delay
 import java.lang.Math.sqrt
@@ -43,6 +45,9 @@ class MainActivityChild : ComponentActivity() {
 fun ScreenNavigation() {
     var screenState by remember { mutableStateOf("info") }
 
+    var correctAnswers by remember { mutableStateOf(0) }
+    var wrongAnswers by remember { mutableStateOf(0) }
+
     when (screenState) {
         "info" -> {
             LaunchedEffect(Unit) {
@@ -55,7 +60,24 @@ fun ScreenNavigation() {
             MainScreen(onPlayClick = { screenState = "game" })
         }
         "game" -> {
-            GameScreen()
+            GameScreen(onGameFinished = { correct, wrong ->
+                correctAnswers = correct
+                wrongAnswers = wrong
+                screenState = "end"
+            })
+        }
+        "end" -> {
+            // Przekaż wyniki do GameEndScreen
+            GameEndScreen(
+                correctAnswers = correctAnswers,
+                wrongAnswers = wrongAnswers,
+                onPlayAgain = {
+                    screenState = "info"
+                    // Reset wyników na potrzeby nowej gry (opcjonalne)
+                    correctAnswers = 0
+                    wrongAnswers = 0
+                }
+            )
         }
     }
 }

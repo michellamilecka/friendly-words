@@ -1,64 +1,23 @@
-package com.example.child_app
+package com.example.child_app.ui.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Dp
-import androidx.compose.foundation.Canvas
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.PlayArrow
-import com.example.child_app.ui.theme.LightBlue
+import androidx.compose.ui.unit.dp
 import com.example.child_app.ui.theme.YellowFrames
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.text.font.FontWeight
-import com.example.child_app.ui.theme.Blue
-
-@Composable
-fun MainScreen(onPlayClick: () -> Unit) {
-    val activeConfiguration = remember {
-        mutableStateOf<Pair<String, String>?>(Pair("1 konfiguracja NA STAŁE", "uczenie"))
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Blue),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-            modifier = Modifier.fillMaxWidth(0.9f)
-        ) {
-            Text(
-                "Przyjazne Słowa",
-                fontSize = 50.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = activeConfiguration.value?.let {
-                    "Aktywna konfiguracja: ${it.first} (tryb: ${it.second})"
-                } ?: "Brak aktywnej konfiguracji",
-                fontSize = 20.sp,
-                color = LightBlue
-            )
-            Spacer(modifier = Modifier.height(40.dp))
-            PlayButton(onClick = onPlayClick )
-        }
-    }
-}
-
 
 @Composable
 fun PlayButton(
