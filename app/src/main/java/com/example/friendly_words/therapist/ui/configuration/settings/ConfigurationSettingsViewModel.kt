@@ -35,6 +35,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
     private val resourceRepository: ResourceRepository,
     private val imageRepository: ImageRepository,
 
+
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationSettingsState())
@@ -145,7 +146,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
             }
             is ConfigurationSettingsEvent.ResetNavigation -> {
                 _state.update {
-                    it.copy(navigateToList = false)
+                    it.copy(navigateToList = false,message = null)
                 }
             }
             is ConfigurationSettingsEvent.Test -> {
@@ -252,9 +253,16 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 configurationRepository.insertImageUsages(imageUsages)
                             }
 
+                            val message = if (currentId != null) {
+                                "Pomyślnie zaktualizowano krok uczenia"
+                            } else {
+                                "Pomyślnie dodano nowy krok uczenia"
+                            }
                             _state.update {
-                                //Log.d("ScrollDebug", "Konfiguracja zapisana — ustawiam navigateToList i shouldScrollToBottom")
-                                it.copy(navigateToList = true)
+                                it.copy(
+                                    message = message,
+                                    navigateToList = true
+                                )
                             }
                         }
                     }

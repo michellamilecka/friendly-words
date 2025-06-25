@@ -10,6 +10,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.friendly_words.therapist.ui.components.NewConfigurationTopBar
 import com.example.friendly_words.therapist.ui.components.NewConfigurationTopTabs
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
@@ -27,6 +28,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ConfigurationSettingsScreen(
+    navController: NavController,
     onBackClick: () -> Unit,
     configId: Long? = null,
     viewModel: ConfigurationSettingsViewModel = hiltViewModel()
@@ -34,20 +36,19 @@ fun ConfigurationSettingsScreen(
     var selectedTabIndex by remember { mutableStateOf(0) }
     val state by viewModel.state.collectAsState()
 
-    //val infoMessage = state.infoMessage
+
 
 
     LaunchedEffect(state.navigateToList) {
-        Log.d("ScrollDebug", "LaunchedEffect — navigateToList=${state.navigateToList}")
+        //Log.d("ScrollDebug", "LaunchedEffect — navigateToList=${state.navigateToList}")
         if (configId != null) {
             viewModel.loadConfiguration(configId.toLong())
         }
 
         if (state.navigateToList) {
-            Log.d("ScrollDebug", "navigateToList == true — przechodzę do listy")
-            // Scrollowanie tylko jeśli flaga ustawiona po zapisie nowej konfiguracji
-
-
+            state.message?.let {
+                navController.previousBackStackEntry?.savedStateHandle?.set("message", it)
+            }
             onBackClick()
             viewModel.onEvent(ConfigurationSettingsEvent.ResetNavigation)
         }

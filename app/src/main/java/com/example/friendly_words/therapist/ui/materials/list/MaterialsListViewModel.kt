@@ -79,6 +79,9 @@ class MaterialsListViewModel @Inject constructor(
 
     fun onEvent(event: MaterialsListEvent) {
         when (event) {
+            is MaterialsListEvent.ClearInfoMessage -> {
+                _uiState.update { it.copy(infoMessage = null) }
+            }
             is MaterialsListEvent.SelectMaterial -> {
                 val selected = event.index
                 val selectedResource = _uiState.value.materials.getOrNull(selected) ?: return
@@ -126,7 +129,8 @@ class MaterialsListViewModel @Inject constructor(
                         it.copy(
                         selectedIndex = newSelectedIndex,
                         showDeleteDialog = false,
-                        materialToDelete = null
+                        materialToDelete = null,
+                        infoMessage = "Pomyślnie usunięto materiał"
                     )}
                 }
 

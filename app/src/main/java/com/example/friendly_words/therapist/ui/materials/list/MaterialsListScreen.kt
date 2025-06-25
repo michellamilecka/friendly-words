@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.composables.core.ScrollArea
 import com.composables.core.Thumb
@@ -37,13 +38,39 @@ import com.composables.core.rememberScrollAreaState
 
 @Composable
 fun MaterialsListScreen(
+    navController: NavController,
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
     onEditClick: (Long) -> Unit,
     viewModel: MaterialsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(Unit) {
+        val message = navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("message")
+
+        message?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<String>("message")
+        }
+    }
+    LaunchedEffect(state.infoMessage) {
+        state.infoMessage?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.onEvent(MaterialsListEvent.ClearInfoMessage)
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -78,7 +105,11 @@ fun MaterialsListScreen(
                     }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
+
     ) { padding ->
         Row(
             modifier = Modifier

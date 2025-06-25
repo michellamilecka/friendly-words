@@ -10,6 +10,7 @@ data class MaterialsListState(
     val showDeleteDialog: Boolean = false,
     val materialToDelete: Pair<Int, Resource>? = null,
     val imagesForSelected: Map<Long, List<Image>> = emptyMap(),
-    val pendingSelectId: Long? = null
+    val pendingSelectId: Long? = null,
+    val infoMessage: String? = null
 
 )

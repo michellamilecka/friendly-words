@@ -160,6 +160,12 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     }
 
                     savedStateHandle["newlySavedResourceId"] = resourceId
+                    val successMessage = if (resourceIdToEdit == null)
+                        "Pomyślnie dodano nowy materiał"
+                    else
+                        "Pomyślnie zaktualizowano materiał"
+
+                    savedStateHandle["message"] = successMessage
                 }
             }
 
