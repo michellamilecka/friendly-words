@@ -1,6 +1,7 @@
 package com.example.friendly_words.therapist.ui.configuration.settings
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Configuration
@@ -18,6 +19,7 @@ import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationS
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveViewModel
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestViewModel
+import com.example.friendly_words.therapist.ui.configuration.test.toDerivedTestState
 import com.example.friendly_words.therapist.ui.configuration.test.toTestSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,13 +33,16 @@ import javax.inject.Inject
 class ConfigurationSettingsViewModel @Inject constructor(
     private val configurationRepository: ConfigurationRepository,
     private val resourceRepository: ResourceRepository,
-    private val imageRepository: ImageRepository
+    private val imageRepository: ImageRepository,
+
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationSettingsState())
     val state: StateFlow<ConfigurationSettingsState> = _state
 
     init {
+
+
         viewModelScope.launch {
             updateAvailableWordsToAdd()
         }
@@ -230,6 +235,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
 
                                 val newId = configurationRepository.insert(configuration)
 
+
                                 // dodajemy informacje o tym ktore mateiraly zostaly dodane do konfiguracji
                                 val resourceLinks = currentState.materialState.vocabItems
                                     .map { it.id }
@@ -247,6 +253,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                             }
 
                             _state.update {
+                                //Log.d("ScrollDebug", "Konfiguracja zapisana — ustawiam navigateToList i shouldScrollToBottom")
                                 it.copy(navigateToList = true)
                             }
                         }
@@ -357,13 +364,15 @@ class ConfigurationSettingsViewModel @Inject constructor(
             val materialState = ConfigurationMaterialState(vocabItems = vocabItems)
             val learningState = config.learningSettings.toConfigurationLearningState()
             val testState = config.testSettings.toConfigurationTestState()
+            val testShouldBeEditable = testState != learningState.toDerivedTestState()
+            val finalTestState = testState.copy(testEditEnabled = testShouldBeEditable)
             val reinforcementState = config.learningSettings.toConfigurationReinforcementState()
 
             _state.update {
                 it.copy(
                     materialState = materialState,
                     learningState = learningState,
-                    testState = testState,
+                    testState = finalTestState,
                     reinforcementState = reinforcementState,
                     saveState = it.saveState.copy(stepName = config.name, editingConfigId = config.id)
                 )

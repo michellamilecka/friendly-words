@@ -44,11 +44,13 @@ import java.io.File
 import androidx.compose.ui.platform.LocalContext
 import java.io.IOException
 import android.graphics.Bitmap
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import java.io.FileOutputStream
@@ -60,11 +62,13 @@ fun MaterialsCreatingNewMaterialScreen(
     onBackClick: () -> Unit,
     onSaveClick: (Long) -> Unit,
     //resourceId: Long?
+
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(state.saveCompleted) {
     val savedId = state.newlySavedResourceId
@@ -143,6 +147,12 @@ fun MaterialsCreatingNewMaterialScreen(
                 .padding(padding)
                 .background(Color.White)
                 .padding(24.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    focusManager.clearFocus()
+                }
         ) {
             Row(modifier = Modifier.fillMaxSize().weight(1f)) {
                 // Lewa kolumna

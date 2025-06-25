@@ -1,7 +1,12 @@
 package com.example.friendly_words.therapist.ui.configuration.settings
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -10,11 +15,14 @@ import com.example.friendly_words.therapist.ui.components.NewConfigurationTopTab
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestScreen
 import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningScreen
+import com.example.friendly_words.therapist.ui.configuration.list.ConfigurationEvent
+import com.example.friendly_words.therapist.ui.configuration.list.ConfigurationViewModel
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialScreen
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementScreen
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveEvent
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveScreen
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
+import kotlinx.coroutines.delay
 
 
 @Composable
@@ -26,16 +34,25 @@ fun ConfigurationSettingsScreen(
     var selectedTabIndex by remember { mutableStateOf(0) }
     val state by viewModel.state.collectAsState()
 
+    //val infoMessage = state.infoMessage
+
+
     LaunchedEffect(state.navigateToList) {
+        Log.d("ScrollDebug", "LaunchedEffect — navigateToList=${state.navigateToList}")
         if (configId != null) {
             viewModel.loadConfiguration(configId.toLong())
         }
 
         if (state.navigateToList) {
+            Log.d("ScrollDebug", "navigateToList == true — przechodzę do listy")
+            // Scrollowanie tylko jeśli flaga ustawiona po zapisie nowej konfiguracji
+
+
             onBackClick()
             viewModel.onEvent(ConfigurationSettingsEvent.ResetNavigation)
         }
     }
+
 
 
 
@@ -55,15 +72,15 @@ fun ConfigurationSettingsScreen(
 
     Scaffold(
         topBar = {
-            val stepName = viewModel.state.collectAsState().value.saveState.stepName
             NewConfigurationTopBar(
-                title = "Nowy krok uczenia: ${stepName}",
+                title = "Nowy krok uczenia: ${state.saveState.stepName}",
                 onBackClick = {
                     viewModel.onEvent(ConfigurationSettingsEvent.ShowExitDialog)
                 }
             )
-        }
-    ) { padding ->
+        },
+
+    )  { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -1,5 +1,7 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
+import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Configuration
@@ -14,7 +16,8 @@ import kotlinx.coroutines.flow.first
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
-    private val configurationRepository: ConfigurationRepository
+    private val configurationRepository: ConfigurationRepository,
+
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationState())
@@ -22,6 +25,7 @@ class ConfigurationViewModel @Inject constructor(
 
 
     init {
+
         viewModelScope.launch {
             configurationRepository.getAll().collect { configurations ->
                 if (configurations.isEmpty()) {
@@ -77,7 +81,15 @@ class ConfigurationViewModel @Inject constructor(
                     }
                 }
             }
-
+//            is ConfigurationEvent.MarkShouldScrollToBottom -> {
+//                _state.update { it.copy(shouldScrollToBottom = event.scroll) }
+//            }
+//            is ConfigurationEvent.ShowInfo -> {
+//                _state.update { it.copy(infoMessage = event.message) }
+//            }
+//            is ConfigurationEvent.ClearInfoMessage -> {
+//                _state.update { it.copy(infoMessage = null) }
+//            }
 
             is ConfigurationEvent.CopyRequested -> {
 

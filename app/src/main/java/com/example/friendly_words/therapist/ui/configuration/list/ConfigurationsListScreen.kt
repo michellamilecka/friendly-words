@@ -1,5 +1,6 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,8 +46,15 @@ fun ConfigurationsListScreen(
     var hideExamples by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     val stateForScroll=rememberScrollAreaState(lazyListState)
+    val snackbarHostState = remember { SnackbarHostState() }
+    //val infoMessage = state.infoMessage
 
-
+//    LaunchedEffect(infoMessage) {
+//        if (infoMessage != null) {
+//            snackbarHostState.showSnackbar(infoMessage)
+//            viewModel.onEvent(ConfigurationEvent.ClearInfoMessage)
+//        }
+//    }
     val filteredConfigurations = remember(state.searchQuery, state.configurations, hideExamples) {
         state.configurations
             .filter { it.name.contains(state.searchQuery, ignoreCase = true) }
@@ -54,8 +62,8 @@ fun ConfigurationsListScreen(
     }
 
     LaunchedEffect(state.shouldScrollToBottom) {
-        if (state.shouldScrollToBottom && filteredConfigurations.isNotEmpty()) {
-            lazyListState.animateScrollToItem(filteredConfigurations.size - 1)
+        if (state.shouldScrollToBottom) {
+            lazyListState.scrollToItem(filteredConfigurations.lastIndex)
             viewModel.onEvent(ConfigurationEvent.ScrollHandled)
         }
     }
@@ -71,15 +79,31 @@ fun ConfigurationsListScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                         }
-                        Text("Przyjazne Słowa Ustawienia", fontSize = 30.sp, modifier = Modifier.weight(1f), color = Color.White)
-                        Text("UTWÓRZ", fontSize = 30.sp, color = Color.White, modifier = Modifier.clickable { viewModel.onEvent(ConfigurationEvent.CreateRequested); onCreateClick() })
+                        Text(
+                            "Przyjazne Słowa Ustawienia",
+                            fontSize = 30.sp,
+                            modifier = Modifier.weight(1f),
+                            color = Color.White
+                        )
+                        Text(
+                            "UTWÓRZ",
+                            fontSize = 30.sp,
+                            color = Color.White,
+                            modifier = Modifier.clickable {
+                                viewModel.onEvent(ConfigurationEvent.CreateRequested)
+                                onCreateClick()
+                            }
+                        )
                         Spacer(modifier = Modifier.width(15.dp))
                     }
                 },
                 backgroundColor = DarkBlue
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
-    ) { padding ->
+    ){ padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
