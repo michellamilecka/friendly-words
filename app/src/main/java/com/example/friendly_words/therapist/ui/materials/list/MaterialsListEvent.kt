@@ -7,5 +7,6 @@ sealed class MaterialsListEvent {
     data class RequestDelete(val index: Int, val resource: Resource) : MaterialsListEvent()
     object ConfirmDelete : MaterialsListEvent()
     object DismissDeleteDialog : MaterialsListEvent()
+    object ClearInfoMessage : MaterialsListEvent()
 }
 

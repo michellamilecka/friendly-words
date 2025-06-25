@@ -12,7 +12,7 @@ sealed class ConfigurationEvent {
     data class EditRequested(val configuration: Configuration) : ConfigurationEvent()
     //data class MarkShouldScrollToBottom(val scroll: Boolean) : ConfigurationEvent()
     object CreateRequested : ConfigurationEvent()
-    //object ClearInfoMessage : ConfigurationEvent()
+    object ClearInfoMessage : ConfigurationEvent()
     //data class ShowInfo(val message: String) : ConfigurationEvent()
     object DismissDialogs : ConfigurationEvent()
     object ScrollHandled : ConfigurationEvent()

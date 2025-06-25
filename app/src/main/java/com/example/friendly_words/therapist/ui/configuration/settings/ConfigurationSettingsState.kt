@@ -14,7 +14,7 @@ data class ConfigurationSettingsState (
     val testState: ConfigurationTestState = ConfigurationTestState(),
     val saveState: ConfigurationSaveState = ConfigurationSaveState(),
     val showExitDialog: Boolean = false,
-    //val infoMessage: String? = null,
+    val message: String? = null,
     val navigateToList: Boolean = false
 
 )

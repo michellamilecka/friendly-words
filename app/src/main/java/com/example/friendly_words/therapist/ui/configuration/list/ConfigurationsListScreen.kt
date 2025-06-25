@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.composables.core.ScrollArea
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
@@ -36,6 +37,7 @@ import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
 @Composable
 fun ConfigurationsListScreen(
+    navController: NavController,
     onBackClick: () -> Unit,
     onCreateClick: () -> Unit,
     onEditClick: (Long) -> Unit,
@@ -43,18 +45,37 @@ fun ConfigurationsListScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+
     var hideExamples by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     val stateForScroll=rememberScrollAreaState(lazyListState)
     val snackbarHostState = remember { SnackbarHostState() }
-    //val infoMessage = state.infoMessage
+    LaunchedEffect(Unit) {
+        val message = navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<String>("message")
 
-//    LaunchedEffect(infoMessage) {
-//        if (infoMessage != null) {
-//            snackbarHostState.showSnackbar(infoMessage)
-//            viewModel.onEvent(ConfigurationEvent.ClearInfoMessage)
-//        }
-//    }
+        message?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<String>("message")
+        }
+    }
+    val infoMessage = state.infoMessage
+
+    LaunchedEffect(infoMessage) {
+        infoMessage?.let {
+            snackbarHostState.showSnackbar(
+                message = it,
+                duration = SnackbarDuration.Short
+            )
+            viewModel.onEvent(ConfigurationEvent.ClearInfoMessage)
+        }
+    }
     val filteredConfigurations = remember(state.searchQuery, state.configurations, hideExamples) {
         state.configurations
             .filter { it.name.contains(state.searchQuery, ignoreCase = true) }
@@ -62,12 +83,12 @@ fun ConfigurationsListScreen(
     }
 
     LaunchedEffect(state.shouldScrollToBottom) {
-        if (state.shouldScrollToBottom) {
+        if (state.shouldScrollToBottom && filteredConfigurations.isNotEmpty()) {
+            kotlinx.coroutines.delay(80)
             lazyListState.scrollToItem(filteredConfigurations.lastIndex)
             viewModel.onEvent(ConfigurationEvent.ScrollHandled)
         }
     }
-
     Scaffold(
         topBar = {
             TopAppBar(

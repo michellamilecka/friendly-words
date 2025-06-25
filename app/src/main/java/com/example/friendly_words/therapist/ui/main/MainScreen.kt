@@ -58,7 +58,7 @@ fun MainScreen() {
         }
 
         composable(NavRoutes.MATERIALS) {
-            MaterialsListScreen(
+            MaterialsListScreen(navController = navController,
                 onBackClick = { navController.popBackStack() },
                 onCreateClick = { navController.navigate(NavRoutes.MATERIAL_CREATE) },
                 onEditClick = { resourceId ->
@@ -69,7 +69,7 @@ fun MainScreen() {
 
 
         composable(NavRoutes.MATERIAL_CREATE) {
-            MaterialsCreatingNewMaterialScreen(
+            MaterialsCreatingNewMaterialScreen(navController = navController,
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = { savedResourceId ->
                     navController.previousBackStackEntry
@@ -87,7 +87,7 @@ fun MainScreen() {
                 type = NavType.LongType
             })
         ) {
-            MaterialsCreatingNewMaterialScreen(
+            MaterialsCreatingNewMaterialScreen(navController = navController,
                 onBackClick = { navController.popBackStack() },
                 onSaveClick = { savedResourceId ->
                     navController.previousBackStackEntry
@@ -101,6 +101,7 @@ fun MainScreen() {
 
         composable(NavRoutes.CONFIG_LIST) {
             ConfigurationsListScreen(
+                navController = navController,
                 onBackClick = { navController.popBackStack() },
                 onCreateClick = {
                     navController.navigate(NavRoutes.CONFIG_CREATE)
@@ -112,7 +113,7 @@ fun MainScreen() {
         }
 
         composable(NavRoutes.CONFIG_CREATE) {
-            ConfigurationSettingsScreen(onBackClick = { navController.popBackStack() })
+            ConfigurationSettingsScreen(navController = navController,onBackClick = { navController.popBackStack() })
         }
 
         composable(
@@ -122,7 +123,7 @@ fun MainScreen() {
 
             val configId = backStackEntry.arguments?.getLong("configId")
 
-            ConfigurationSettingsScreen(
+            ConfigurationSettingsScreen(navController = navController,
                 onBackClick = { navController.popBackStack() },
                 configId = configId
             )

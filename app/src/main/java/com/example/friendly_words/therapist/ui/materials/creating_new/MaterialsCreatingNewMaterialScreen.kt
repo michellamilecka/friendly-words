@@ -53,11 +53,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.navigation.NavController
 import java.io.FileOutputStream
 import com.example.friendly_words.data.entities.Image
 
 @Composable
 fun MaterialsCreatingNewMaterialScreen(
+    navController: NavController,
     viewModel: MaterialsCreatingNewMaterialViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onSaveClick: (Long) -> Unit,
@@ -71,13 +73,20 @@ fun MaterialsCreatingNewMaterialScreen(
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(state.saveCompleted) {
-    val savedId = state.newlySavedResourceId
-        if (state.saveCompleted && savedId != null) {
-            onSaveClick(savedId)
-            viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetSaveCompleted)
+        if (state.saveCompleted) {
+            val savedId = state.newlySavedResourceId
+            savedId?.let {
 
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("message", if (state.isEditing) "Pomyślnie zaktualizowano materiał" else "Pomyślnie dodano materiał")
+
+                navController.popBackStack()
+            }
+            viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetSaveCompleted)
         }
     }
+
 
     LaunchedEffect(state.exitWithoutSaving) {
         if (state.exitWithoutSaving) {

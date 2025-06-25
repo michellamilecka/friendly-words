@@ -65,7 +65,7 @@ class ConfigurationViewModel @Inject constructor(
                     }
                 }
                 configurationRepository.delete(event.configuration)
-                _state.update { it.copy(showDeleteDialogFor = null) }
+                _state.update { it.copy(showDeleteDialogFor = null,infoMessage = "Pomyślnie usunięto krok uczenia") }
             }
 
             is ConfigurationEvent.ActivateRequested -> _state.update {
@@ -87,16 +87,16 @@ class ConfigurationViewModel @Inject constructor(
 //            is ConfigurationEvent.ShowInfo -> {
 //                _state.update { it.copy(infoMessage = event.message) }
 //            }
-//            is ConfigurationEvent.ClearInfoMessage -> {
-//                _state.update { it.copy(infoMessage = null) }
-//            }
+            is ConfigurationEvent.ClearInfoMessage -> {
+                _state.update { it.copy(infoMessage = null) }
+            }
 
             is ConfigurationEvent.CopyRequested -> {
 
                 val newName = generateCopyName(event.configuration.name, _state.value.configurations.map { it.name })
                 val copied = event.configuration.copy(id = 0, name = newName,isActive = false,activeMode = null, isExample = false)
                 viewModelScope.launch { configurationRepository.insert(copied)
-                    _state.update { it.copy(shouldScrollToBottom = true)} }
+                    _state.update { it.copy(shouldScrollToBottom = true,infoMessage = "Pomyślnie skopiowano krok uczenia")} }
             }
 
             is ConfigurationEvent.EditRequested -> {
