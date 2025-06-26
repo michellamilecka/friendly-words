@@ -23,10 +23,11 @@ import java.util.*
 
 @Composable
 fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
-    val context = LocalContext.current
-    val rounds = remember { generateGameRounds() }
-    var currentRoundIndex by remember { mutableStateOf(0) }
 
+    /* ---------- DANE GRY ---------- */
+
+    var rounds by remember { mutableStateOf(generateGameRounds()) }
+    var currentRoundIndex by remember { mutableStateOf(0) }
     val currentRound = rounds[currentRoundIndex]
     val correctItem = currentRound.correctItem
     val instructionText = GameSettings.instructionType.getInstructionText(correctItem.label)
@@ -34,70 +35,74 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
     var correctAnswersCount by remember { mutableStateOf(0) }
     var wrongAnswersCount by remember { mutableStateOf(0) }
 
+    /**
+     * repeatStage:
+     * 0 – runda pierwotna
+     * 1 – powtórka z identycznym układem (po błędzie)
+     * 2 – powtórka z przetasowanym układem (po poprawnej odpowiedzi w etapie 1)
+     */
+    var repeatStage by remember { mutableStateOf(0) }
+
+    /* ---------- STANY UI ---------- */
+
     var showCongratsScreen by remember { mutableStateOf(false) }
     var goNextAfterCongrats by remember { mutableStateOf(false) }
 
     var answerJudged by remember(currentRoundIndex) { mutableStateOf(false) }
     var correctClicked by remember(currentRoundIndex) { mutableStateOf(false) }
-    var wasIncorrectClick by remember(currentRoundIndex) { mutableStateOf(false) }
-    var goToNextRound by remember(currentRoundIndex) { mutableStateOf(false) }
+    var hadMistakeThisRound by remember(currentRoundIndex) { mutableStateOf(false) }
 
     var dimIncorrect by remember(currentRoundIndex) { mutableStateOf(false) }
     var scaleCorrect by remember(currentRoundIndex) { mutableStateOf(false) }
     var animateCorrect by remember(currentRoundIndex) { mutableStateOf(false) }
     var outlineCorrect by remember(currentRoundIndex) { mutableStateOf(false) }
 
-    var ttsReady by remember { mutableStateOf(false) }
+    /* ---------- TTS ---------- */
 
+    val context = LocalContext.current
+    var ttsReady by remember { mutableStateOf(false) }
+    var currentPraise by remember { mutableStateOf("") }
     val tts = remember {
         TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                ttsReady = true
-            }
+            if (status == TextToSpeech.SUCCESS) ttsReady = true
         }
     }
+    LaunchedEffect(ttsReady) { if (ttsReady) tts.language = Locale("pl", "PL") }
 
-    LaunchedEffect(ttsReady) {
-        if (ttsReady) {
-            tts.language = Locale("pl", "PL")
-        }
-    }
+    /* ---------- START NOWEJ RUNDY ---------- */
 
-    // Start rundy: mówimy instrukcję i uruchamiamy efekty, ale **nie blokujemy kliknięć**
+    /* ---------- START NOWEJ RUNDY ---------- */
+
     LaunchedEffect(currentRoundIndex, ttsReady) {
         if (ttsReady && !GameSettings.isTestMode) {
             tts.speak(instructionText, TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
-        // Reset stanów
-        dimIncorrect = false
-        scaleCorrect = false
-        animateCorrect = false
-        outlineCorrect = false
-        answerJudged = false
-        correctClicked = false
-        wasIncorrectClick = false
-        goToNextRound = false
+        /* reset stanów */
+        dimIncorrect = false; scaleCorrect = false
+        animateCorrect = false; outlineCorrect = false
+        answerJudged = false; correctClicked = false
+        hadMistakeThisRound = false
         showCongratsScreen = false
         goNextAfterCongrats = false
 
         if (!GameSettings.isTestMode) {
             delay(StatesFromConfiguration.effectsDelayMillis)
-        }
 
-        // Aktywuj efekty (ale kliknięcia są możliwe cały czas)
-        dimIncorrect = true
-        scaleCorrect = true
-        animateCorrect = true
-        outlineCorrect = true
+            /* aktywujemy efekty – TYLKO poza testem */
+            dimIncorrect = true
+            scaleCorrect = true
+            animateCorrect = true
+            outlineCorrect = true
+        }
     }
+
 
     DisposableEffect(Unit) {
-        onDispose {
-            tts.stop()
-            tts.shutdown()
-        }
+        onDispose { tts.stop(); tts.shutdown() }
     }
+
+    /* ---------- NAWIGACJA ---------- */
 
     fun goToNext() {
         if (currentRoundIndex < rounds.lastIndex) {
@@ -107,8 +112,10 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
         }
     }
 
+    /* ---------- OBSŁUGA KLIKNIĘĆ ---------- */
+
     fun handleAnswer(item: GameItem) {
-        if (showCongratsScreen) return // blokuj kliknięcia tylko podczas ekranu gratulacji
+        if (showCongratsScreen) return            // blokada w czasie ekranu grat.
 
         val isCorrect = item == correctItem
 
@@ -116,31 +123,101 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
             if (!answerJudged) {
                 if (isCorrect) correctAnswersCount++ else wrongAnswersCount++
                 answerJudged = true
-                goToNextRound = true
+                goNextAfterCongrats = true
             }
             return
         }
 
         if (isCorrect && !correctClicked) {
             correctClicked = true
-            if (!wasIncorrectClick) {
-                correctAnswersCount++
-            }
-            showCongratsScreen = true
+            if (!hadMistakeThisRound) correctAnswersCount++ // punkt tylko jeśli bezbłędnie
+            showCongratsScreen = true                       // ekran tylko po poprawnym kliknięciu
         } else if (!isCorrect && !answerJudged) {
             wrongAnswersCount++
-            wasIncorrectClick = true
+            hadMistakeThisRound = true                      // odnotuj błąd w TEJ rundzie
         }
 
         answerJudged = true
     }
 
-    if (showCongratsScreen) {
-        CorrectAnswerScreen(correctItem = correctItem) {
-            showCongratsScreen = false
-            goNextAfterCongrats = true
+    fun speakPraise(text: String) {
+        if (ttsReady) {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
+
+    /* ---------- EKRAN GRATULACJI ---------- */
+
+    if (showCongratsScreen) {
+        LaunchedEffect(showCongratsScreen) {
+            if (showCongratsScreen) {
+                currentPraise = GameSettings.praises.random()
+                speakPraise(currentPraise)
+            }
+        }
+
+        CorrectAnswerScreen(
+            correctItem = correctItem,
+            praiseText = currentPraise,
+            speakPraise = { speakPraise(currentPraise) },
+            onTimeout = {
+                showCongratsScreen = false
+
+                when (repeatStage) {
+                    0 -> {  // oryginalna runda
+                        if (hadMistakeThisRound) {
+                            // dodaj powtórkę z IDENTYCZNYM układem
+                            val list = rounds.toMutableList()
+                            list.add(currentRoundIndex + 1, currentRound)
+                            rounds = list
+                            repeatStage = 1
+                        }
+                    }
+
+                    1 -> {  // powtórka z identycznym układem
+                        if (hadMistakeThisRound) {
+                            // znów błąd → kolejna powtórka identyczna
+                            val list = rounds.toMutableList()
+                            list.add(currentRoundIndex + 1, currentRound)
+                            rounds = list
+                            // repeatStage zostaje 1
+                        } else {
+                            // bez błędu → dokładamy przetasowany układ
+                            val shuffledRound = currentRound.copy(
+                                options = currentRound.options.shuffled()
+                            )
+                            val list = rounds.toMutableList()
+                            list.add(currentRoundIndex + 1, shuffledRound)
+                            rounds = list
+                            repeatStage = 2
+                        }
+                    }
+
+                    2 -> {  // powtórka z przetasowanym układem
+                        if (hadMistakeThisRound) {
+                            // błąd → kolejna przetasowana powtórka
+                            val shuffledRound = currentRound.copy(
+                                options = currentRound.options.shuffled()
+                            )
+                            val list = rounds.toMutableList()
+                            list.add(currentRoundIndex + 1, shuffledRound)
+                            rounds = list
+                            // repeatStage pozostaje 2
+                        } else {
+                            // bezbłędnie → wracamy do trybu normalnego
+                            repeatStage = 0
+                        }
+                    }
+                }
+
+                hadMistakeThisRound = false     // zresetuj przed kolejną rundą
+                goNextAfterCongrats = true
+            }
+        )
+    }
+
+
+    /* ---------- PRZEJŚCIE DO KOLEJNEJ RUNDY ---------- */
 
     LaunchedEffect(goNextAfterCongrats) {
         if (goNextAfterCongrats) {
@@ -150,15 +227,8 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
         }
     }
 
-    LaunchedEffect(goToNextRound) {
-        if (goToNextRound) {
-            delay(500)
-            goToNextRound = false
-            goToNext()
-        }
-    }
+    /* ---------- UI RUNDY ---------- */
 
-    // Wyświetlaj ekran gry jeśli nie na ekranie gratulacji
     if (!showCongratsScreen) {
         Box(
             modifier = Modifier
@@ -179,7 +249,7 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(Modifier.height(80.dp))
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(32.dp),
@@ -188,7 +258,7 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
                         .fillMaxWidth()
                         .wrapContentHeight()
                 ) {
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
 
                     currentRound.options.forEach { item ->
                         ImageOptionBox(
@@ -203,7 +273,7 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(Modifier.weight(1f))
                 }
             }
         }

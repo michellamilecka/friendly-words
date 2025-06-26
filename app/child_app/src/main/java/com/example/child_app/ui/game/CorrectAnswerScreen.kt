@@ -14,10 +14,18 @@ import com.example.child_app.ui.components.ImageOptionBox
 import com.example.child_app.ui.data.GameItem
 import com.example.child_app.ui.theme.Blue
 import kotlinx.coroutines.delay
+import com.example.child_app.ui.data.GameSettings
 
 @Composable
-fun CorrectAnswerScreen(correctItem: GameItem, onTimeout: () -> Unit) {
+fun CorrectAnswerScreen(
+    correctItem: GameItem,
+    praiseText: String,          // ← przekazujemy wylosowaną pochwałę
+    speakPraise: () -> Unit,     // ← lambda, która odtwarza TTS
+    onTimeout: () -> Unit
+) {
+    // uruchamiamy TTS i timer tylko raz
     LaunchedEffect(Unit) {
+        speakPraise()            // ← mówimy pochwałę
         delay(3000)
         onTimeout()
     }
@@ -28,18 +36,18 @@ fun CorrectAnswerScreen(correctItem: GameItem, onTimeout: () -> Unit) {
             .background(Blue)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Brawo!",
+                text = praiseText,
                 fontSize = 64.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(Modifier.height(48.dp))
 
             ImageOptionBox(
                 imageRes = correctItem.imageRes,
@@ -51,9 +59,8 @@ fun CorrectAnswerScreen(correctItem: GameItem, onTimeout: () -> Unit) {
                 outlineCorrect = false,
                 onClick = {}
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
         }
     }
 }
+
+

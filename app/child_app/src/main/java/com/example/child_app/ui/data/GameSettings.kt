@@ -10,7 +10,17 @@ enum class InstructionType(val format: (String) -> String) {
 
 object GameSettings {
     var numberOfWordsToTeach = 3
-    var repetitionsPerWord = 2
+    var repetitionsPerWord = 1
     var isTestMode: Boolean = false
     var instructionType: InstructionType = InstructionType.SHOW_ME
+
+    val praises = listOf(
+        "Dobrze!",
+        "Super!",
+        "Świetnie!",
+        "Brawo!",
+        "Rewelacja!",
+        "Ekstra!"
+    )
 }
+
