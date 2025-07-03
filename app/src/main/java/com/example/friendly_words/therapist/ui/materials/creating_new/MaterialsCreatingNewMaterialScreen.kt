@@ -58,6 +58,16 @@ import java.io.FileOutputStream
 import com.example.friendly_words.data.entities.Image
 
 @Composable
+private fun rememberHideKeyboard(): () -> Unit {
+    val focusManager      = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    return {
+        focusManager.clearFocus(force = true)
+        keyboardController?.hide()
+    }
+}
+
+@Composable
 fun MaterialsCreatingNewMaterialScreen(
     navController: NavController,
     viewModel: MaterialsCreatingNewMaterialViewModel = hiltViewModel(),
@@ -71,9 +81,11 @@ fun MaterialsCreatingNewMaterialScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val hideKeyboard = rememberHideKeyboard()
 
     LaunchedEffect(state.saveCompleted) {
         if (state.saveCompleted) {
+            hideKeyboard()
             val savedId = state.newlySavedResourceId
             savedId?.let {
 
@@ -87,9 +99,9 @@ fun MaterialsCreatingNewMaterialScreen(
         }
     }
 
-
     LaunchedEffect(state.exitWithoutSaving) {
         if (state.exitWithoutSaving) {
+            hideKeyboard()
             onBackClick()
             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetExitWithoutSaving)
         }
@@ -99,8 +111,6 @@ fun MaterialsCreatingNewMaterialScreen(
         focusRequester.requestFocus()
         keyboardController?.show()
     }
-
-
 
     // Launcher do wyboru obrazu z galerii
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -146,7 +156,10 @@ fun MaterialsCreatingNewMaterialScreen(
                 } else {
                      "Nowy materiał: ${state.resourceName}"
                 },
-                onBackClick = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ShowExitDialog) }
+                onBackClick = {
+                    hideKeyboard()
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ShowExitDialog)
+                }
             )
         }
     ) { padding ->
@@ -172,14 +185,14 @@ fun MaterialsCreatingNewMaterialScreen(
                 ) {
                     Spacer(modifier = Modifier.height(40.dp))//bylo 110
 
-                    Text("Uczone słowo", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                    Text("Uczone pojęcie (słowo)", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = state.learnedWord,
                         onValueChange = {
                             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.LearnedWordChanged(it))
                         },
-                        label = { Text("Wpisz uczone słowo") },
+                        label = { Text("Wpisz słowo") },
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .focusRequester(focusRequester),
@@ -222,7 +235,7 @@ fun MaterialsCreatingNewMaterialScreen(
 
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Chcę edytować nazwę materiału", fontSize = 16.sp)
+                        Text("Inna nazwa materiału", fontSize = 16.sp)
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -260,16 +273,6 @@ fun MaterialsCreatingNewMaterialScreen(
                             cursorColor = Color.Black
                         )
                     )
-
-                    if (state.showNameConflictDialog) {
-                        InfoDialog(
-                            show = true,
-                            message = "Materiał o tej nazwie już istnieje.",
-                            onDismiss = {
-                                viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog)
-                            }
-                        )
-                    }
                     Spacer(modifier = Modifier.height(80.dp))
                     Button(
                         onClick = {
@@ -401,7 +404,7 @@ fun MaterialsCreatingNewMaterialScreen(
         if (state.showDuplicateNameConfirmation) {
             YesNoDialog(
                 show = true,
-                message = "Materiał o tej nazwie już istnieje. Czy chcesz mimo to zapisać?",
+                message = "Materiał o tej nazwie już istnieje. Czy na pewno chcesz zapisać nowy materiał z tą samą nazwą?",
                 onConfirm = {
                     viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ConfirmSaveDespiteDuplicate)
                 },
@@ -422,6 +425,16 @@ fun MaterialsCreatingNewMaterialScreen(
                 }
             )
         }
+        if (state.showEmptyTextFieldsDialog) {
+            InfoDialog(
+                show = true,
+                message = "'Uczone pojęcie (słowo)' oraz 'Nazwa materiału' nie mogą być puste!",
+                onDismiss = {
+                    viewModel.onEvent(MaterialsCreatingNewMaterialEvent.DismissEmptyFieldsDialog)
+                }
+            )
+        }
+
 
     }
 }
