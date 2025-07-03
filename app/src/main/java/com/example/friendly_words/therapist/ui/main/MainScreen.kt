@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -178,7 +179,7 @@ fun MainContent(
                     text = activeConfiguration?.let {
                         "Aktywny krok uczenia: ${it.first} (tryb: ${it.second})"
                     } ?: "Brak aktywnego kroku uczenia",
-                    fontSize = 20.sp
+                    fontSize = 24.sp
                 )
 
                 Button(
@@ -188,10 +189,10 @@ fun MainContent(
                         contentColor = Color.Black
                     ),
                     modifier = Modifier
-                        .width((LocalConfiguration.current.screenWidthDp/2).dp)
-                        .height(70.dp)
+                        .width((LocalConfiguration.current.screenWidthDp * 0.7f).dp)
+                        .height(85.dp)
                 ) {
-                    Text("MATERIAŁY", fontSize = 16.sp)
+                    Text("MATERIAŁY EDUKACYJNE", fontSize = 20.sp)
                 }
 
                 Button(
@@ -201,10 +202,10 @@ fun MainContent(
                         contentColor = Color.Black
                     ),
                     modifier = Modifier
-                        .width(((LocalConfiguration.current.screenWidthDp/2).dp))
-                        .height(70.dp)
+                        .width(((LocalConfiguration.current.screenWidthDp * 0.7f).dp))
+                        .height(85.dp)
                 ) {
-                    Text("KROKI UCZENIA", fontSize = 16.sp)
+                    Text("KROKI UCZENIA", fontSize = 20.sp)
                 }
             }
         }
