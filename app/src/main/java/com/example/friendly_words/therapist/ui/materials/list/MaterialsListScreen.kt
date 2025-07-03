@@ -26,6 +26,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -89,7 +91,7 @@ fun MaterialsListScreen(
                         }
 
                         Text(
-                            "Materiały",
+                            "Materiały edukacyjne",
                             fontSize = 30.sp,
                             color = Color.White,
                             modifier = Modifier.weight(1f)
@@ -259,7 +261,7 @@ fun MaterialsListScreen(
         materialToDelete.let { (index, name) ->
             YesNoDialog(
                 show = true,
-                message = "Czy na pewno chcesz usunąć zasób: ${name.name}?",
+                message = "Czy na pewno chcesz usunąć materiał: ${name.name}?",
                 onConfirm = { viewModel.onEvent(MaterialsListEvent.ConfirmDelete) },
                 onDismiss = { viewModel.onEvent(MaterialsListEvent.DismissDeleteDialog) }
             )

@@ -248,9 +248,8 @@ fun ConfigurationTestScreen(
                         )
 
                         Text(
-                            text = "W trybie testu dziecko pracuje na materiałach w zakładce MATERIAŁ. " +
-                                    "W trybie testu nie używa się podpowiedzi i wzmocnień, " +
-                                    "a terapeuta powinien powstrzymać się od interwencji w interakcje dziecka aż do zakończenia testu.",
+                            text =  "W trybie testu nie używa się podpowiedzi i wzmocnień, " +
+                                    "a terapeuta nie pomaga i nie rozmawia z dzieckiem, aż do zakończenia testu.",
                             fontSize = 16.sp,
                             color = Color.Black,
                             lineHeight = 22.sp,

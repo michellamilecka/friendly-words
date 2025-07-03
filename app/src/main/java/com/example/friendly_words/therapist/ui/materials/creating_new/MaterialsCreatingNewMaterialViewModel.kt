@@ -36,12 +36,8 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(
         MaterialsCreatingNewMaterialState(
-            resourceName = if (resourceIdToEdit == null) "Nowy materiał" else "",
-            learnedWord = if (resourceIdToEdit == null) {
-                TextFieldValue("Nowy materiał", selection = TextRange("Nowy materiał".length))
-            } else {
-                TextFieldValue("")
-            },
+            resourceName = "",
+            learnedWord = TextFieldValue(""),
             images = emptyList(),
             isEditing = resourceIdToEdit != null
         )
@@ -123,7 +119,11 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     val name = state.value.resourceName.trim()
                     val learnedWord = state.value.learnedWord.text.trim()
 
-                    if (name.isBlank()) return@launch
+                    if (name.isBlank() && learnedWord.isBlank()) {
+                        _state.update { it.copy(showEmptyTextFieldsDialog = true) }
+                        return@launch
+                    }
+
 
                     val allResources = resourceRepository.getAllOnce()
                     val alreadyExists = allResources.any {
@@ -176,11 +176,6 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 _state.update { it.copy(showDuplicateNameConfirmation = false, confirmingDuplicateSave = true) }
                 onEvent(MaterialsCreatingNewMaterialEvent.SaveClicked)
             }
-
-
-            is MaterialsCreatingNewMaterialEvent.DismissNameConflictDialog -> {
-                _state.update { it.copy(showNameConflictDialog = false) }
-            }
             is MaterialsCreatingNewMaterialEvent.ResetSaveCompleted -> {
                 _state.update { it.copy(saveCompleted = false, newlySavedResourceId = null) }
             }
@@ -231,8 +226,9 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     }
                 }
             }
-
-
+            is MaterialsCreatingNewMaterialEvent.DismissEmptyFieldsDialog -> {
+                _state.update { it.copy(showEmptyTextFieldsDialog = false) }
+            }
         }
     }
     private suspend fun reloadImages() {

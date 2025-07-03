@@ -12,7 +12,6 @@ sealed class MaterialsCreatingNewMaterialEvent {
     object DismissExitDialog : MaterialsCreatingNewMaterialEvent()
     object ConfirmExit : MaterialsCreatingNewMaterialEvent()
     object SaveClicked : MaterialsCreatingNewMaterialEvent()
-    object DismissNameConflictDialog : MaterialsCreatingNewMaterialEvent()
     object ResetSaveCompleted : MaterialsCreatingNewMaterialEvent()
     object ResetExitWithoutSaving : MaterialsCreatingNewMaterialEvent()
     data class LearnedWordChanged(val word: TextFieldValue) : MaterialsCreatingNewMaterialEvent()
@@ -23,7 +22,7 @@ sealed class MaterialsCreatingNewMaterialEvent {
     object ConfirmImageDeletion : MaterialsCreatingNewMaterialEvent()
     object DismissDuplicateNameDialog : MaterialsCreatingNewMaterialEvent()
     object ConfirmSaveDespiteDuplicate: MaterialsCreatingNewMaterialEvent()
-
+    object DismissEmptyFieldsDialog : MaterialsCreatingNewMaterialEvent()
 
 
 }
