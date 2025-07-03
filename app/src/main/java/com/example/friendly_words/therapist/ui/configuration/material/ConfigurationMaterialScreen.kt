@@ -365,7 +365,7 @@ fun ConfigurationMaterialScreen(
             AlertDialog(
                 onDismissRequest = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
                 title = {
-                    Text(text="Wybierz materiał, które chcesz dodać do kroku uczenia:", fontSize = 26.sp,
+                    Text(text="Wybierz materiał, który chcesz dodać do kroku uczenia:", fontSize = 26.sp,
                     fontStyle = FontStyle.Italic)
 
                 },

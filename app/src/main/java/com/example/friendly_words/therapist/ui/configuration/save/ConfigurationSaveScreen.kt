@@ -256,7 +256,7 @@ fun ConfigurationSaveScreen(
 
     InfoDialog(
         show = saveState.showEmptyNameDialog,
-        message = "Nazwa kroku nie może być pusta",
+        message = "Nazwa kroku nie może być pusta!",
         onDismiss = { onEvent(ConfigurationSaveEvent.DismissEmptyNameDialog) }
     )
     InfoDialog(
