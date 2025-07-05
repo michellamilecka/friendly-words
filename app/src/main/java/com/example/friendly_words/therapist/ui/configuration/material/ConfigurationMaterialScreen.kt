@@ -341,20 +341,25 @@ fun ConfigurationMaterialScreen(
                         val item = state.vocabItems[selectedIndex]
                         val images = item.imagePaths
 
-                        ImageSelectionWithCheckbox(
-                            images = images,
-                            selectedImages = item.selectedImages,
-                            inLearningStates = item.inLearningStates,
-                            inTestStates = item.inTestStates,
-                            onImageSelectionChanged = {
-                                onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
-                            },
-                            onLearningTestChanged = { i, learning, test ->
-                                onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
-                            }
-                        )
+                        if (images.isEmpty()) {
+                            Text("Ten materiał nie zawiera żadnych zdjęć. Aby je dodać, przejdź do sekcji 'MATERIAŁY EDUKACYJNE'.", fontSize = 20.sp)
+                        } else {
+                            ImageSelectionWithCheckbox(
+                                images = images,
+                                selectedImages = item.selectedImages,
+                                inLearningStates = item.inLearningStates,
+                                inTestStates = item.inTestStates,
+                                onImageSelectionChanged = {
+                                    onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
+                                },
+                                onLearningTestChanged = { i, learning, test ->
+                                    onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
+                                }
+                            )
+                        }
+
                     } else {
-                        Text("Wybierz słowo z listy po lewej.", fontSize = 20.sp)
+                        Text("Do kroku uczenia nie dodano jeszcze żadnych materiałów. Aby to zrobić, kliknij przycisk 'DODAJ'. ", fontSize = 20.sp)
                     }
                 }
             }

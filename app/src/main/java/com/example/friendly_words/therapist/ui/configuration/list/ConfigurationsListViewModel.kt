@@ -5,6 +5,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Configuration
+import com.example.friendly_words.data.entities.ConfigurationImageUsage
+import com.example.friendly_words.data.entities.ConfigurationResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,9 +36,11 @@ class ConfigurationViewModel @Inject constructor(
                     configurationRepository.insert(Configuration(name = "Krok przykładowy 3", isExample = true))
                 }
                 val active = configurations.find { it.isActive }
+                val (examples, userConfigs) = configurations.partition { it.isExample }
+
                 _state.update {
                     it.copy(
-                        configurations = configurations,
+                        configurations = examples + userConfigs.sortedBy { cfg -> cfg.name.lowercase() },
                         activeConfiguration = active
                     )
                 }
@@ -93,9 +97,42 @@ class ConfigurationViewModel @Inject constructor(
 
             is ConfigurationEvent.CopyRequested -> {
 
+                val originalConfiguration = event.configuration
                 val newName = generateCopyName(event.configuration.name, _state.value.configurations.map { it.name })
-                val copied = event.configuration.copy(id = 0, name = newName,isActive = false,activeMode = null, isExample = false)
-                viewModelScope.launch { configurationRepository.insert(copied)
+
+                viewModelScope.launch {
+
+                    val newId = configurationRepository.insert(
+                        originalConfiguration.copy(
+                            id = 0,
+                            name = newName,
+                            isActive = false,
+                            activeMode = null,
+                            isExample = false
+                        )
+                    )
+
+                    // kopiujemy polaczenia z materialami dla danego kroku
+                    val resourceLinks = configurationRepository.getResources(originalConfiguration.id)
+                        .map { link ->
+                            ConfigurationResource(
+                                configurationId = newId,
+                                resourceId      = link.resourceId
+                            )
+                        }
+                    configurationRepository.insertResources(resourceLinks)
+
+                    // kopiujemy uzycia obrazow dla danego kroku
+                    val imageUsages = configurationRepository.getImageUsages(originalConfiguration.id)
+                        .map { usage ->
+                            ConfigurationImageUsage(
+                                configurationId = newId,
+                                imageId         = usage.imageId,
+                                inLearning      = usage.inLearning,
+                                inTest          = usage.inTest
+                            )
+                        }
+                    configurationRepository.insertImageUsages(imageUsages)
                     _state.update { it.copy(shouldScrollToBottom = true,infoMessage = "Pomyślnie skopiowano krok uczenia")} }
             }
 
@@ -125,9 +162,11 @@ class ConfigurationViewModel @Inject constructor(
     private suspend fun refreshConfigurations() {
         val configurations = configurationRepository.getAll().first()
         val active = configurations.find { it.isActive }
+        val (examples, userConfigs) = configurations.partition { it.isExample }
+
         _state.update {
             it.copy(
-                configurations = configurations,
+                configurations = examples + userConfigs.sortedBy { cfg -> cfg.name.lowercase() },
                 activeConfiguration = active
             )
         }
