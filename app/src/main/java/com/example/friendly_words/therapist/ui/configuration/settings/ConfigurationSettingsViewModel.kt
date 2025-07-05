@@ -228,6 +228,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 configurationRepository.insertImageUsages(imageUsages)
 
                             } else {
+
                                 val configuration = Configuration(
                                     name = saveEvent.name,
                                     isExample = false,
