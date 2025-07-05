@@ -73,9 +73,9 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 id = resource.id,
                                 word = resource.name,
                                 learnedWord = resource.learnedWord,
-                                selectedImages = List(images.size) { it == 0 },
-                                inLearningStates = List(images.size) { it == 0 },
-                                inTestStates = List(images.size) { it == 0 },
+                                selectedImages = List(images.size) { true },
+                                inLearningStates = List(images.size) { true },
+                                inTestStates = List(images.size) { true},
                                 imagePaths = images.map { it.path }
                             )
 
@@ -197,8 +197,9 @@ class ConfigurationSettingsViewModel @Inject constructor(
                             // edytujemy istniejącą konfigurację
                             if(currentId != null) {
 
-                                val updated = Configuration(
-                                    id = currentId,
+                                val originalConfiguration = existingConfigurations.first { it.id == currentId }
+
+                                val updated = originalConfiguration.copy (
                                     name = currentName,
                                     isExample = false,
                                     learningSettings = learningSettings,
@@ -227,6 +228,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 configurationRepository.insertImageUsages(imageUsages)
 
                             } else {
+
                                 val configuration = Configuration(
                                     name = saveEvent.name,
                                     isExample = false,
