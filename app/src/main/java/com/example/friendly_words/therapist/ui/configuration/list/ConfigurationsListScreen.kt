@@ -266,7 +266,7 @@ fun ConfigurationsListScreen(
             VerticalScrollbar(
                 modifier=Modifier.align(Alignment.TopEnd)
                     .fillMaxHeight()
-                    .width(4.dp)
+                    .width(8.dp)
             ){
                 Thumb(Modifier.background(Color.Gray))
             }
