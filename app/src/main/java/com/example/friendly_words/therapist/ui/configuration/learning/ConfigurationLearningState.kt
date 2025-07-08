@@ -40,6 +40,6 @@ fun ConfigurationLearningState.toLearningSettings(
             .filterValues { it }
             .keys
             .toList(),
-        verbalPraiseEnabled = reinforcementState.praiseReadingEnabled
+        animationsEnabled = reinforcementState.animationsEnabled
     )
 }

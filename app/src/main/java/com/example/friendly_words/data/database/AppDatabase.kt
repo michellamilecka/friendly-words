@@ -23,7 +23,7 @@ import com.example.friendly_words.data.entities.ConfigurationResource
         ConfigurationImageUsage::class
         // todo dodanie reszty encji jak juz dao beda zrobione
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

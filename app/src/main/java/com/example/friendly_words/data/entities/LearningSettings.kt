@@ -13,7 +13,7 @@ data class LearningSettings (
     val hintAfterSeconds: Int = 3,
     val typesOfHints: List<String> = emptyList(),
     val typesOfPraises: List<String> = emptyList(),  //listOf("dobrze", "super", "świetnie", "ekstra", "rewelacja", "brawo"),
-    val verbalPraiseEnabled: Boolean = true
+    val animationsEnabled: Boolean = true
 )
 
 fun LearningSettings.toConfigurationLearningState(): ConfigurationLearningState {
@@ -36,6 +36,6 @@ fun LearningSettings.toConfigurationReinforcementState(): ConfigurationReinforce
         praiseStates = listOf("dobrze", "super", "świetnie", "ekstra", "rewelacja", "brawo")
             .associateWith { typesOfPraises.contains(it) }
             .withDefault { false },
-        praiseReadingEnabled = verbalPraiseEnabled
+        animationsEnabled = animationsEnabled
     )
 }
