@@ -197,7 +197,7 @@ fun ConfigurationSaveScreen(
                                 learningState.imageCount.toString() to testState.imageCount.toString()
                                 ),
                         "Liczba powtórzeń dla każdego słowa" to (
-                                learningState.repetitionCount.toString() to "X"
+                                learningState.repetitionCount.toString() to testState.repetitionCount.toString()
                                 ),
                         "Rodzaj polecenia" to (
                                 learningState.selectedPrompt to testState.selectedPrompt
@@ -223,9 +223,6 @@ fun ConfigurationSaveScreen(
                                 ),
                         "Animacje" to (
                                 reinforcementState.animationsEnabled.toYesNo() to "X"
-                                ),
-                        "Łączna liczba prób" to (
-                                "X" to testState.attemptsCount.toString()
                                 )
                     )
 

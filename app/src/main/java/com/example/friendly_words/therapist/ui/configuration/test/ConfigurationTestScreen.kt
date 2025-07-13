@@ -84,13 +84,13 @@ fun ConfigurationTestScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     NumberSelector(
-                        label = "Łączna liczba prób w teście:",
+                        label = "Liczba prób dla każdego słowa:",
                         minValue = 1,
                         maxValue = 5,
-                        value = state.attemptsCount,
+                        value = state.repetitionCount,
                         onValueChange = {
                             if (state.testEditEnabled) {
-                                onEvent(ConfigurationTestEvent.SetAttemptsCount(it))
+                                onEvent(ConfigurationTestEvent.SetRepetitionCount(it))
                             }
                         },
                         enabled = state.testEditEnabled,
