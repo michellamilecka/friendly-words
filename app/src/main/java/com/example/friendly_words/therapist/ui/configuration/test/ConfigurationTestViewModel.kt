@@ -23,7 +23,7 @@ class ConfigurationTestViewModel @Inject constructor() : ViewModel() {
     companion object {
         fun reduce(state: ConfigurationTestState, event: ConfigurationTestEvent,learningState: ConfigurationLearningState? = null): ConfigurationTestState {
             return when (event) {
-                is ConfigurationTestEvent.SetAttemptsCount -> state.copy(attemptsCount = event.count)
+                is ConfigurationTestEvent.SetRepetitionCount -> state.copy(repetitionCount = event.count)
                 is ConfigurationTestEvent.SetImageCount -> state.copy(imageCount = event.count)
                 is ConfigurationTestEvent.SetEditEnabled -> {
                     if (!event.enabled && learningState != null) {
@@ -31,7 +31,7 @@ class ConfigurationTestViewModel @Inject constructor() : ViewModel() {
                         state.copy(
                             testEditEnabled = false,
                             imageCount = learningState.imageCount,
-                            attemptsCount = learningState.repetitionCount,
+                            repetitionCount = learningState.repetitionCount,
                             selectedPrompt = learningState.selectedPrompt,
                             captionsEnabled = learningState.captionsEnabled,
                             readingEnabled = learningState.readingEnabled
@@ -46,7 +46,7 @@ class ConfigurationTestViewModel @Inject constructor() : ViewModel() {
                         state.copy(
                             testEditEnabled = false,
                             imageCount = learningState.imageCount,
-                            attemptsCount = learningState.repetitionCount,
+                            repetitionCount = learningState.repetitionCount,
                             selectedPrompt = learningState.selectedPrompt,
                             captionsEnabled = learningState.captionsEnabled,
                             readingEnabled = learningState.readingEnabled

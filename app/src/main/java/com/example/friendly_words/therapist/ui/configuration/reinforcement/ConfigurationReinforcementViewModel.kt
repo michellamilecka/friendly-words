@@ -30,8 +30,8 @@ class ConfigurationReinforcementViewModel @Inject constructor() : ViewModel() {
                     updated[event.word] = event.enabled
                     state.copy(praiseStates = updated)
                 }
-                is ConfigurationReinforcementEvent.ToggleReading -> {
-                    state.copy(praiseReadingEnabled = event.enabled)
+                is ConfigurationReinforcementEvent.ToggleAnimations -> {
+                    state.copy(animationsEnabled = event.enabled)
                 }
             }
         }

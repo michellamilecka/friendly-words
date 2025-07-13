@@ -5,7 +5,6 @@ import com.example.friendly_words.therapist.ui.configuration.learning.Configurat
 import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
 
 data class ConfigurationTestState(
-    val attemptsCount: Int = 2,
     val imageCount: Int = 3,
     val repetitionCount: Int = 0,
     val answerTime: Int = 0, // todo: chyba trzeba dodac komponent do ustawiania czasu na odpowiedz w teście
@@ -21,19 +20,16 @@ fun ConfigurationTestState.toTestSettings(
     return TestSettings(
         numberOfWords = materialState.vocabItems.size,
         displayedImagesCount = this.imageCount,
-        repetitionPerWord = 0, // todo: chyba trzeba dodac komponent do ustawiania powtorzen w teście
+        repetitionPerWord = this.repetitionCount,
         commandType = this.selectedPrompt,
         showLabelsUnderImages = this.captionsEnabled,
-        readCommand = this.readingEnabled,
-        totalNumberOfAttempts = this.attemptsCount,
-        //answerTimeSeconds = this.timePerTask
-        //todo: dodac miejsce na ustawienie czasu na odpowiedz (chyba)
+        readCommand = this.readingEnabled
     )
 }
 fun ConfigurationLearningState.toDerivedTestState(): ConfigurationTestState {
     return ConfigurationTestState(
         imageCount = this.imageCount,
-        attemptsCount = this.repetitionCount,
+        repetitionCount = this.repetitionCount,
         selectedPrompt = this.selectedPrompt,
         captionsEnabled = this.captionsEnabled,
         readingEnabled = this.readingEnabled,

@@ -156,9 +156,9 @@ fun ConfigurationSaveScreen(
                     // Nagłówki
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(text = "INFORMACJE O KROKU", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = DarkBlue)
-                        Spacer(modifier = Modifier.width(250.dp))
+                        Spacer(modifier = Modifier.width(110.dp))
                         Text(text = "TRYB NAUKI", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = DarkBlue)
-                        Text(text = "TRYB TESTU", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = DarkBlue)
+                        Text(text = "TRYB TESTU", modifier = Modifier.weight(1f).padding(start = 32.dp), fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = DarkBlue)
                     }
 
                     val learnedWordsCount = materialState.vocabItems.count { item ->
@@ -197,7 +197,7 @@ fun ConfigurationSaveScreen(
                                 learningState.imageCount.toString() to testState.imageCount.toString()
                                 ),
                         "Liczba powtórzeń dla każdego słowa" to (
-                                learningState.repetitionCount.toString() to "X"
+                                learningState.repetitionCount.toString() to testState.repetitionCount.toString()
                                 ),
                         "Rodzaj polecenia" to (
                                 learningState.selectedPrompt to testState.selectedPrompt
@@ -221,16 +221,9 @@ fun ConfigurationSaveScreen(
                                     .joinToString(", ")
                                     .ifEmpty { "-" } to "X"
                                 ),
-
-                        "Czytanie głosowe pochwał" to (
-                                reinforcementState.praiseReadingEnabled.toYesNo() to "X"
-                                ),
-                        "Łączna liczba prób" to (
-                                "X" to testState.attemptsCount.toString()
+                        "Animacje" to (
+                                reinforcementState.animationsEnabled.toYesNo() to "X"
                                 )
-//                        "Czas na udzielenie odpowiedzi" to (
-//                                "-" to "${testState.timePerTask} s"
-//                                )
                     )
 
                     fields.forEach { (label, values) ->
@@ -241,9 +234,9 @@ fun ConfigurationSaveScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(text = label, modifier = Modifier.weight(1f))
-                            Spacer(modifier = Modifier.width(250.dp))
+                            Spacer(modifier = Modifier.width(110.dp))
                             Text(text = values.first, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                            Text(text = values.second.toString(), modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                            Text(text = values.second.toString(), modifier = Modifier.weight(1f).padding(start = 32.dp), textAlign = TextAlign.Center)
                         }
                         Divider()
                     }
