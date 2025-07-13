@@ -2,7 +2,10 @@ package com.example.friendly_words.therapist.ui.configuration.reinforcement
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,6 +88,33 @@ fun ConfigurationReinforcementScreen(
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Column(
+                    modifier = Modifier
+                        .widthIn(max = 450.dp)
+                        .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
+                        .padding(12.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Informacja",
+                        tint = DarkBlue,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .padding(bottom = 8.dp)
+                    )
+
+                    Text(
+                        text = "Czytanie pochwał słownych po poprawnej odpowiedzi jest zawsze włączone. ",
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        lineHeight = 22.sp
+                    )
+                }
+
             }
 
             //prawa strona ekranu

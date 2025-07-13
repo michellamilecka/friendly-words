@@ -160,6 +160,33 @@ fun ConfigurationTestScreen(
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .widthIn(max = 450.dp)
+                            .background(Color(0xFFF0F0F0), shape = RoundedCornerShape(8.dp))
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Informacja",
+                            tint = DarkBlue,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .padding(bottom = 8.dp)
+                        )
+
+                        Text(
+                            text = "Jeśli dziecko nie wybierze odpowiedzi, ekran zmieni się automatycznie po czasie ustawionym w sekcji UCZENIE – Pokaż podpowiedź po (sekundach).",
+                            fontSize = 16.sp,
+                            color = Color.Black,
+                            lineHeight = 22.sp
+                        )
+                    }
+
                 }
 
                 Spacer(modifier = Modifier.width(32.dp))
