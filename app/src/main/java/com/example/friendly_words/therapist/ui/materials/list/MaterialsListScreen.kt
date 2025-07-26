@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.style.TextAlign
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -109,7 +110,24 @@ fun MaterialsListScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
+            SnackbarHost(
+                hostState = snackbarHostState
+            ) { snackbarData ->
+                Snackbar(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .height(80.dp),  // Zwiększona wysokość
+                    backgroundColor = Color.DarkGray,
+                    contentColor = Color.White
+                ) {
+                    Text(
+                        text = snackbarData.message,
+                        fontSize = 28.sp,                  // Większa czcionka
+                        textAlign = TextAlign.Center,      // Wyrównanie do środka
+                        modifier = Modifier.fillMaxWidth() // Zajmuje całą szerokość
+                    )
+                }
+            }
         }
 
     ) { padding ->

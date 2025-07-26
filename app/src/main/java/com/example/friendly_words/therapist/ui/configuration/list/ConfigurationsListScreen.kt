@@ -82,13 +82,19 @@ fun ConfigurationsListScreen(
             .filter { if (hideExamples) !it.isExample else true }
     }
 
-    LaunchedEffect(state.shouldScrollToBottom) {
-        if (state.shouldScrollToBottom && filteredConfigurations.isNotEmpty()) {
-            kotlinx.coroutines.delay(80)
-            lazyListState.scrollToItem(filteredConfigurations.lastIndex)
+    LaunchedEffect(state.newlyAddedConfigId) {
+        val newId = state.newlyAddedConfigId
+        if (newId != null) {
+            kotlinx.coroutines.delay(100) // Poczekaj aż lista się zaktualizuje
+            val index = filteredConfigurations.indexOfFirst { it.id == newId }
+            if (index != -1) {
+                lazyListState.scrollToItem(index)
+            }
             viewModel.onEvent(ConfigurationEvent.ScrollHandled)
         }
     }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -122,8 +128,26 @@ fun ConfigurationsListScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
+            SnackbarHost(
+                hostState = snackbarHostState
+            ) { snackbarData ->
+                Snackbar(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .height(80.dp),  // Zwiększona wysokość
+                    backgroundColor = Color.DarkGray,
+                    contentColor = Color.White
+                ) {
+                    Text(
+                        text = snackbarData.message,
+                        fontSize = 28.sp,                  // Większa czcionka
+                        textAlign = TextAlign.Center,      // Wyrównanie do środka
+                        modifier = Modifier.fillMaxWidth() // Zajmuje całą szerokość
+                    )
+                }
+            }
         }
+
     ){ padding ->
         Column(
             modifier = Modifier

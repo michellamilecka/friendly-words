@@ -111,6 +111,10 @@ class ConfigurationViewModel @Inject constructor(
                             isExample = false
                         )
                     )
+                    _state.update { it.copy(
+                        newlyAddedConfigId = newId,
+                        infoMessage = "Pomyślnie skopiowano krok uczenia"
+                    ) }
 
                     // kopiujemy polaczenia z materialami dla danego kroku
                     val resourceLinks = configurationRepository.getResources(originalConfiguration.id)
@@ -133,15 +137,16 @@ class ConfigurationViewModel @Inject constructor(
                             )
                         }
                     configurationRepository.insertImageUsages(imageUsages)
-                    _state.update { it.copy(shouldScrollToBottom = true,infoMessage = "Pomyślnie skopiowano krok uczenia")} }
+                    }
             }
 
             is ConfigurationEvent.EditRequested -> {
                 // Obsługiwane w UI
             }
             is ConfigurationEvent.ScrollHandled -> {
-                _state.update { it.copy(shouldScrollToBottom = false) }
+                _state.update { it.copy(newlyAddedConfigId = null) }
             }
+
             is ConfigurationEvent.SetActiveMode -> {
                 viewModelScope.launch {
                     configurationRepository.setActiveConfiguration(event.configuration, event.mode)
