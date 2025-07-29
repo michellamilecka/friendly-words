@@ -4,16 +4,16 @@
     <selectionStates>
       <SelectionState runConfigName="app.child_app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-19T18:53:43.381928400Z">
+        <DropdownSelection timestamp="2025-06-26T19:49:22.684616100Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\julit\.android\avd\Medium_Tablet_API_35.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\miche\.android\avd\Pixel_Tablet_API_35.avd" />
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="terapeuta">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
