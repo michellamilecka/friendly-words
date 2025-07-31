@@ -1,15 +1,19 @@
+
 package com.example.friendly_words.therapist.ui.configuration.list
 
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -19,6 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,12 +51,13 @@ fun ConfigurationsListScreen(
     viewModel: ConfigurationViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-
-
     var hideExamples by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
-    val stateForScroll=rememberScrollAreaState(lazyListState)
+    val stateForScroll = rememberScrollAreaState(lazyListState)
     val snackbarHostState = remember { SnackbarHostState() }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     LaunchedEffect(Unit) {
         val message = navController.currentBackStackEntry
             ?.savedStateHandle
@@ -93,7 +101,6 @@ fun ConfigurationsListScreen(
             viewModel.onEvent(ConfigurationEvent.ScrollHandled)
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -147,176 +154,195 @@ fun ConfigurationsListScreen(
                 }
             }
         }
-
-    ){ padding ->
-        Column(
+    ) { padding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
         ) {
-            TextField(
-                value = state.searchQuery,
-                onValueChange = { viewModel.onEvent(ConfigurationEvent.SearchChanged(it)) },
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.2f)
-                    .padding(16.dp),
-                placeholder = { Text("Wyszukaj", fontSize =calculateResponsiveFontSize(35.sp)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search Icon", tint = Color.Gray)
-                },
-                colors = TextFieldDefaults.textFieldColors(
-                    backgroundColor = Color.White,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.Black
-                ),
-                shape = RoundedCornerShape(8.dp)
-            )
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.width(20.dp))
-                var showTooltipName by remember { mutableStateOf(false) }
-                var showTooltipActions by remember { mutableStateOf(false) }
-
-                Text("NAZWA KROKU UCZENIA", fontSize = 25.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.width(6.dp))
-                Box {
-                    Icon(Icons.Default.Info, contentDescription = "Info", tint = Color.Gray,
-                        modifier = Modifier.size(40.dp).clickable { showTooltipName = !showTooltipName })
-                    if (showTooltipName) {
-                        Popup(onDismissRequest = { showTooltipName = false }) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color.White)
-                                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                                    .padding(8.dp)
-                            ) {
-                                Text("Zestaw do nauki z dodatkowymi ustawieniami procesu uczenia.", fontSize = 30.sp)
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(0.7f))
-                Text(
-                    "UKRYJ\nPRZYKŁADOWE KROKI",
-                    fontSize = 20.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    //modifier = Modifier.fillMaxWidth()
-                )
-                Checkbox(
-                    checked = hideExamples,
-                    onCheckedChange = { hideExamples = it },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = DarkBlue,
-                        uncheckedColor = Color.Gray,
-                        checkmarkColor = Color.White
-                    )
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Text("AKCJE", fontSize = 25.sp, color = Color.Gray)
-                Spacer(modifier = Modifier.width(15.dp))
-                Box {
-                    Icon(Icons.Default.Info, contentDescription = "Info", tint = Color.Gray,
-                        modifier = Modifier.size(40.dp).clickable { showTooltipActions = !showTooltipActions })
-                    if (showTooltipActions) {
-                        Popup(onDismissRequest = { showTooltipActions = false }) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color.White)
-                                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                                    .padding(8.dp)
-                            ) {
-                                Text("Edytuj, Skopiuj, Usuń", fontSize = 30.sp)
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.fillMaxHeight(0.03f))
-        ScrollArea(state=stateForScroll) {
-            LazyColumn(
-                state = lazyListState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                    .fillMaxSize()
             ) {
-                items(filteredConfigurations) { config ->
-                    val activeConfig = state.activeConfiguration
-                    val activeMode =
-                        if (activeConfig?.id == config.id) activeConfig.activeMode else null
+                TextField(
+                    value = state.searchQuery,
+                    onValueChange = { viewModel.onEvent(ConfigurationEvent.SearchChanged(it)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.2f)
+                        .padding(16.dp),
+                    placeholder = { Text("Wyszukaj", fontSize = calculateResponsiveFontSize(35.sp)) },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Search Icon", tint = Color.Gray)
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        }
+                    ),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color.White,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
 
-                    ConfigurationItem(
-                        configuration = config,
-                        isActive = config.isActive,
-                        activeMode = activeMode,
-                        onActivate = { mode ->
-                            viewModel.onEvent(
-                                ConfigurationEvent.SetActiveMode(
-                                    config,
-                                    mode
-                                )
-                            )
-                        },
-                        onActivateRequest = {
-                            viewModel.onEvent(
-                                ConfigurationEvent.ActivateRequested(
-                                    config
-                                )
-                            )
-                        },
-                        onDeleteRequest = {
-                            viewModel.onEvent(
-                                ConfigurationEvent.DeleteRequested(
-                                    config
-                                )
-                            )
-                        },
-                        onEdit = {
-                            viewModel.onEvent(ConfigurationEvent.EditRequested(config))
-                            onEditClick(config.id)
-                        },
-                        onCopy = { viewModel.onEvent(ConfigurationEvent.CopyRequested(config)) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.width(20.dp))
+                    var showTooltipName by remember { mutableStateOf(false) }
+                    var showTooltipActions by remember { mutableStateOf(false) }
+
+                    Text("NAZWA KROKU UCZENIA", fontSize = 25.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box {
+                        Icon(Icons.Default.Info, contentDescription = "Info", tint = Color.Gray,
+                            modifier = Modifier.size(40.dp).clickable { showTooltipName = !showTooltipName })
+                        if (showTooltipName) {
+                            Popup(onDismissRequest = { showTooltipName = false }) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White)
+                                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Text("Zestaw do nauki z dodatkowymi ustawieniami procesu uczenia.", fontSize = 30.sp)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(0.7f))
+                    Text(
+                        "UKRYJ\nPRZYKŁADOWE KROKI",
+                        fontSize = 20.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
                     )
-
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Checkbox(
+                        checked = hideExamples,
+                        onCheckedChange = { hideExamples = it },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = DarkBlue,
+                            uncheckedColor = Color.Gray,
+                            checkmarkColor = Color.White
+                        )
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text("AKCJE", fontSize = 25.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Box {
+                        Icon(Icons.Default.Info, contentDescription = "Info", tint = Color.Gray,
+                            modifier = Modifier.size(40.dp).clickable { showTooltipActions = !showTooltipActions })
+                        if (showTooltipActions) {
+                            Popup(onDismissRequest = { showTooltipActions = false }) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color.White)
+                                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                        .padding(8.dp)
+                                ) {
+                                    Text("Edytuj, Skopiuj, Usuń", fontSize = 30.sp)
+                                }
+                            }
+                        }
+                    }
                 }
-            }
-            VerticalScrollbar(
-                modifier=Modifier.align(Alignment.TopEnd)
-                    .fillMaxHeight()
-                    .width(8.dp)
-            ){
-                Thumb(Modifier.background(Color.Gray))
-            }
-        }
-            state.showDeleteDialogFor?.let { configToDelete ->
-                YesNoDialogWithName (
-                    show = true,
-                    message = "Czy chcesz usunąć krok uczenia:",
-                    name="${configToDelete.name}?",
-                    onConfirm = {
-                        viewModel.onEvent(ConfigurationEvent.ConfirmDelete(configToDelete))
-                    },
-                    onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
-                )
-            }
 
-            state.showActivateDialogFor?.let { configToActivate ->
-                YesNoDialogWithName (
-                    show = true,
-                    message = "Czy chcesz aktywować krok uczenia:",
-                    name="${configToActivate.name}?",
-                    onConfirm = {
-                        viewModel.onEvent(ConfigurationEvent.ConfirmActivate(configToActivate))
-                    },
-                    onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
-                )
+                Spacer(modifier = Modifier.fillMaxHeight(0.03f))
+                ScrollArea(state = stateForScroll) {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        items(filteredConfigurations) { config ->
+                            val activeConfig = state.activeConfiguration
+                            val activeMode =
+                                if (activeConfig?.id == config.id) activeConfig.activeMode else null
+
+                            ConfigurationItem(
+                                configuration = config,
+                                isActive = config.isActive,
+                                activeMode = activeMode,
+                                onActivate = { mode ->
+                                    viewModel.onEvent(
+                                        ConfigurationEvent.SetActiveMode(
+                                            config,
+                                            mode
+                                        )
+                                    )
+                                },
+                                onActivateRequest = {
+                                    viewModel.onEvent(
+                                        ConfigurationEvent.ActivateRequested(
+                                            config
+                                        )
+                                    )
+                                },
+                                onDeleteRequest = {
+                                    viewModel.onEvent(
+                                        ConfigurationEvent.DeleteRequested(
+                                            config
+                                        )
+                                    )
+                                },
+                                onEdit = {
+                                    viewModel.onEvent(ConfigurationEvent.EditRequested(config))
+                                    onEditClick(config.id)
+                                },
+                                onCopy = { viewModel.onEvent(ConfigurationEvent.CopyRequested(config)) }
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                    }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.TopEnd)
+                            .fillMaxHeight()
+                            .width(8.dp)
+                    ) {
+                        Thumb(Modifier.background(Color.Gray))
+                    }
+                }
+                state.showDeleteDialogFor?.let { configToDelete ->
+                    YesNoDialogWithName(
+                        show = true,
+                        message = "Czy chcesz usunąć krok uczenia:",
+                        name = "${configToDelete.name}?",
+                        onConfirm = {
+                            viewModel.onEvent(ConfigurationEvent.ConfirmDelete(configToDelete))
+                        },
+                        onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
+                    )
+                }
+
+                state.showActivateDialogFor?.let { configToActivate ->
+                    YesNoDialogWithName(
+                        show = true,
+                        message = "Czy chcesz aktywować krok uczenia:",
+                        name = "${configToActivate.name}?",
+                        onConfirm = {
+                            viewModel.onEvent(ConfigurationEvent.ConfirmActivate(configToActivate))
+                        },
+                        onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
+                    )
+                }
             }
         }
     }
@@ -405,8 +431,6 @@ fun ConfigurationItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End
             ) {
-
-
                 if (!configuration.isExample) {
                     Spacer(modifier = Modifier.width(20.dp))
                     IconButton(onClick = onEdit) {
@@ -419,15 +443,15 @@ fun ConfigurationItem(
                     }
                     Spacer(modifier = Modifier.width(15.dp))
                 }
-                    IconButton(onClick = onCopy) {
-                        Icon(
-                            imageVector = Icons.Default.FileCopy,
-                            contentDescription = "Copy",
-                            tint = DarkBlue,
-                            modifier = Modifier.size(65.dp)
-                        )
-                    }
-                if(!configuration.isExample) {
+                IconButton(onClick = onCopy) {
+                    Icon(
+                        imageVector = Icons.Default.FileCopy,
+                        contentDescription = "Copy",
+                        tint = DarkBlue,
+                        modifier = Modifier.size(65.dp)
+                    )
+                }
+                if (!configuration.isExample) {
                     Spacer(modifier = Modifier.width(10.dp))
                     IconButton(onClick = onDeleteRequest) {
                         Icon(

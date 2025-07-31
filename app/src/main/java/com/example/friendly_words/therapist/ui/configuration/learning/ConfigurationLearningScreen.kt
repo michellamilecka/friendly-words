@@ -53,7 +53,7 @@ fun ConfigurationLearningScreen(
                     .padding(16.dp),
                 contentAlignment = Alignment.TopCenter
             ) { Column(
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+
             ) {
                 Text(
                     text = "Ustawienia próby",
@@ -62,7 +62,7 @@ fun ConfigurationLearningScreen(
                     color = DarkBlue,
                     textAlign = TextAlign.Center
                 )
-
+                Spacer(modifier = Modifier.height(29.dp))
                 NumberSelector(
                     label = "Liczba obrazków wyświetlanych na ekranie:",
                     minValue = 1,
@@ -85,16 +85,18 @@ fun ConfigurationLearningScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ){
+                    Spacer(modifier = Modifier.height(25.dp))
                     Text(
                         text = "Rodzaj polecenia:",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
                     )
+                    Spacer(modifier = Modifier.height(25.dp))
 
-                    Spacer(modifier = Modifier.height(10.dp))
                     Box(
                         modifier = Modifier
+
                             .onGloballyPositioned { coordinates ->
                                 textFieldSize = coordinates.size
                             }
@@ -119,7 +121,7 @@ fun ConfigurationLearningScreen(
                                 disabledLabelColor = DarkBlue,
                                 disabledTrailingIconColor = DarkBlue
                             ),
-                            modifier = Modifier
+
                         )
 
                         DropdownMenu(

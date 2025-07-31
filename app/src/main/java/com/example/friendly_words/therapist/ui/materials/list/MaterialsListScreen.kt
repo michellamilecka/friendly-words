@@ -3,6 +3,7 @@ package com.example.friendly_words.therapist.ui.materials.list
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -26,8 +27,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,7 +41,6 @@ import com.composables.core.ScrollArea
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.composables.core.rememberScrollAreaState
-
 
 @Composable
 fun MaterialsListScreen(
@@ -49,6 +52,9 @@ fun MaterialsListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         val message = navController.currentBackStackEntry
@@ -135,7 +141,15 @@ fun MaterialsListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }
         ) {
+
             // Lista materiałów
             Column(
                 modifier = Modifier
@@ -143,6 +157,29 @@ fun MaterialsListScreen(
                     .weight(1f)
                     .background(DarkBlue.copy(alpha = 0.1f))
             ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Szukaj materiału...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        }
+                    ),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = DarkBlue,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = DarkBlue,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.Black
+                    )
+                )
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -163,8 +200,16 @@ fun MaterialsListScreen(
                             state = listState,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            itemsIndexed(state.materials) { index, material ->
-                                val isSelected = state.selectedIndex == index
+                            val filteredMaterials = state.materials.filter {
+                                it.name.contains(searchQuery, ignoreCase = true)
+                            }
+
+                            // POPRAWIONE: używamy filteredMaterials zamiast state.materials
+                            itemsIndexed(filteredMaterials) { filteredIndex, material ->
+                                // Znajdź oryginalny indeks w pełnej liście
+                                val originalIndex = state.materials.indexOf(material)
+                                val isSelected = state.selectedIndex == originalIndex
+
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -172,7 +217,7 @@ fun MaterialsListScreen(
                                         .clickable {
                                             viewModel.onEvent(
                                                 MaterialsListEvent.SelectMaterial(
-                                                    index
+                                                    originalIndex // Używamy oryginalnego indeksu
                                                 )
                                             )
                                         }
@@ -203,7 +248,7 @@ fun MaterialsListScreen(
                                         IconButton(onClick = {
                                             viewModel.onEvent(
                                                 MaterialsListEvent.RequestDelete(
-                                                    index,
+                                                    originalIndex, // Używamy oryginalnego indeksu
                                                     material
                                                 )
                                             )
@@ -285,6 +330,4 @@ fun MaterialsListScreen(
             )
         }
     }
-
 }
-

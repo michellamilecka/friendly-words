@@ -179,7 +179,7 @@ fun MainContent(
                     text = activeConfiguration?.let {
                         "Aktywny krok uczenia: ${it.first} (tryb: ${it.second})"
                     } ?: "Brak aktywnego kroku uczenia",
-                    fontSize = 24.sp
+                    fontSize = 25.sp
                 )
 
                 Button(
@@ -192,7 +192,7 @@ fun MainContent(
                         .width((LocalConfiguration.current.screenWidthDp * 0.7f).dp)
                         .height(85.dp)
                 ) {
-                    Text("MATERIAŁY EDUKACYJNE", fontSize = 20.sp)
+                    Text("MATERIAŁY EDUKACYJNE", fontSize = 25.sp)
                 }
 
                 Button(
@@ -205,7 +205,7 @@ fun MainContent(
                         .width(((LocalConfiguration.current.screenWidthDp * 0.7f).dp))
                         .height(85.dp)
                 ) {
-                    Text("KROKI UCZENIA", fontSize = 20.sp)
+                    Text("KROKI UCZENIA", fontSize = 25.sp)
                 }
             }
         }

@@ -3,12 +3,21 @@ package com.example.friendly_words.therapist.ui.configuration.material
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import com.composables.core.VerticalScrollbar
+import com.composables.core.rememberScrollAreaState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -16,16 +25,21 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import com.composables.core.ScrollArea
+import com.composables.core.Thumb
 import com.example.friendly_words.R
 import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
@@ -34,26 +48,14 @@ import com.example.friendly_words.therapist.ui.theme.LightBlue
 import com.example.friendly_words.therapist.ui.theme.White
 
 data class VocabularyItem(
-    val id:Long,
+    val id: Long,
     val word: String,
-    val learnedWord:String,
+    val learnedWord: String,
     val selectedImages: List<Boolean>,
     val inLearningStates: List<Boolean>,
     val inTestStates: List<Boolean>,
     val imagePaths: List<String>
-) {
-}
-
-fun getImageResourcesForWord(word: String): List<Int> {
-    return when (word.lowercase()) {
-        "misiu" -> listOf(R.drawable.misiu_1, R.drawable.misiu_2, R.drawable.misiu_3)
-        "tablet" -> listOf(R.drawable.tablet_1, R.drawable.tablet_2, R.drawable.tablet_3)
-        "but" -> listOf(R.drawable.but_1, R.drawable.but_2, R.drawable.but_3)
-        "kredka" -> listOf(R.drawable.kredka_1, R.drawable.kredka_2, R.drawable.kredka_3) // Przykładowo
-        "parasol" -> listOf(R.drawable.parasol_1, R.drawable.parasol_2, R.drawable.parasol_3) // Przykładowo
-        else -> listOf(R.drawable.placeholder)
-    }
-}
+)
 
 @Composable
 fun ImageSelectionWithCheckbox(
@@ -177,6 +179,12 @@ fun ConfigurationMaterialScreen(
     onEvent: (ConfigurationMaterialEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val lazyListState = rememberLazyListState()
+    val scrollAreaState = rememberScrollAreaState(lazyListState)
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxSize().weight(1f)) {
@@ -193,7 +201,12 @@ fun ConfigurationMaterialScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf("SŁOWO", "W UCZENIU", "W TEŚCIE", "USUŃ").forEachIndexed { index, label ->
+                        listOf(
+                            "SŁOWO",
+                            "W UCZENIU",
+                            "W TEŚCIE",
+                            "USUŃ"
+                        ).forEachIndexed { index, label ->
                             Text(
                                 label,
                                 fontSize = 18.sp,
@@ -216,8 +229,10 @@ fun ConfigurationMaterialScreen(
                             val index = state.vocabItems.indexOf(item)
                             val isSelected = state.selectedWordIndex == index
 
-                            val hasLearning = item.selectedImages.zip(item.inLearningStates).any { it.first && it.second }
-                            val hasTest = item.selectedImages.zip(item.inTestStates).any { it.first && it.second }
+                            val hasLearning = item.selectedImages.zip(item.inLearningStates)
+                                .any { it.first && it.second }
+                            val hasTest = item.selectedImages.zip(item.inTestStates)
+                                .any { it.first && it.second }
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -298,7 +313,7 @@ fun ConfigurationMaterialScreen(
                         YesNoDialogWithName(
                             show = true,
                             message = "Czy chcesz usunąć z kroku uczenia słowo:",
-                            name="${state.vocabItems[state.wordIndexToDelete!!].learnedWord}?",
+                            name = "${state.vocabItems[state.wordIndexToDelete!!].learnedWord}?",
                             onConfirm = {
                                 onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
                             },
@@ -308,13 +323,21 @@ fun ConfigurationMaterialScreen(
                         )
                     }
 
-                    Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Button(
                             onClick = { onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
                             colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
                             modifier = Modifier.width(200.dp).height(48.dp)
                         ) {
-                            Text("DODAJ", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                "DODAJ",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
                 }
@@ -326,23 +349,26 @@ fun ConfigurationMaterialScreen(
                     .weight(1f)
                     .fillMaxHeight()
                     .background(
-                        color= White
+                        color = White
                     )
                     .padding(16.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                Column (
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                ){
+                ) {
                     val selectedIndex = state.selectedWordIndex
                     if (selectedIndex in state.vocabItems.indices) {
                         val item = state.vocabItems[selectedIndex]
                         val images = item.imagePaths
 
                         if (images.isEmpty()) {
-                            Text("Ten materiał nie zawiera żadnych zdjęć. Aby je dodać, przejdź do sekcji 'MATERIAŁY EDUKACYJNE'.", fontSize = 20.sp)
+                            Text(
+                                "Ten materiał nie zawiera żadnych zdjęć. Aby je dodać, przejdź do sekcji 'MATERIAŁY EDUKACYJNE'.",
+                                fontSize = 20.sp
+                            )
                         } else {
                             ImageSelectionWithCheckbox(
                                 images = images,
@@ -353,13 +379,22 @@ fun ConfigurationMaterialScreen(
                                     onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
                                 },
                                 onLearningTestChanged = { i, learning, test ->
-                                    onEvent(ConfigurationMaterialEvent.LearningTestChanged(i, learning, test))
+                                    onEvent(
+                                        ConfigurationMaterialEvent.LearningTestChanged(
+                                            i,
+                                            learning,
+                                            test
+                                        )
+                                    )
                                 }
                             )
                         }
 
                     } else {
-                        Text("Do kroku uczenia nie dodano jeszcze żadnych materiałów. Aby to zrobić, kliknij przycisk 'DODAJ'. ", fontSize = 20.sp)
+                        Text(
+                            "Do kroku uczenia nie dodano jeszcze żadnych materiałów. Aby to zrobić, kliknij przycisk 'DODAJ'. ",
+                            fontSize = 20.sp
+                        )
                     }
                 }
             }
@@ -367,45 +402,162 @@ fun ConfigurationMaterialScreen(
 
         // Dialog dodawania słowa
         if (state.showAddDialog) {
-            AlertDialog(
-                onDismissRequest = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
-                title = {
-                    Text(text="Wybierz materiał, który chcesz dodać do kroku uczenia:", fontSize = 26.sp,
-                    fontStyle = FontStyle.Italic)
+            val scrollState = rememberScrollState()
+            val lazyListState = rememberLazyListState()
+            val scrollAreaState = rememberScrollAreaState(lazyListState)
 
-                },
-                text = {
-                    if (state.availableWordsToAdd.isEmpty()) {
-                        Text("BRAK, DODAJ W MATERIAŁACH")
-                    } else {
-                        Column {
-                            state.availableWordsToAdd.forEach { resource ->
-                                Text(
-                                    text = resource.name,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
-                                        }
-                                        .padding(vertical = 8.dp),
-                                    fontSize = 18.sp
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                AlertDialog(
+                    onDismissRequest = {
+                        searchQuery = ""
+                        keyboardController?.hide() // Ukryj klawiaturę przy zamykaniu dialogu
+                        focusManager.clearFocus() // Wyczyść fokus
+                        onEvent(ConfigurationMaterialEvent.HideAddDialog)
+                    },
+                    title = {
+                        Text(
+                            text = "Wybierz materiał, który chcesz dodać do kroku uczenia:",
+                            fontSize = 26.sp,
+                            fontStyle = FontStyle.Italic
+                        )
+                    },
+                    text = {
+                        // Dodajemy Modifier.focusable(), aby lepiej zarządzać fokusem
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(scrollState)
+                                .fillMaxWidth()
+                                .padding(end = 12.dp)
+                                .focusable() // Umożliwia przechwycenie fokusu
+                        ) {
+                            // Dodajemy focusRequester do pola tekstowego
+                            val focusRequester = remember { FocusRequester() }
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                label = { Text("Szukaj...") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                                    .focusRequester(focusRequester),
+                                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        keyboardController?.hide()
+                                    }
+                                ),
+
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    textColor = Color.Black,
+                                    cursorColor = DarkBlue,
+                                    focusedBorderColor = DarkBlue,
+                                    unfocusedBorderColor = Color.Gray,
+                                    focusedLabelColor = DarkBlue,
+                                    unfocusedLabelColor = Color.Gray
                                 )
+                            )
+
+                            // Automatyczne ustawienie fokusu na polu tekstowym po otwarciu dialogu
+                            LaunchedEffect(Unit) {
+                                focusRequester.requestFocus()
+                                // Opcjonalnie: otwórz klawiaturę automatycznie
+                                keyboardController?.show()
+                            }
+
+                            val filteredWords = state.availableWordsToAdd.filter {
+                                it.name.contains(searchQuery, ignoreCase = true)
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 200.dp)
+                            ) {
+                                ScrollArea(state = scrollAreaState) {
+                                    LazyColumn(
+                                        state = lazyListState,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(end = 12.dp)
+                                    ) {
+                                        if (filteredWords.isEmpty()) {
+                                            item {
+                                                Text(
+                                                    "BRAK WYNIKÓW",
+                                                    fontSize = 16.sp,
+                                                    color = Color.Gray,
+                                                    modifier = Modifier.padding(vertical = 8.dp)
+                                                )
+                                            }
+                                        } else {
+                                            items(filteredWords) { resource ->
+                                                Text(
+                                                    text = resource.name,
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable {
+                                                            searchQuery = ""
+                                                            keyboardController?.hide() // Ukryj klawiaturę
+                                                            focusManager.clearFocus() // Wyczyść fokus
+                                                            onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
+                                                        }
+                                                        .padding(vertical = 8.dp),
+                                                    fontSize = 18.sp
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    VerticalScrollbar(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .fillMaxHeight()
+                                            .width(8.dp)
+                                    ) {
+                                        Thumb(Modifier.background(Color.Gray))
+                                    }
+                                }
                             }
                         }
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = { onEvent(ConfigurationMaterialEvent.HideAddDialog) },
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = DarkBlue,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text("ANULUJ")
-                    }
-                }
-            )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                searchQuery = ""
+                                keyboardController?.hide() // Ukryj klawiaturę
+                                focusManager.clearFocus() // Wyczyść fokus
+                                onEvent(ConfigurationMaterialEvent.HideAddDialog)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = DarkBlue,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("ANULUJ")
+                        }
+                    },
+                    modifier = Modifier
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            keyboardController?.hide() // Ukryj klawiaturę przy kliknięciu w tło
+                            focusManager.clearFocus() // Wyczyść fokus
+                        }
+                )
+            }
         }
+
     }
 }

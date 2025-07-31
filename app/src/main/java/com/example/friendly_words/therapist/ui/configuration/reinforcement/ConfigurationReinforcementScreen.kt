@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,7 @@ import com.example.friendly_words.therapist.ui.theme.White
 
 @Composable
 fun ConfigurationReinforcementScreen(
+
     state: ConfigurationReinforcementState,
     onEvent: (ConfigurationReinforcementEvent) -> Unit,
     onBackClick: () -> Unit
@@ -35,6 +37,8 @@ fun ConfigurationReinforcementScreen(
                 .padding(16.dp)
         ) {
             // lewa strona ekranu
+            val configuration = LocalConfiguration.current
+            val screenHeight = configuration.screenHeightDp.dp
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -46,7 +50,7 @@ fun ConfigurationReinforcementScreen(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = screenHeight * 0.03f)
                 )
 
                 val praiseWords = state.praiseStates.keys.toList().chunked(3)
@@ -57,7 +61,7 @@ fun ConfigurationReinforcementScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp)
+                            .padding(vertical = screenHeight * 0.05f)
                     ) {
                         row.forEach { word ->
                             Row(
@@ -89,7 +93,7 @@ fun ConfigurationReinforcementScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(screenHeight * 0.08f))
 
                 Column(
                     modifier = Modifier
@@ -130,7 +134,7 @@ fun ConfigurationReinforcementScreen(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = screenHeight * 0.08f)
                 )
 
                 Row(

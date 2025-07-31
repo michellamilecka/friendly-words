@@ -84,7 +84,7 @@ fun ConfigurationTestScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     NumberSelector(
-                        label = "Liczba prób dla każdego słowa:",
+                        label = "Liczba powtórzeń dla każdego słowa:",
                         minValue = 1,
                         maxValue = 5,
                         value = state.repetitionCount,
@@ -100,6 +100,7 @@ fun ConfigurationTestScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
@@ -108,7 +109,7 @@ fun ConfigurationTestScreen(
                             fontWeight = FontWeight.Medium,
                             color = labelColor
                         )
-
+                        Spacer(modifier = Modifier.height(25.dp))
                         ExposedDropdownMenuBox(
                             expanded = expanded,
                             onExpandedChange = {
@@ -124,8 +125,7 @@ fun ConfigurationTestScreen(
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth(),
+
                                 enabled = state.testEditEnabled,
                                 textStyle = LocalTextStyle.current.copy(fontSize = 18.sp),
                                 colors = TextFieldDefaults.outlinedTextFieldColors(
