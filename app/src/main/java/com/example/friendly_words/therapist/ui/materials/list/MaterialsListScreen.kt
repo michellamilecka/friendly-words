@@ -42,7 +42,6 @@ import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.composables.core.rememberScrollAreaState
 
-
 @Composable
 fun MaterialsListScreen(
     navController: NavController,
@@ -204,8 +203,13 @@ fun MaterialsListScreen(
                             val filteredMaterials = state.materials.filter {
                                 it.name.contains(searchQuery, ignoreCase = true)
                             }
-                            itemsIndexed(filteredMaterials) { index, material ->
-                                val isSelected = state.selectedIndex == index
+
+                            // POPRAWIONE: używamy filteredMaterials zamiast state.materials
+                            itemsIndexed(filteredMaterials) { filteredIndex, material ->
+                                // Znajdź oryginalny indeks w pełnej liście
+                                val originalIndex = state.materials.indexOf(material)
+                                val isSelected = state.selectedIndex == originalIndex
+
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -213,7 +217,7 @@ fun MaterialsListScreen(
                                         .clickable {
                                             viewModel.onEvent(
                                                 MaterialsListEvent.SelectMaterial(
-                                                    index
+                                                    originalIndex // Używamy oryginalnego indeksu
                                                 )
                                             )
                                         }
@@ -244,7 +248,7 @@ fun MaterialsListScreen(
                                         IconButton(onClick = {
                                             viewModel.onEvent(
                                                 MaterialsListEvent.RequestDelete(
-                                                    index,
+                                                    originalIndex, // Używamy oryginalnego indeksu
                                                     material
                                                 )
                                             )
@@ -326,6 +330,4 @@ fun MaterialsListScreen(
             )
         }
     }
-
 }
-
