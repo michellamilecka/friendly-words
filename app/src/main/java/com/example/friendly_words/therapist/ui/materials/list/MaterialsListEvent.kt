@@ -8,5 +8,6 @@ sealed class MaterialsListEvent {
     object ConfirmDelete : MaterialsListEvent()
     object DismissDeleteDialog : MaterialsListEvent()
     object ClearInfoMessage : MaterialsListEvent()
+    data class SelectByResourceId(val resourceId: Long) : MaterialsListEvent()
 }
 

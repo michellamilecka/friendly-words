@@ -1,10 +1,13 @@
 package com.example.friendly_words.therapist.ui.materials.list
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.data.entities.Image
+import kotlinx.coroutines.flow.filterNotNull
+
 import com.example.friendly_words.data.entities.Resource
 import com.example.friendly_words.data.repositories.ImageRepository
 import com.example.friendly_words.data.repositories.ResourceRepository
@@ -28,18 +31,17 @@ class MaterialsListViewModel @Inject constructor(
 
 
     init {
-        // 1. Nasłuchiwanie ID nowo zapisanego zasobu z SavedStateHandle
+
         viewModelScope.launch {
-            savedStateHandle.getStateFlow<Long?>("newlySavedResourceId", null).collect { id ->
-                id?.let { newId ->
-                    _uiState.update {
-                        it.copy(pendingSelectId = newId)
-                    }
+            savedStateHandle
+                .getStateFlow<Long?>("newlySavedResourceId", null)
+                .filterNotNull()            // odfiltrowujemy pierwsze null-emisje
+                .collect { newId ->
+                    Log.d("MaterialsListVM", "⬅️ really collected newlySavedResourceId = $newId")
+                    _uiState.update { it.copy(pendingSelectId = newId) }
                     savedStateHandle["newlySavedResourceId"] = null
                 }
-            }
         }
-
         // 2. Nasłuchiwanie zmian w bazie zasobów
         viewModelScope.launch {
             resourceRepository.getAll().collect { rawResources ->
@@ -110,7 +112,14 @@ class MaterialsListViewModel @Inject constructor(
                     materialToDelete = event.index to event.resource
                 )}
             }
-
+            is MaterialsListEvent.SelectByResourceId -> {
+                // znajdź index po resourceId
+                val idx = _uiState.value.materials.indexOfFirst { it.id == event.resourceId }
+                if (idx != -1) {
+                    // zaktualizuj selectedIndex i wczytaj obrazki tak jak przy manualnym kliknięciu
+                    onEvent(MaterialsListEvent.SelectMaterial(idx))
+                }
+            }
             MaterialsListEvent.ConfirmDelete -> {
                 val (index, resource) = _uiState.value.materialToDelete ?: return
                 val currentSelected = _uiState.value.selectedIndex

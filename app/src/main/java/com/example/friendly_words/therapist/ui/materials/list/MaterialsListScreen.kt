@@ -1,5 +1,6 @@
 package com.example.friendly_words.therapist.ui.materials.list
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,6 +52,7 @@ fun MaterialsListScreen(
     viewModel: MaterialsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -60,7 +62,7 @@ fun MaterialsListScreen(
         val message = navController.currentBackStackEntry
             ?.savedStateHandle
             ?.get<String>("message")
-
+        val index=navController.currentBackStackEntry
         message?.let {
             snackbarHostState.showSnackbar(
                 message = it,
@@ -78,6 +80,23 @@ fun MaterialsListScreen(
                 duration = SnackbarDuration.Short
             )
             viewModel.onEvent(MaterialsListEvent.ClearInfoMessage)
+        }
+    }
+    val newlySavedId = remember {
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<Long>("newlySavedResourceId")
+    }.also {
+        // od razu usuń, żeby już się nie pojawiło przy kolejnych rekonfiguracjach
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.remove<Long>("newlySavedResourceId")
+    }
+
+// Uruchom, gdy mamy both: nowy ID **i** już załadowane materiały
+    LaunchedEffect(newlySavedId, state.materials) {
+        if (newlySavedId != null && state.materials.isNotEmpty()) {
+            viewModel.onEvent(MaterialsListEvent.SelectByResourceId(newlySavedId))
         }
     }
     Scaffold(
@@ -193,6 +212,16 @@ fun MaterialsListScreen(
 
                 val listState = rememberLazyListState()
                 val scrollAreaState = rememberScrollAreaState(listState)
+                LaunchedEffect(state.selectedIndex) {
+                    state.selectedIndex?.let { idx ->
+                        // 1) pobierz ID zasobu spod tego indeksu
+                        val resourceId = state.materials.getOrNull(idx)?.id
+                        // 2) zaloguj je
+                        Log.d("MaterialsListScreen", "selectedIndex = $idx → resourceId = $resourceId")
+                        // 3) przewiń do tego wiersza
+                        listState.animateScrollToItem(idx)
+                    }
+                }
 
                 ScrollArea(state = scrollAreaState) {
                     Box(modifier = Modifier.fillMaxSize()) {
