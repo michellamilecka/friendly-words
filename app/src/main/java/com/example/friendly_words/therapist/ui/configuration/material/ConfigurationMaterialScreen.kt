@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -400,162 +401,166 @@ fun ConfigurationMaterialScreen(
             }
         }
 
+
         // Dialog dodawania słowa
         if (state.showAddDialog) {
             val scrollState = rememberScrollState()
             val lazyListState = rememberLazyListState()
             val scrollAreaState = rememberScrollAreaState(lazyListState)
 
+            // Funkcja do zamykania klawiatury i dialogu
+            val closeDialog = {
+                searchQuery = ""
+                keyboardController?.hide()
+                focusManager.clearFocus()
+                onEvent(ConfigurationMaterialEvent.HideAddDialog)
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
                     ) {
-                        focusManager.clearFocus()
-                        keyboardController?.hide()
+                        closeDialog()
                     },
                 contentAlignment = Alignment.Center
             ) {
-                AlertDialog(
-                    onDismissRequest = {
-                        searchQuery = ""
-                        keyboardController?.hide() // Ukryj klawiaturę przy zamykaniu dialogu
-                        focusManager.clearFocus() // Wyczyść fokus
-                        onEvent(ConfigurationMaterialEvent.HideAddDialog)
-                    },
-                    title = {
-                        Text(
-                            text = "Wybierz materiał, który chcesz dodać do kroku uczenia:",
-                            fontSize = 26.sp,
-                            fontStyle = FontStyle.Italic
-                        )
-                    },
-                    text = {
-                        // Dodajemy Modifier.focusable(), aby lepiej zarządzać fokusem
-                        Column(
-                            modifier = Modifier
-                                .verticalScroll(scrollState)
-                                .fillMaxWidth()
-                                .padding(end = 12.dp)
-                                .focusable() // Umożliwia przechwycenie fokusu
-                        ) {
-                            // Dodajemy focusRequester do pola tekstowego
-                            val focusRequester = remember { FocusRequester() }
-                            OutlinedTextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                label = { Text("Szukaj...") },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                                    .focusRequester(focusRequester),
-                                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        keyboardController?.hide()
-                                    }
-                                ),
-
-                                colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    textColor = Color.Black,
-                                    cursorColor = DarkBlue,
-                                    focusedBorderColor = DarkBlue,
-                                    unfocusedBorderColor = Color.Gray,
-                                    focusedLabelColor = DarkBlue,
-                                    unfocusedLabelColor = Color.Gray
-                                )
-                            )
-
-                            // Automatyczne ustawienie fokusu na polu tekstowym po otwarciu dialogu
-                            LaunchedEffect(Unit) {
-                                focusRequester.requestFocus()
-                                // Opcjonalnie: otwórz klawiaturę automatycznie
-                                keyboardController?.show()
-                            }
-
-                            val filteredWords = state.availableWordsToAdd.filter {
-                                it.name.contains(searchQuery, ignoreCase = true)
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(max = 200.dp)
-                            ) {
-                                ScrollArea(state = scrollAreaState) {
-                                    LazyColumn(
-                                        state = lazyListState,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(end = 12.dp)
-                                    ) {
-                                        if (filteredWords.isEmpty()) {
-                                            item {
-                                                Text(
-                                                    "BRAK WYNIKÓW",
-                                                    fontSize = 16.sp,
-                                                    color = Color.Gray,
-                                                    modifier = Modifier.padding(vertical = 8.dp)
-                                                )
-                                            }
-                                        } else {
-                                            items(filteredWords) { resource ->
-                                                Text(
-                                                    text = resource.name,
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .clickable {
-                                                            searchQuery = ""
-                                                            keyboardController?.hide() // Ukryj klawiaturę
-                                                            focusManager.clearFocus() // Wyczyść fokus
-                                                            onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
-                                                        }
-                                                        .padding(vertical = 8.dp),
-                                                    fontSize = 18.sp
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    VerticalScrollbar(
-                                        modifier = Modifier
-                                            .align(Alignment.TopEnd)
-                                            .fillMaxHeight()
-                                            .width(8.dp)
-                                    ) {
-                                        Thumb(Modifier.background(Color.Gray))
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                searchQuery = ""
-                                keyboardController?.hide() // Ukryj klawiaturę
-                                focusManager.clearFocus() // Wyczyść fokus
-                                onEvent(ConfigurationMaterialEvent.HideAddDialog)
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                backgroundColor = DarkBlue,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("ANULUJ")
-                        }
-                    },
+                Surface(
                     modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .fillMaxHeight(0.8f)
                         .clickable(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
-                            keyboardController?.hide() // Ukryj klawiaturę przy kliknięciu w tło
-                            focusManager.clearFocus() // Wyczyść fokus
+                            // Pochłaniamy kliknięcia wewnątrz dialogu - nie robimy nic
+                        },
+                    elevation = 8.dp,
+                    color = Color.White,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        // Tytuł
+                        Text(
+                            text = "Wybierz materiał, który chcesz dodać do kroku uczenia:",
+                            fontSize = 26.sp,
+                            fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        // Pole wyszukiwania z focusable
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            label = { Text("Szukaj...") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    keyboardController?.hide()
+                                    focusManager.clearFocus()
+                                }
+                            ),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                textColor = Color.Black,
+                                cursorColor = DarkBlue,
+                                focusedBorderColor = DarkBlue,
+                                unfocusedBorderColor = Color.Gray,
+                                focusedLabelColor = DarkBlue,
+                                unfocusedLabelColor = Color.Gray
+                            )
+                        )
+
+                        // Lista słów
+                        val filteredWords = state.availableWordsToAdd.filter {
+                            it.name.contains(searchQuery, ignoreCase = true)
+                        }.sortedWith { a, b -> a.name.compareTo(b.name, ignoreCase = true) }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            ScrollArea(state = scrollAreaState) {
+                                LazyColumn(
+                                    state = lazyListState,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 12.dp)
+                                ) {
+                                    if (filteredWords.isEmpty()) {
+                                        item {
+                                            Text(
+                                                "BRAK WYNIKÓW",
+                                                fontSize = 16.sp,
+                                                color = Color.Gray,
+                                                modifier = Modifier.padding(vertical = 8.dp)
+                                            )
+                                        }
+                                    } else {
+                                        items(filteredWords) { resource ->
+                                            Text(
+                                                text = resource.name,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        closeDialog()
+                                                        onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
+                                                    }
+                                                    .padding(vertical = 8.dp),
+                                                fontSize = 18.sp
+                                            )
+                                        }
+                                    }
+                                }
+
+                                VerticalScrollbar(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .fillMaxHeight()
+                                        .width(8.dp)
+                                ) {
+                                    Thumb(Modifier.background(Color.Gray))
+                                }
+                            }
                         }
-                )
+
+                        // Przycisk anuluj
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = closeDialog,
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = DarkBlue,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text("ANULUJ")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Efekt do ukrywania klawiatury przy zamknięciu
+            LaunchedEffect(state.showAddDialog) {
+                if (!state.showAddDialog) {
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                }
             }
         }
 

@@ -44,6 +44,7 @@ import java.io.File
 import androidx.compose.ui.platform.LocalContext
 import java.io.IOException
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.navigation.NavController
 import java.io.FileOutputStream
 import com.example.friendly_words.data.entities.Image
+import com.example.friendly_words.therapist.ui.main.NavRoutes
 
 @Composable
 private fun rememberHideKeyboard(): () -> Unit {
@@ -86,18 +88,35 @@ fun MaterialsCreatingNewMaterialScreen(
     LaunchedEffect(state.saveCompleted) {
         if (state.saveCompleted) {
             hideKeyboard()
-            val savedId = state.newlySavedResourceId
-            savedId?.let {
+            state.newlySavedResourceId?.let { newId ->
 
-                navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("message", if (state.isEditing) "Pomyślnie zaktualizowano materiał" else "Pomyślnie dodano materiał")
+                // 1) wypisz current/previous entry i ich klucze
+                val currentEntry = navController.currentBackStackEntry
+                val prevEntry    = navController.previousBackStackEntry
+                Log.d("NavDebug", "▶▶ current route = ${currentEntry?.destination?.route}, " +
+                        "handleKeys = ${currentEntry?.savedStateHandle?.keys()}")
+                Log.d("NavDebug", "▶▶ previous route = ${prevEntry?.destination?.route}, " +
+                        "handleKeys = ${prevEntry?.savedStateHandle?.keys()}")
 
+                // 2) wypisz klucze handle’u dla ekranu listy po jego ROUTE
+                val listEntry = navController.getBackStackEntry(NavRoutes.MATERIALS)
+                Log.d("NavDebug", "▶▶ MATERIALS handle keys before set = ${listEntry.savedStateHandle.keys()}")
+
+                // 3) zapis nowego ID i wiadomości pod tym handle’em
+                listEntry.savedStateHandle["newlySavedResourceId"] = newId
+                listEntry.savedStateHandle["message"]            =
+                    if (state.isEditing) "Pomyślnie zaktualizowano materiał"
+                    else                   "Pomyślnie dodano materiał"
+
+                // 4) wróć do ekranu listy
                 navController.popBackStack()
             }
             viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ResetSaveCompleted)
         }
     }
+
+
+
 
     LaunchedEffect(state.exitWithoutSaving) {
         if (state.exitWithoutSaving) {
