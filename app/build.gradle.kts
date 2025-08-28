@@ -45,6 +45,7 @@ dependencies {
 
     val room_version = "2.7.1"
     val nav_version = "2.9.0"
+    implementation(project(":shared"))
     implementation ("androidx.navigation:navigation-compose:$nav_version")
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
@@ -74,6 +75,5 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.6.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("com.composables:core:1.32.0")
-
 
 }

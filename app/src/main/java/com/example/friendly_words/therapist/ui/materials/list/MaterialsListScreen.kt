@@ -214,12 +214,17 @@ fun MaterialsListScreen(
                 val scrollAreaState = rememberScrollAreaState(listState)
                 LaunchedEffect(state.selectedIndex) {
                     state.selectedIndex?.let { idx ->
-                        // 1) pobierz ID zasobu spod tego indeksu
-                        val resourceId = state.materials.getOrNull(idx)?.id
-                        // 2) zaloguj je
-                        Log.d("MaterialsListScreen", "selectedIndex = $idx → resourceId = $resourceId")
-                        // 3) przewiń do tego wiersza
-                        listState.animateScrollToItem(idx)
+                        if (idx >= 0) {
+                            // 1) pobierz ID zasobu spod tego indeksu
+                            val resourceId = state.materials.getOrNull(idx)?.id
+                            // 2) zaloguj je
+                            Log.d(
+                                "MaterialsListScreen",
+                                "selectedIndex = $idx → resourceId = $resourceId"
+                            )
+                            // 3) przewiń do tego wiersza
+                            listState.animateScrollToItem(idx)
+                        }
                     }
                 }
 
