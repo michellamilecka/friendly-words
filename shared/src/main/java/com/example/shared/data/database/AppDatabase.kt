@@ -1,17 +1,17 @@
-package com.example.friendly_words.data.database
+package com.example.shared.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.friendly_words.data.another.Converters
-import com.example.friendly_words.data.daos.ConfigurationDao
-import com.example.friendly_words.data.daos.ImageDao
-import com.example.friendly_words.data.daos.ResourceDao
-import com.example.friendly_words.data.entities.Image
-import com.example.friendly_words.data.entities.Resource
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.data.entities.ConfigurationImageUsage
-import com.example.friendly_words.data.entities.ConfigurationResource
+import com.example.shared.data.another.Converters
+import com.example.shared.data.daos.ConfigurationDao
+import com.example.shared.data.daos.ImageDao
+import com.example.shared.data.daos.ResourceDao
+import com.example.shared.data.entities.Configuration
+import com.example.shared.data.entities.ConfigurationImageUsage
+import com.example.shared.data.entities.ConfigurationResource
+import com.example.shared.data.entities.Image
+import com.example.shared.data.entities.Resource
 
 
 @Database(

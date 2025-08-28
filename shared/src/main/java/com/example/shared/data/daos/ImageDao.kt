@@ -1,4 +1,4 @@
-package com.example.friendly_words.data.daos
+package com.example.shared.data.daos
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,7 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.friendly_words.data.entities.Image
+import com.example.shared.data.entities.Image
 
 @Dao
 interface ImageDao {

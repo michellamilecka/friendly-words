@@ -56,7 +56,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.navigation.NavController
 import java.io.FileOutputStream
-import com.example.friendly_words.data.entities.Image
+import com.example.shared.data.entities.Image
 import com.example.friendly_words.therapist.ui.main.NavRoutes
 
 @Composable

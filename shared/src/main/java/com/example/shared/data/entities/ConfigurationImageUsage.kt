@@ -1,4 +1,4 @@
-package com.example.friendly_words.data.entities
+package com.example.shared.data.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey

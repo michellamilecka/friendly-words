@@ -1,4 +1,4 @@
-package com.example.friendly_words.data.enums
+package com.example.shared.data.enums
 
 enum class HintType(val displayName: String){
     OMBRAMUJ_POPRAWNA("Obramuj poprawną"),

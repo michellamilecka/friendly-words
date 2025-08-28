@@ -1,8 +1,18 @@
-package com.example.friendly_words.therapist.ui.configuration.material
+package com.example.shared.data.another
 
-import com.example.friendly_words.data.entities.ConfigurationImageUsage
-import com.example.friendly_words.data.entities.Resource
-import com.example.friendly_words.data.repositories.ImageRepository
+import com.example.shared.data.entities.ConfigurationImageUsage
+import com.example.shared.data.entities.Resource
+import com.example.shared.data.repositories.ImageRepository
+
+data class VocabularyItem(
+    val id: Long,
+    val word: String,
+    val learnedWord: String,
+    val selectedImages: List<Boolean>,
+    val inLearningStates: List<Boolean>,
+    val inTestStates: List<Boolean>,
+    val imagePaths: List<String>
+)
 
 data class ConfigurationMaterialState(
     val vocabItems: List<VocabularyItem> = emptyList(),

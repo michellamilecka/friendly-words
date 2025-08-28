@@ -1,11 +1,10 @@
 package com.example.friendly_words.therapist.ui.configuration.settings
 
-import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
-import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
-import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementEvent
-import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
+import com.example.shared.data.another.ConfigurationLearningState
+import com.example.shared.data.another.ConfigurationMaterialState
+import com.example.shared.data.another.ConfigurationReinforcementState
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveState
-import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestState
+import com.example.shared.data.another.ConfigurationTestState
 
 data class ConfigurationSettingsState (
     val materialState: ConfigurationMaterialState = ConfigurationMaterialState(),

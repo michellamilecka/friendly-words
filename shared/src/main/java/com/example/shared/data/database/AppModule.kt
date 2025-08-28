@@ -1,13 +1,13 @@
-package com.example.friendly_words.data.database
+package com.example.shared.data.database
 
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.friendly_words.data.daos.ConfigurationDao
-import com.example.friendly_words.data.daos.ImageDao
-import com.example.friendly_words.data.daos.ResourceDao
-import com.example.friendly_words.data.repositories.ConfigurationRepository
+import com.example.shared.data.daos.ConfigurationDao
+import com.example.shared.data.daos.ImageDao
+import com.example.shared.data.daos.ResourceDao
+import com.example.shared.data.repositories.ConfigurationRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

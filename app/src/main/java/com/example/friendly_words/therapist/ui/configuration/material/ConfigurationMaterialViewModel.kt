@@ -1,17 +1,10 @@
 package com.example.friendly_words.therapist.ui.configuration.material
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 
-import com.example.friendly_words.data.repositories.ImageRepository
-import com.example.friendly_words.data.repositories.ResourceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-import android.util.Log
+import com.example.shared.data.another.ConfigurationMaterialState
 
 data class ImageUsageInfo(
     val word: String,

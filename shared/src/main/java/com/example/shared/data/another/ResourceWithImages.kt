@@ -1,9 +1,9 @@
-package com.example.friendly_words.data.another
+package com.example.shared.data.another
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import com.example.friendly_words.data.entities.Image
-import com.example.friendly_words.data.entities.Resource
+import com.example.shared.data.entities.Image
+import com.example.shared.data.entities.Resource
 
 data class ResourceWithImages(
     @Embedded val resource: Resource,

@@ -16,11 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.friendly_words.therapist.ui.components.NumberSelector
-import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.White
+import com.example.shared.data.another.ConfigurationTestState
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

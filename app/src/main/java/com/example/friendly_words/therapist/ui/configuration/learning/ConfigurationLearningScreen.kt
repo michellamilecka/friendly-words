@@ -17,14 +17,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.therapist.ui.components.NumberSelector
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.White
+import com.example.shared.data.another.ConfigurationLearningState
 
 @Composable
 fun ConfigurationLearningScreen(
-    state:ConfigurationLearningState,
+    state: ConfigurationLearningState,
     onEvent:(ConfigurationLearningEvent) -> Unit,
     onBackClick: () -> Unit
 ){

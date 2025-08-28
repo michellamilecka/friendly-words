@@ -1,7 +1,7 @@
-package com.example.friendly_words.data.repositories
+package com.example.shared.data.repositories
 
-import com.example.friendly_words.data.daos.ImageDao
-import com.example.friendly_words.data.entities.Image
+import com.example.shared.data.daos.ImageDao
+import com.example.shared.data.entities.Image
 import javax.inject.Inject
 
 class ImageRepository @Inject constructor(private val imageDao: ImageDao) {

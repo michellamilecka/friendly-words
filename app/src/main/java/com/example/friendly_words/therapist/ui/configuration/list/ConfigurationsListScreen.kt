@@ -33,7 +33,7 @@ import com.composables.core.ScrollArea
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.composables.core.rememberScrollAreaState
-import com.example.friendly_words.data.entities.Configuration
+import com.example.shared.data.entities.Configuration
 import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
 import com.example.friendly_words.child_app.main.calculateResponsiveFontSize
 import com.example.friendly_words.therapist.ui.theme.DarkBlue

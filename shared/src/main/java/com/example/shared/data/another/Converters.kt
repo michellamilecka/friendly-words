@@ -1,7 +1,6 @@
-package com.example.friendly_words.data.another
+package com.example.shared.data.another
 
 import androidx.room.TypeConverter
-import com.example.friendly_words.therapist.ui.configuration.reinforcement.defaultPraiseMap
 
 class Converters {
 
@@ -32,4 +31,8 @@ class Converters {
         // scal z domyślną listą pochwał, upewniając się że mamy każdy klucz
         return defaultPraiseMap().mapValues { (key, _) -> parsed[key] ?: false }
     }
+
+    fun defaultPraiseMap(): Map<String, Boolean> = listOf(
+        "dobrze", "super", "świetnie", "ekstra", "rewelacja", "brawo"
+    ).associateWith { true }
 }

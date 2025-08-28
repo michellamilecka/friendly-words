@@ -1,4 +1,4 @@
-package com.example.friendly_words.therapist.ui.configuration.reinforcement
+package com.example.shared.data.another
 
 data class ConfigurationReinforcementState(
     val praiseStates: Map<String, Boolean> = defaultPraiseMap(),

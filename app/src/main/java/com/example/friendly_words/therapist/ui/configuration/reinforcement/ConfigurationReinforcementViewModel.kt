@@ -1,6 +1,7 @@
 package com.example.friendly_words.therapist.ui.configuration.reinforcement
 
 import androidx.lifecycle.ViewModel
+import com.example.shared.data.another.ConfigurationReinforcementState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

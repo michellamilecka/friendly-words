@@ -1,7 +1,7 @@
 package com.example.friendly_words.therapist.ui.materials.list
 
-import com.example.friendly_words.data.entities.Image
-import com.example.friendly_words.data.entities.Resource
+import com.example.shared.data.entities.Image
+import com.example.shared.data.entities.Resource
 
 data class MaterialsListState(
     val materials: List<Resource> = emptyList(),

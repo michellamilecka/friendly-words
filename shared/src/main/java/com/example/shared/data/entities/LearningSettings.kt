@@ -1,7 +1,7 @@
-package com.example.friendly_words.data.entities
+package com.example.shared.data.entities
 
-import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
-import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
+import com.example.shared.data.another.ConfigurationLearningState
+import com.example.shared.data.another.ConfigurationReinforcementState
 
 data class LearningSettings (
     val numberOfWords: Int = 0,

@@ -1,6 +1,6 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
-import com.example.friendly_words.data.entities.Configuration
+import com.example.shared.data.entities.Configuration
 
 data class ConfigurationState(
     val searchQuery: String = "",
@@ -14,5 +14,5 @@ data class ConfigurationState(
 
 
 
-)
+    )
 

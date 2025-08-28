@@ -2,7 +2,7 @@ package com.example.friendly_words.therapist.ui.materials.creating_new
 
 import android.net.Uri
 import androidx.compose.ui.text.input.TextFieldValue
-import com.example.friendly_words.data.entities.Image
+import com.example.shared.data.entities.Image
 
 sealed class MaterialsCreatingNewMaterialEvent {
     data class ResourceNameChanged(val newName: String) : MaterialsCreatingNewMaterialEvent()

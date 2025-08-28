@@ -1,6 +1,6 @@
-package com.example.friendly_words.data.entities
+package com.example.shared.data.entities
 
-import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestState
+import com.example.shared.data.another.ConfigurationTestState
 
 data class TestSettings(
     val numberOfWords: Int = 0,

@@ -1,8 +1,6 @@
-package com.example.friendly_words.therapist.ui.configuration.learning
+package com.example.shared.data.another
 
-import com.example.friendly_words.data.entities.LearningSettings
-import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
-import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
+import com.example.shared.data.entities.LearningSettings
 
 data class ConfigurationLearningState(
     val imageCount: Int = 3,

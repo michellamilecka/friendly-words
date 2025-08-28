@@ -1,7 +1,7 @@
 package com.example.friendly_words.therapist.ui.materials.creating_new
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.example.friendly_words.data.entities.Image
+import com.example.shared.data.entities.Image
 
 data class MaterialsCreatingNewMaterialState (
     val resourceName: String = "",

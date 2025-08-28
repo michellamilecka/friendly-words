@@ -1,9 +1,9 @@
-package com.example.friendly_words.data.daos
+package com.example.shared.data.daos
 
 import androidx.room.*
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.data.entities.ConfigurationImageUsage
-import com.example.friendly_words.data.entities.ConfigurationResource
+import com.example.shared.data.entities.Configuration
+import com.example.shared.data.entities.ConfigurationImageUsage
+import com.example.shared.data.entities.ConfigurationResource
 import kotlinx.coroutines.flow.Flow
 
 @Dao

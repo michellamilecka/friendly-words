@@ -1,6 +1,6 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
-import com.example.friendly_words.data.entities.Configuration
+import com.example.shared.data.entities.Configuration
 
 sealed class ConfigurationEvent {
     data class SearchChanged(val query: String) : ConfigurationEvent()

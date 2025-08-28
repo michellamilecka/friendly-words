@@ -1,9 +1,9 @@
-package com.example.friendly_words.data.repositories
+package com.example.shared.data.repositories
 
-import com.example.friendly_words.data.daos.ConfigurationDao
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.data.entities.ConfigurationImageUsage
-import com.example.friendly_words.data.entities.ConfigurationResource
+import com.example.shared.data.daos.ConfigurationDao
+import com.example.shared.data.entities.Configuration
+import com.example.shared.data.entities.ConfigurationImageUsage
+import com.example.shared.data.entities.ConfigurationResource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton

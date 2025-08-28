@@ -2,8 +2,8 @@ package com.example.friendly_words.therapist.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.data.repositories.ConfigurationRepository
+import com.example.shared.data.entities.Configuration
+import com.example.shared.data.repositories.ConfigurationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

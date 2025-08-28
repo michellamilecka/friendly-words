@@ -1,9 +1,9 @@
-package com.example.friendly_words.data.repositories
+package com.example.shared.data.repositories
 
-import com.example.friendly_words.data.daos.ImageDao
-import com.example.friendly_words.data.daos.ResourceDao
-import com.example.friendly_words.data.database.AppDatabase
-import com.example.friendly_words.data.entities.Resource
+import com.example.shared.data.daos.ImageDao
+import com.example.shared.data.daos.ResourceDao
+import com.example.shared.data.database.AppDatabase
+import com.example.shared.data.entities.Resource
 import javax.inject.Inject
 
 
