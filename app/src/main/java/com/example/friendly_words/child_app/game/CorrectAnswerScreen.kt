@@ -1,4 +1,4 @@
-package com.example.child_app.ui.game
+package com.example.friendly_words.child_app.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,15 +10,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.child_app.ui.components.ImageOptionBox
-import com.example.child_app.ui.data.GameItem
-import com.example.child_app.ui.theme.Blue
+import com.example.friendly_words.child_app.theme.Blue
 import kotlinx.coroutines.delay
-import com.example.child_app.ui.data.GameSettings
 
 @Composable
 fun CorrectAnswerScreen(
-    correctItem: GameItem,
+    correctItem: com.example.friendly_words.child_app.data.GameItem,
     praiseText: String,          // ← przekazujemy wylosowaną pochwałę
     speakPraise: () -> Unit,     // ← lambda, która odtwarza TTS
     onTimeout: () -> Unit
@@ -49,7 +46,7 @@ fun CorrectAnswerScreen(
 
             Spacer(Modifier.height(48.dp))
 
-            ImageOptionBox(
+            com.example.friendly_words.child_app.components.ImageOptionBox(
                 imageRes = correctItem.imageRes,
                 label = correctItem.label,
                 size = 500.dp,

@@ -1,6 +1,6 @@
-package com.example.child_app.ui.data
+package com.example.friendly_words.child_app.data
 
-import com.example.child_app.R
+import com.example.friendly_words.R
 
 data class GameItem(
     val label: String,

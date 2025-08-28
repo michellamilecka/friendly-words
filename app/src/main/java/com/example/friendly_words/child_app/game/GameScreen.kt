@@ -1,4 +1,4 @@
-package com.example.child_app.ui.game
+package com.example.friendly_words.child_app.game
 
 import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.background
@@ -12,12 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.child_app.ui.components.ImageOptionBox
-import com.example.child_app.ui.data.GameItem
-import com.example.child_app.ui.data.GameSettings
-import com.example.child_app.ui.data.StatesFromConfiguration
-import com.example.child_app.ui.data.generateGameRounds
-import com.example.child_app.ui.theme.Blue
+import com.example.friendly_words.child_app.theme.Blue
 import kotlinx.coroutines.delay
 import java.util.*
 
@@ -26,11 +21,11 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
 
     /* ---------- DANE GRY ---------- */
 
-    var rounds by remember { mutableStateOf(generateGameRounds()) }
+    var rounds by remember { mutableStateOf(com.example.friendly_words.child_app.data.generateGameRounds()) }
     var currentRoundIndex by remember { mutableStateOf(0) }
     val currentRound = rounds[currentRoundIndex]
     val correctItem = currentRound.correctItem
-    val instructionText = GameSettings.instructionType.getInstructionText(correctItem.label)
+    val instructionText = com.example.friendly_words.child_app.data.GameSettings.instructionType.getInstructionText(correctItem.label)
 
     var correctAnswersCount by remember { mutableStateOf(0) }
     var wrongAnswersCount by remember { mutableStateOf(0) }
@@ -74,7 +69,7 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
     /* ---------- START NOWEJ RUNDY ---------- */
 
     LaunchedEffect(currentRoundIndex, ttsReady) {
-        if (ttsReady && !GameSettings.isTestMode) {
+        if (ttsReady && !com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             tts.speak(instructionText, TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
@@ -86,8 +81,8 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
         showCongratsScreen = false
         goNextAfterCongrats = false
 
-        if (!GameSettings.isTestMode) {
-            delay(StatesFromConfiguration.effectsDelayMillis)
+        if (!com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
+            delay(com.example.friendly_words.child_app.data.StatesFromConfiguration.effectsDelayMillis)
 
             /* aktywujemy efekty – TYLKO poza testem */
             dimIncorrect = true
@@ -114,12 +109,12 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
 
     /* ---------- OBSŁUGA KLIKNIĘĆ ---------- */
 
-    fun handleAnswer(item: GameItem) {
+    fun handleAnswer(item: com.example.friendly_words.child_app.data.GameItem) {
         if (showCongratsScreen) return            // blokada w czasie ekranu grat.
 
         val isCorrect = item == correctItem
 
-        if (GameSettings.isTestMode) {
+        if (com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             if (!answerJudged) {
                 if (isCorrect) correctAnswersCount++ else wrongAnswersCount++
                 answerJudged = true
@@ -151,7 +146,7 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
     if (showCongratsScreen) {
         LaunchedEffect(showCongratsScreen) {
             if (showCongratsScreen) {
-                currentPraise = GameSettings.praises.random()
+                currentPraise = com.example.friendly_words.child_app.data.GameSettings.praises.random()
                 speakPraise(currentPraise)
             }
         }
@@ -261,7 +256,7 @@ fun GameScreen(onGameFinished: (correct: Int, wrong: Int) -> Unit) {
                     Spacer(Modifier.weight(1f))
 
                     currentRound.options.forEach { item ->
-                        ImageOptionBox(
+                        com.example.friendly_words.child_app.components.ImageOptionBox(
                             imageRes = item.imageRes,
                             label = item.label,
                             size = 350.dp,

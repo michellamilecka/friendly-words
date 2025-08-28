@@ -1,4 +1,4 @@
-package com.example.child_app.ui.game
+package com.example.friendly_words.child_app.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,8 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.child_app.ui.components.PlayButton
-import com.example.child_app.ui.theme.Blue
+import com.example.friendly_words.child_app.theme.Blue
 
 @Composable
 fun GameEndScreen(
@@ -55,7 +54,7 @@ fun GameEndScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            PlayButton(
+            com.example.friendly_words.child_app.components.PlayButton(
                 size = 150.dp,
                 onClick = onPlayAgain
             )

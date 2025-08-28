@@ -1,4 +1,4 @@
-package com.example.child_app.ui.components
+package com.example.friendly_words.child_app.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.child_app.ui.theme.YellowFrames
+import com.example.friendly_words.child_app.theme.YellowFrames
 
 @Composable
 fun PlayButton(

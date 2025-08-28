@@ -1,4 +1,4 @@
-package com.example.child_app.ui.components
+package com.example.friendly_words.child_app.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.child_app.ui.theme.YellowFrames
+import com.example.friendly_words.child_app.theme.YellowFrames
 
 @Composable
 fun ImageOptionBox(

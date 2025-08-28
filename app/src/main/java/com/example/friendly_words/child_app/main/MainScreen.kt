@@ -1,4 +1,4 @@
-package com.example.child_app.ui.main
+package com.example.friendly_words.child_app.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,14 +10,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.child_app.ui.components.PlayButton
-import com.example.child_app.ui.data.GameSettings
-import com.example.child_app.ui.theme.Blue
-import com.example.child_app.ui.theme.LightBlue
+import com.example.friendly_words.child_app.theme.Blue
+import com.example.friendly_words.child_app.theme.LightBlue
 
 @Composable
 fun MainScreen(onPlayClick: () -> Unit) {
-    var isTestMode by remember { mutableStateOf(GameSettings.isTestMode) }
+    var isTestMode by remember { mutableStateOf(com.example.friendly_words.child_app.data.GameSettings.isTestMode) }
 
     Box(
         modifier = Modifier
@@ -46,7 +44,7 @@ fun MainScreen(onPlayClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            PlayButton(onClick = onPlayClick)
+            com.example.friendly_words.child_app.components.PlayButton(onClick = onPlayClick)
         }
 
         Row(
@@ -67,7 +65,7 @@ fun MainScreen(onPlayClick: () -> Unit) {
                 checked = isTestMode,
                 onCheckedChange = {
                     isTestMode = it
-                    GameSettings.isTestMode = it
+                    com.example.friendly_words.child_app.data.GameSettings.isTestMode = it
                 },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = LightBlue

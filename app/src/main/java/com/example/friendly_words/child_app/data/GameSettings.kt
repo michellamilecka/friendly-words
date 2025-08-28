@@ -1,4 +1,4 @@
-package com.example.child_app.ui.data
+package com.example.friendly_words.child_app.data
 
 enum class InstructionType(val format: (String) -> String) {
     SHORT({ it }),

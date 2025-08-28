@@ -1,4 +1,4 @@
-package com.example.child_app.ui.main
+package com.example.friendly_words.child_app.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,10 +23,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.Dp
-import com.example.child_app.ui.game.GameScreen
-import com.example.child_app.R
-import com.example.child_app.ui.game.GameEndScreen
-import com.example.child_app.ui.theme.LightBlue
+import com.example.friendly_words.child_app.game.GameScreen
+import com.example.friendly_words.R
+import com.example.friendly_words.child_app.theme.LightBlue
+import com.example.friendly_words.child_app.game.GameEndScreen
 import kotlinx.coroutines.delay
 import java.lang.Math.sqrt
 
@@ -35,14 +35,14 @@ class MainActivityChild : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                ScreenNavigation()
+                ScreenNavigationGame()
             }
         }
     }
 }
 
 @Composable
-fun ScreenNavigation() {
+fun ScreenNavigationGame() {
     var screenState by remember { mutableStateOf("info") }
 
     var correctAnswers by remember { mutableStateOf(0) }

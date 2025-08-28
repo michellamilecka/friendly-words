@@ -1,4 +1,4 @@
-package com.example.child_app.ui.theme
+package com.example.friendly_words.child_app.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
