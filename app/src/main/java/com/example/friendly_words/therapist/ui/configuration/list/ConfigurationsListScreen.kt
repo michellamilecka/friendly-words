@@ -86,17 +86,47 @@ fun ConfigurationsListScreen(
             .filter { if (hideExamples) !it.isExample else true }
     }
 
-    LaunchedEffect(state.newlyAddedConfigId) {
+    LaunchedEffect(state.newlyAddedConfigId, state.configurations.size) {
+        android.util.Log.d(
+            "ConfigurationsListScreen",
+            "newlyAddedConfigId: ${state.newlyAddedConfigId}, configs size: ${state.configurations.size}"
+        )
         val newId = state.newlyAddedConfigId
-        if (newId != null) {
-            kotlinx.coroutines.delay(100) // Poczekaj aż lista się zaktualizuje
-            val index = filteredConfigurations.indexOfFirst { it.id == newId }
+        if (newId != null && state.configurations.isNotEmpty()) {
+            android.util.Log.d(
+                "ConfigurationsListScreen",
+                "Attempting to scroll to config with id: $newId"
+            )
+
+            // Zawsze wyczyść filtry żeby nowa konfiguracja była widoczna
+            viewModel.onEvent(ConfigurationEvent.SearchChanged(""))
+            hideExamples = false
+
+            // Poczekaj aż filtry się zaktualizują
+            kotlinx.coroutines.delay(300)
+
+            // Znajdź indeks w pełnej liście konfiguracji
+            val index = state.configurations.indexOfFirst { it.id == newId }
+
+            android.util.Log.d(
+                "ConfigurationsListScreen",
+                "Found config at index: $index in list of ${state.configurations.size} items"
+            )
+
             if (index != -1) {
+                // Użyj scrollToItem zamiast animateScrollToItem dla pewności
                 lazyListState.scrollToItem(index)
+                android.util.Log.d(
+                    "ConfigurationsListScreen",
+                    "Successfully scrolled to config: id=$newId, index=$index"
+                )
             }
+
+            // Oznacz scrollowanie jako obsłużone
             viewModel.onEvent(ConfigurationEvent.ScrollHandled)
         }
     }
+
 
     Scaffold(
         topBar = {
