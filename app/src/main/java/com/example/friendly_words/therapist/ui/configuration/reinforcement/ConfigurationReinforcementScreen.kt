@@ -10,13 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
-import com.example.friendly_words.therapist.ui.theme.White
+import com.example.shared.data.another.ConfigurationReinforcementState
 
 
 @Composable

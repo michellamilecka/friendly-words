@@ -1,6 +1,6 @@
 package com.example.friendly_words.therapist.ui.materials.list
 
-import com.example.friendly_words.data.entities.Resource
+import com.example.shared.data.entities.Resource
 
 sealed class MaterialsListEvent {
     data class SelectMaterial(val index: Int) : MaterialsListEvent()

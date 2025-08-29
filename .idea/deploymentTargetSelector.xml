@@ -2,27 +2,19 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app.child_app">
+      <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-26T19:49:22.684616100Z">
+        <DropdownSelection timestamp="2025-08-10T12:49:25.991068500Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\miche\.android\avd\Pixel_Tablet_API_35.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\julit\.android\avd\Medium_Tablet_API_35.avd" />
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="terapeuta">
+      <SelectionState runConfigName="child_app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-31T11:14:46.747794300Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\miche\.android\avd\Pixel_Tablet_API_35.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
       </SelectionState>
     </selectionStates>
   </component>

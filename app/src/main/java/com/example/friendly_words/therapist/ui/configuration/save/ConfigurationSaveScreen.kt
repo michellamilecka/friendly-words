@@ -19,18 +19,16 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.friendly_words.therapist.ui.components.InfoDialog
-import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
-import com.example.friendly_words.therapist.ui.configuration.material.ConfigurationMaterialState
-import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementState
+import com.example.shared.data.another.ConfigurationLearningState
+import com.example.shared.data.another.ConfigurationMaterialState
+import com.example.shared.data.another.ConfigurationReinforcementState
 import com.example.friendly_words.therapist.ui.configuration.settings.ConfigurationSettingsEvent
-import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestState
+import com.example.shared.data.another.ConfigurationTestState
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.White
-import kotlinx.coroutines.launch
 
 
 fun Boolean.toYesNo(): String = if (this) "Tak" else "Nie"

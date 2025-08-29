@@ -1,8 +1,8 @@
 package com.example.friendly_words.therapist.ui.configuration.test
 
 import androidx.lifecycle.ViewModel
-import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningEvent
-import com.example.friendly_words.therapist.ui.configuration.learning.ConfigurationLearningState
+import com.example.shared.data.another.ConfigurationLearningState
+import com.example.shared.data.another.ConfigurationTestState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +21,7 @@ class ConfigurationTestViewModel @Inject constructor() : ViewModel() {
     }
 
     companion object {
-        fun reduce(state: ConfigurationTestState, event: ConfigurationTestEvent,learningState: ConfigurationLearningState? = null): ConfigurationTestState {
+        fun reduce(state: ConfigurationTestState, event: ConfigurationTestEvent, learningState: ConfigurationLearningState? = null): ConfigurationTestState {
             return when (event) {
                 is ConfigurationTestEvent.SetRepetitionCount -> state.copy(repetitionCount = event.count)
                 is ConfigurationTestEvent.SetImageCount -> state.copy(imageCount = event.count)

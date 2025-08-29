@@ -3,7 +3,6 @@ package com.example.friendly_words.therapist.ui.configuration.material
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.platform.LocalFocusManager
@@ -26,37 +25,22 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.composables.core.ScrollArea
 import com.composables.core.Thumb
-import com.example.friendly_words.R
-import com.example.friendly_words.therapist.ui.components.YesNoDialog
 import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue
 import com.example.friendly_words.therapist.ui.theme.White
+import com.example.shared.data.another.ConfigurationMaterialState
 
-data class VocabularyItem(
-    val id: Long,
-    val word: String,
-    val learnedWord: String,
-    val selectedImages: List<Boolean>,
-    val inLearningStates: List<Boolean>,
-    val inTestStates: List<Boolean>,
-    val imagePaths: List<String>
-)
 
 @Composable
 fun ImageSelectionWithCheckbox(

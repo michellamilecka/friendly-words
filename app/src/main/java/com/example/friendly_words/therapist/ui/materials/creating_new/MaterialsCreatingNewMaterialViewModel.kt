@@ -8,10 +8,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.R
-import com.example.friendly_words.data.entities.Image
-import com.example.friendly_words.data.entities.Resource
-import com.example.friendly_words.data.repositories.ImageRepository
-import com.example.friendly_words.data.repositories.ResourceRepository
+import com.example.shared.data.entities.Image
+import com.example.shared.data.entities.Resource
+import com.example.shared.data.repositories.ImageRepository
+import com.example.shared.data.repositories.ResourceRepository
 import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

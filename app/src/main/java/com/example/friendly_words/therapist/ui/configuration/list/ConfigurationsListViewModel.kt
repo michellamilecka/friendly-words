@@ -4,23 +4,23 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.data.entities.ConfigurationImageUsage
-import com.example.friendly_words.data.entities.ConfigurationResource
+import com.example.shared.data.entities.Configuration
+import com.example.shared.data.entities.ConfigurationImageUsage
+import com.example.shared.data.entities.ConfigurationResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.example.friendly_words.data.repositories.ConfigurationRepository
+import com.example.shared.data.repositories.ConfigurationRepository
 import kotlinx.coroutines.flow.first
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
     private val configurationRepository: ConfigurationRepository,
 
-) : ViewModel() {
+    ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationState())
     val state: StateFlow<ConfigurationState> = _state

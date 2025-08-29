@@ -1,17 +1,16 @@
 package com.example.friendly_words.therapist.ui.configuration.settings
 
 import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.data.entities.ConfigurationResource
-import com.example.friendly_words.data.entities.toConfigurationLearningState
-import com.example.friendly_words.data.entities.toConfigurationTestState
-import com.example.friendly_words.data.entities.toConfigurationReinforcementState
-import com.example.friendly_words.data.repositories.ConfigurationRepository
-import com.example.friendly_words.data.repositories.ImageRepository
-import com.example.friendly_words.data.repositories.ResourceRepository
+import com.example.shared.data.entities.Configuration
+import com.example.shared.data.entities.ConfigurationResource
+import com.example.shared.data.entities.toConfigurationLearningState
+import com.example.shared.data.entities.toConfigurationTestState
+import com.example.shared.data.entities.toConfigurationReinforcementState
+import com.example.shared.data.repositories.ConfigurationRepository
+import com.example.shared.data.repositories.ImageRepository
+import com.example.shared.data.repositories.ResourceRepository
 import com.example.friendly_words.therapist.ui.configuration.learning.*
 import com.example.friendly_words.therapist.ui.configuration.material.*
 import com.example.friendly_words.therapist.ui.configuration.reinforcement.ConfigurationReinforcementViewModel
@@ -19,8 +18,12 @@ import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationS
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveViewModel
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestViewModel
-import com.example.friendly_words.therapist.ui.configuration.test.toDerivedTestState
-import com.example.friendly_words.therapist.ui.configuration.test.toTestSettings
+import com.example.shared.data.another.toDerivedTestState
+import com.example.shared.data.another.toTestSettings
+import com.example.shared.data.another.ConfigurationMaterialState
+import com.example.shared.data.another.VocabularyItem
+import com.example.shared.data.another.toConfigurationImageUsages
+import com.example.shared.data.another.toLearningSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +39,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
     private val imageRepository: ImageRepository,
 
 
-) : ViewModel() {
+    ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationSettingsState())
     val state: StateFlow<ConfigurationSettingsState> = _state

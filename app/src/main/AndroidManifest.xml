@@ -7,18 +7,31 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Friendlywords"
-        android:screenOrientation="landscape"
         tools:targetApi="31">
         <activity
             android:name=".therapist.ui.main.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Friendlywords">
+            android:label="ustawienia"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.Friendlywords"
+            android:taskAffinity="com.example.friendly_words.therapist.ui.main.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.example.friendly_words.child_app.main.MainActivityChild"
+            android:exported="true"
+            android:label="gra"
+            android:icon="@drawable/eti_logo"
+            android:roundIcon="@drawable/iwrd_logo"
+            android:theme="@style/Theme.Friendlywords"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.example.friendly_words.child_app.main.MainActivityChild">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

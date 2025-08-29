@@ -1,7 +1,6 @@
 
 package com.example.friendly_words.therapist.ui.configuration.list
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,11 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -36,10 +33,9 @@ import com.composables.core.ScrollArea
 import com.composables.core.Thumb
 import com.composables.core.VerticalScrollbar
 import com.composables.core.rememberScrollAreaState
-import com.example.friendly_words.data.entities.Configuration
-import com.example.friendly_words.therapist.ui.components.YesNoDialog
+import com.example.shared.data.entities.Configuration
 import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
-import com.example.friendly_words.therapist.ui.main.calculateResponsiveFontSize
+import com.example.friendly_words.child_app.main.calculateResponsiveFontSize
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 
 @Composable
