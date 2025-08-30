@@ -9,7 +9,13 @@ import kotlinx.coroutines.launch
 
 object StatesFromConfiguration {
 
-    //Podpowiedzi
+    // ====== Flagi aktywnych efektów (z configa) ======
+    var enableDimIncorrect: Boolean = false
+    var enableScaleCorrect: Boolean = false
+    var enableAnimateCorrect: Boolean = false
+    var enableOutlineCorrect: Boolean = false
+
+    // ====== Flagi faktycznego działania (po triggerze) ======
     var dimIncorrect by mutableStateOf(false)
         private set
 
@@ -22,37 +28,41 @@ object StatesFromConfiguration {
     var outlineCorrect by mutableStateOf(false)
         private set
 
-    object StatesFromConfiguration {
-        var effectsDelayMillis: Long = 5000L
-    }
-    //Czas do podpowiedzi
     var effectsDelayMillis: Long = 5000L
 
     fun triggerPromptOutline() {
-        MainScope().launch {
-            delay(effectsDelayMillis)
-            outlineCorrect = true
+        if (enableOutlineCorrect) {
+            MainScope().launch {
+                delay(effectsDelayMillis)
+                outlineCorrect = true
+            }
         }
     }
 
     fun triggerPromptAnimate() {
-        MainScope().launch {
-            delay(effectsDelayMillis)
-            animateCorrect = true
+        if (enableAnimateCorrect) {
+            MainScope().launch {
+                delay(effectsDelayMillis)
+                animateCorrect = true
+            }
         }
     }
 
     fun triggerPromptScale() {
-        MainScope().launch {
-            delay(effectsDelayMillis)
-            scaleCorrect = true
+        if (enableScaleCorrect) {
+            MainScope().launch {
+                delay(effectsDelayMillis)
+                scaleCorrect = true
+            }
         }
     }
 
     fun triggerPromptDim() {
-        MainScope().launch {
-            delay(effectsDelayMillis)
-            dimIncorrect = true
+        if (enableDimIncorrect) {
+            MainScope().launch {
+                delay(effectsDelayMillis)
+                dimIncorrect = true
+            }
         }
     }
 
@@ -62,4 +72,12 @@ object StatesFromConfiguration {
         animateCorrect = false
         outlineCorrect = false
     }
+
+    fun resetEnabled() {
+        enableDimIncorrect = false
+        enableScaleCorrect = false
+        enableAnimateCorrect = false
+        enableOutlineCorrect = false
+    }
 }
+

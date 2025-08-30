@@ -51,7 +51,7 @@ fun ScreenNavigation() {
     }
 
     if (showFirstScreen) {
-        com.example.friendly_words.child_app.main.InformationScreen()
+        InformationScreen()
     } else {
         MainScreen()
     }
@@ -89,7 +89,7 @@ fun InformationScreen() {
             .background(LightBlue)
     ) {
         Spacer(modifier = Modifier.height(
-            com.example.friendly_words.child_app.main.calculateResponsiveDp(
+            calculateResponsiveDp(
                 55.dp
             )
         ))
@@ -100,21 +100,21 @@ fun InformationScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(
-                com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                calculateResponsiveDp(
                     16.dp
                 )
             ))
             Text(
                 text = "Przyjazne Słowa Ustawienia",
                 color = Color.White,
-                fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                fontSize = calculateResponsiveFontSize(
                     55.sp
                 ),
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(
-                com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                calculateResponsiveDp(
                     60.dp
                 )
             ))
@@ -122,7 +122,7 @@ fun InformationScreen() {
             Text(
                 text = "Rozpoznawanie słów na podstawie zdjęć - konfiguracja",
                 color = Color.White,
-                fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                fontSize = calculateResponsiveFontSize(
                     35.sp
                 ),
                 fontWeight = FontWeight.Bold
@@ -138,7 +138,7 @@ fun InformationScreen() {
         ) {
             Column(
                 modifier = Modifier.padding(
-                    com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                    calculateResponsiveDp(
                         16.dp
                     )
                 ),
@@ -146,42 +146,43 @@ fun InformationScreen() {
             ) {
                 Text(
                     text = "Aplikacje powstają w ramach wspólnego projektu \"non-profit\" i \"open-source\" ",
-                    fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                    fontSize = calculateResponsiveFontSize(
                         27.sp
                     ),
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(
-                    com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                    calculateResponsiveDp(
                         16.dp
                     )
                 ))
                 Text(
                     text = "Politechniki Gdańskiej i fundacji Instytut Wspomagania Rozwoju Dziecka w Gdańsku (http://iwrd.pl/).",
-                    fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                    fontSize = calculateResponsiveFontSize(
                         26.sp
                     ),
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(
-                    com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                    calculateResponsiveDp(
                         16.dp
                     )
                 ))
                 Text(
-                    text = "IWRD, Politechnika Gdańska, ani żaden uczestnik projektu nie odnosi korzyści materialnych z udziału w wytwarzaniu aplikacji.",                    fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                    text = "IWRD, Politechnika Gdańska, ani żaden uczestnik projektu nie odnosi korzyści materialnych z udziału w wytwarzaniu aplikacji.",
+                    fontSize = calculateResponsiveFontSize(
                         26.sp
                     ),
                     color = Color.Black,
                     textAlign = TextAlign.Center,
-                            lineHeight = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                            lineHeight = calculateResponsiveFontSize(
                                 42.sp
                             )
                 )
                 Spacer(modifier = Modifier.height(
-                    com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                    calculateResponsiveDp(
                         16.dp
                     )
                 ))
@@ -189,20 +190,20 @@ fun InformationScreen() {
 
                 Text(
                     text = "Więcej informacji na stronie: https://tiapps.org/",
-                    fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                    fontSize = calculateResponsiveFontSize(
                         26.sp
                     ),
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(
-                    com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                    calculateResponsiveDp(
                         20.dp
                     )
                 ))
                 Text(
                     text = "Do poprawnego działania potrzebne jest para aplikacji: Przyjazne Słowa i Przyjazne Słowa Ustawienia!",
-                    fontSize = com.example.friendly_words.child_app.main.calculateResponsiveFontSize(
+                    fontSize = calculateResponsiveFontSize(
                         26.sp
                     ),
                     fontWeight = FontWeight.Bold,
@@ -211,7 +212,7 @@ fun InformationScreen() {
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(
-                    com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                    calculateResponsiveDp(
                         16.dp
                     )
                 ))
@@ -221,7 +222,7 @@ fun InformationScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Spacer(modifier = Modifier.width(
-                        com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                        calculateResponsiveDp(
                             85.dp
                         )
                     ))
@@ -229,13 +230,13 @@ fun InformationScreen() {
                         painter = painterResource(id = R.drawable.pg_logo),
                         contentDescription = "Politechnika Gdańska Logo",
                         modifier = Modifier.size(
-                            com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                            calculateResponsiveDp(
                                 350.dp
                             )
                         )
                     )
                     Spacer(modifier = Modifier.width(
-                        com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                        calculateResponsiveDp(
                             95.dp
                         )
                     ))
@@ -243,13 +244,13 @@ fun InformationScreen() {
                         painter = painterResource(id = R.drawable.iwrd_logo),
                         contentDescription = "Instytut Wspomagania Rozwoju Dziecka Logo",
                         modifier = Modifier.size(
-                            com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                            calculateResponsiveDp(
                                 420.dp
                             )
                         )
                     )
                     Spacer(modifier = Modifier.width(
-                        com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                        calculateResponsiveDp(
                             70.dp
                         )
                     ))
@@ -257,13 +258,13 @@ fun InformationScreen() {
                         painter = painterResource(id = R.drawable.eti_logo),
                         contentDescription = "ETI Logo",
                         modifier = Modifier.size(
-                            com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                            calculateResponsiveDp(
                                 200.dp
                             )
                         )
                     )
                     Spacer(modifier = Modifier.width(
-                        com.example.friendly_words.child_app.main.calculateResponsiveDp(
+                        calculateResponsiveDp(
                             80.dp
                         )
                     ))
