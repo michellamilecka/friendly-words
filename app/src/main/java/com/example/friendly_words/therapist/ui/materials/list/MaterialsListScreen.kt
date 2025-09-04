@@ -212,18 +212,31 @@ fun MaterialsListScreen(
 
                 val listState = rememberLazyListState()
                 val scrollAreaState = rememberScrollAreaState(listState)
-                LaunchedEffect(state.selectedIndex) {
-                    state.selectedIndex?.let { idx ->
-                        if (idx >= 0) {
-                            // 1) pobierz ID zasobu spod tego indeksu
-                            val resourceId = state.materials.getOrNull(idx)?.id
-                            // 2) zaloguj je
-                            Log.d(
-                                "MaterialsListScreen",
-                                "selectedIndex = $idx → resourceId = $resourceId"
-                            )
-                            // 3) przewiń do tego wiersza
-                            listState.animateScrollToItem(idx)
+                LaunchedEffect(state.selectedIndex, searchQuery) {
+                    state.selectedIndex?.let { selectedIdx ->
+                        if (selectedIdx >= 0) {
+                            val selectedMaterial = state.materials.getOrNull(selectedIdx)
+                            selectedMaterial?.let { material ->
+                                // Znajdź indeks w filtrowanej liście
+                                val filteredMaterials = state.materials.filter {
+                                    it.name.contains(searchQuery, ignoreCase = true)
+                                }
+                                val filteredIndex = filteredMaterials.indexOf(material)
+
+                                // Scrolluj tylko jeśli materiał jest widoczny w filtrowanej liście
+                                if (filteredIndex >= 0) {
+                                    Log.d(
+                                        "MaterialsListScreen",
+                                        "Scrolling to selectedIndex = $selectedIdx → filteredIndex = $filteredIndex, resourceId = ${material.id}"
+                                    )
+                                    listState.animateScrollToItem(filteredIndex)
+                                } else {
+                                    Log.d(
+                                        "MaterialsListScreen",
+                                        "Selected material not visible in filtered list"
+                                    )
+                                }
+                            }
                         }
                     }
                 }
