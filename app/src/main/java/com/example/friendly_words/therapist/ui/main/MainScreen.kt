@@ -2,6 +2,8 @@ package com.example.friendly_words.therapist.ui.main
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -142,6 +144,9 @@ fun MainContent(
     onConfigClick: () -> Unit,
     onMaterialsClick: () -> Unit
 ) {
+    var showInfo by remember { mutableStateOf(false) }
+    var showMaterialsInfo by remember { mutableStateOf(false) }
+    var showConfigInfo by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -154,15 +159,24 @@ fun MainContent(
                         Text(
                             "Przyjazne Słowa Ustawienia",
                             fontSize = 30.sp,
-                            modifier = Modifier.weight(1f),
                             color = Color.White
                         )
+                            IconButton(onClick = { showInfo = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Informacje",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+
                     }
                 },
                 backgroundColor = DarkBlue
+
             )
         }
-    ) { padding ->
+    )  { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -192,7 +206,26 @@ fun MainContent(
                         .width((LocalConfiguration.current.screenWidthDp * 0.7f).dp)
                         .height(85.dp)
                 ) {
-                    Text("MATERIAŁY EDUKACYJNE", fontSize = 25.sp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+
+                        Text("MATERIAŁY EDUKACYJNE", fontSize = 25.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = { showMaterialsInfo = true },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Informacje o materiałach edukacyjnych",
+                                tint = DarkBlue,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+
+                    }
                 }
 
                 Button(
@@ -206,8 +239,61 @@ fun MainContent(
                         .height(85.dp)
                 ) {
                     Text("KROKI UCZENIA", fontSize = 25.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = { showConfigInfo = true },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Informacje o krokach uczenia",
+                            tint = DarkBlue,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
         }
     }
+    if (showMaterialsInfo) {
+        AlertDialog(
+            onDismissRequest = { showMaterialsInfo = false },
+            title = { Text("Materiały edukacyjne") },
+            text = { Text("Tekst do wklejenia od Pani z Insytutu.") },
+            confirmButton = {
+                TextButton(onClick = { showMaterialsInfo = false }) {
+                    Text("OK", color = DarkBlue)
+                }
+            }
+        )
+    }
+    if (showConfigInfo) {
+        AlertDialog(
+            onDismissRequest = { showConfigInfo = false },
+            title = { Text("Kroki uczenia") },
+            text = { Text("Tekst do wklejenia od Pani z Insytutu.") },
+            confirmButton = {
+                TextButton(onClick = { showConfigInfo = false }) {
+                    Text("OK", color = DarkBlue)
+                }
+            }
+        )
+    }
+    if (showInfo) {
+        AlertDialog(
+            onDismissRequest = { showInfo = false },
+            title = { Text("Na czym polega aplikacja?") },
+            text = {
+                Text(
+                    "Tekst przygotowany przez Insytut."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfo = false }) {
+                    Text("OK",color= DarkBlue)
+                }
+            }
+        )
+    }
+
 }

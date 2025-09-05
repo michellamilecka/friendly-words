@@ -370,7 +370,17 @@ fun ConfigurationsListScreen(
                         onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
                     )
                 }
-
+                state.showCopyDialogFor?.let { configToCopy ->
+                    YesNoDialogWithName(
+                        show = true,
+                        message = "Czy chcesz skopiować krok uczenia:",
+                        name = "${configToCopy.name}?",
+                        onConfirm = {
+                            viewModel.onEvent(ConfigurationEvent.ConfirmCopy(configToCopy))
+                        },
+                        onDismiss = { viewModel.onEvent(ConfigurationEvent.DismissDialogs) }
+                    )
+                }
                 state.showActivateDialogFor?.let { configToActivate ->
                     YesNoDialogWithName(
                         show = true,
@@ -404,6 +414,9 @@ fun ConfigurationItem(
         switchChecked = activeMode == "test"
     }
 
+    // 🔹 Stan dymku informacji dla przykładów
+    var showExampleInfo by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -433,19 +446,59 @@ fun ConfigurationItem(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Spacer(modifier = Modifier.height(13.dp))
-                        Text(configuration.name, fontSize = 30.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(configuration.name, fontSize = 30.sp)
+
+                            // 🔹 Ikona informacji dla przykładów
+                            if (configuration.isExample) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Box {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = "Informacja o przykładzie",
+                                        tint = Color.Gray,
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clickable { showExampleInfo = !showExampleInfo }
+                                    )
+                                    if (showExampleInfo) {
+                                        Popup(
+                                            onDismissRequest = { showExampleInfo = false }
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(Color.White)
+                                                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                                    .padding(10.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Przykładowy krok uczenia jest niedotykalny.\n W celu zobaczenia co jest w środku, zrób kopię przyciskiem obok.",
+                                                    fontSize = 20.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            if (isActive) "(aktywny krok w trybie: $activeMode)"
-                            else "(krok nieaktywny)",
+                            if (isActive) "(aktywny krok w trybie: $activeMode)" else "(krok nieaktywny)",
                             fontSize = 20.sp
                         )
                     }
                 }
             }
 
-            Column(modifier = Modifier.weight(1.25f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            Column(
+                modifier = Modifier.weight(1.25f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Text("Uczenie", fontSize = 18.sp)
                     Switch(
                         checked = switchChecked,
