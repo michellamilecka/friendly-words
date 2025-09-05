@@ -69,13 +69,15 @@ class ConfigurationViewModel @Inject constructor(
                     }
                 }
                 configurationRepository.delete(event.configuration)
-                _state.update { it.copy(showDeleteDialogFor = null,infoMessage = "Pomyślnie usunięto krok uczenia") }
+                _state.update { it.copy(showDeleteDialogFor = null,infoMessage = "Pomyślnie usunięto krok uczenia",shouldScrollToTop = isCurrentlyActive) }
             }
 
             is ConfigurationEvent.ActivateRequested -> _state.update {
                 it.copy(showActivateDialogFor = event.configuration)
             }
-
+            is ConfigurationEvent.ScrollToTopHandled -> {
+                _state.update { it.copy(shouldScrollToTop = false) }
+            }
             is ConfigurationEvent.ConfirmActivate -> {
                 viewModelScope.launch {
                     configurationRepository.setActiveConfiguration(event.configuration, "uczenie")
@@ -142,6 +144,10 @@ class ConfigurationViewModel @Inject constructor(
 
             is ConfigurationEvent.EditRequested -> {
                 // Obsługiwane w UI
+            }
+            is ConfigurationEvent.SetNewlyAddedId -> {
+                android.util.Log.d("ConfigurationsListVM", "Set newlyAddedConfigId=${event.id}")
+                _state.update { it.copy(newlyAddedConfigId = event.id) }
             }
             is ConfigurationEvent.ScrollHandled -> {
                 _state.update { it.copy(newlyAddedConfigId = null) }

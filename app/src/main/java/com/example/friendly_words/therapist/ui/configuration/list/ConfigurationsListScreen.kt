@@ -55,21 +55,34 @@ fun ConfigurationsListScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
-        val message = navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.get<String>("message")
+        val handle = navController.currentBackStackEntry?.savedStateHandle
 
+        // 🔹 Odbierz nowo dodane ID
+        val passedId = handle?.get<Long>("newlyAddedConfigId")
+        if (passedId != null) {
+            android.util.Log.d("ConfigurationsListScreen", "received newlyAddedConfigId=$passedId")
+            viewModel.onEvent(ConfigurationEvent.SetNewlyAddedId(passedId))
+            handle.remove<Long>("newlyAddedConfigId")
+        }
+
+        // 🔹 Odbierz message (jak wcześniej)
+        val message = handle?.get<String>("message")
         message?.let {
             snackbarHostState.showSnackbar(
                 message = it,
                 duration = SnackbarDuration.Short
             )
-            navController.currentBackStackEntry
-                ?.savedStateHandle
-                ?.remove<String>("message")
+            handle.remove<String>("message")
         }
     }
+
     val infoMessage = state.infoMessage
+    LaunchedEffect(state.shouldScrollToTop) {
+        if (state.shouldScrollToTop) {
+            lazyListState.scrollToItem(0) // ⬅️ scroll na samą górę
+            viewModel.onEvent(ConfigurationEvent.ScrollToTopHandled)
+        }
+    }
 
     LaunchedEffect(infoMessage) {
         infoMessage?.let {

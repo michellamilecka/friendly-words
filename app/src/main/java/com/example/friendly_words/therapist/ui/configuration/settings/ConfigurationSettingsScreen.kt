@@ -44,14 +44,21 @@ fun ConfigurationSettingsScreen(
         if (configId != null) {
             viewModel.loadConfiguration(configId.toLong())
         }
-
         if (state.navigateToList) {
-            state.message?.let {
-                navController.previousBackStackEntry?.savedStateHandle?.set("message", it)
+            navController.previousBackStackEntry?.savedStateHandle?.let { handle ->
+                state.lastSavedConfigId?.let { id ->
+                    android.util.Log.d("ConfigSettingsScreen", "Passing newlyAddedConfigId=$id via previousBackStackEntry")
+                    handle["newlyAddedConfigId"] = id
+                }
+                state.message?.let { msg ->
+                    handle["message"] = msg
+                }
             }
-            onBackClick()
+
+            onBackClick() // np. popBackStack() / navigateUp()
             viewModel.onEvent(ConfigurationSettingsEvent.ResetNavigation)
         }
+
     }
 
 

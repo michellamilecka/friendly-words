@@ -196,6 +196,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 }
                                 return@launch
                             }
+                            var insertedId: Long? = null
 
                             // edytujemy istniejącą konfigurację
                             if(currentId != null) {
@@ -240,7 +241,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 )
 
                                 val newId = configurationRepository.insert(configuration)
-
+                                insertedId = newId
 
                                 // dodajemy informacje o tym ktore mateiraly zostaly dodane do konfiguracji
                                 val resourceLinks = currentState.materialState.vocabItems
@@ -265,6 +266,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                             }
                             _state.update {
                                 it.copy(
+                                    lastSavedConfigId = insertedId ?: it.lastSavedConfigId,
                                     message = message,
                                     navigateToList = true
                                 )
