@@ -8,6 +8,7 @@ data class ConfigurationState(
     val activeConfiguration: Configuration? = null,
     val showDeleteDialogFor: Configuration? = null,
     val showActivateDialogFor: Configuration? = null,
+    val showCopyDialogFor: Configuration? = null,
     val shouldScrollToBottom: Boolean=false,
     val infoMessage: String? = null,
     val newlyAddedConfigId: Long? = null,

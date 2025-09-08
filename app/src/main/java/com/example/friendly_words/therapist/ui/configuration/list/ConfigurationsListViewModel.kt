@@ -96,8 +96,10 @@ class ConfigurationViewModel @Inject constructor(
             is ConfigurationEvent.ClearInfoMessage -> {
                 _state.update { it.copy(infoMessage = null) }
             }
-
             is ConfigurationEvent.CopyRequested -> {
+                _state.update { it.copy(showCopyDialogFor = event.configuration) }
+            }
+            is ConfigurationEvent.ConfirmCopy -> {
 
                 val originalConfiguration = event.configuration
                 val newName = generateCopyName(event.configuration.name, _state.value.configurations.map { it.name })
@@ -140,6 +142,9 @@ class ConfigurationViewModel @Inject constructor(
                         }
                     configurationRepository.insertImageUsages(imageUsages)
                     }
+                _state.update {
+                    it.copy(showCopyDialogFor = null)
+                }
             }
 
             is ConfigurationEvent.EditRequested -> {
@@ -165,7 +170,7 @@ class ConfigurationViewModel @Inject constructor(
             }
 
             ConfigurationEvent.DismissDialogs -> _state.update {
-                it.copy(showDeleteDialogFor = null, showActivateDialogFor = null)
+                it.copy(showDeleteDialogFor = null, showActivateDialogFor = null, showCopyDialogFor = null)
             }
         }
     }

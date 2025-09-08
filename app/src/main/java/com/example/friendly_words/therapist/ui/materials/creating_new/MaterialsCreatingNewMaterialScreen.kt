@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import java.io.IOException
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -54,10 +55,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import java.io.FileOutputStream
 import com.example.shared.data.entities.Image
 import com.example.friendly_words.therapist.ui.main.NavRoutes
+private sealed class GridTile {
+    data class Photo(val image: Image) : GridTile()
+    data object Placeholder : GridTile()
+}
 
 @Composable
 private fun rememberHideKeyboard(): () -> Unit {
@@ -321,7 +327,11 @@ fun MaterialsCreatingNewMaterialScreen(
                         Text("Dodane obrazki", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        val groupedImages = state.images.chunked(3)
+                        val tiles = remember(state.images) {
+                            state.images.map { GridTile.Photo(it) } + GridTile.Placeholder
+                        }
+                        val groupedTiles = tiles.chunked(3)
+
 
                         Box(
                             modifier = Modifier
@@ -330,51 +340,87 @@ fun MaterialsCreatingNewMaterialScreen(
                                 .padding(horizontal = 8.dp)
                         ) {
                             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                items(groupedImages) { group ->
+                                items(groupedTiles) { group ->
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        group.forEach { image ->
-                                            Box(
-                                                modifier = Modifier.weight(1f).aspectRatio(1f).padding(top = 8.dp),
-                                                contentAlignment = Alignment.TopEnd
-                                            ) {
-                                                val painter = rememberAsyncImagePainter(model = image.path)
-                                                Image(
-                                                    painter = painter,
-                                                    contentDescription = null,
-                                                    contentScale = ContentScale.Fit,
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
-                                                Box(
-                                                    modifier = Modifier
-                                                        .align(Alignment.TopEnd)
-                                                        .padding(6.dp)
-                                                        .size(38.dp)
-                                                        .background(LightBlue, shape = MaterialTheme.shapes.small),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.Clear,
-                                                        contentDescription = "Usuń zdjęcie",
-                                                        tint = Color.White,
+                                        group.forEach { tile ->
+                                            when (tile) {
+                                                is GridTile.Photo -> {
+                                                    Box(
                                                         modifier = Modifier
-                                                            .size(14.dp)
-                                                            .clickable {
-                                                                viewModel.onEvent(
-                                                                    MaterialsCreatingNewMaterialEvent.RequestImageDeletion(image)
-                                                                )
-                                                            }
-                                                    )
+                                                            .weight(1f)
+                                                            .aspectRatio(1f)
+                                                            .padding(top = 8.dp),
+                                                        contentAlignment = Alignment.TopEnd
+                                                    ) {
+                                                        val painter = rememberAsyncImagePainter(model = tile.image.path)
+                                                        Image(
+                                                            painter = painter,
+                                                            contentDescription = null,
+                                                            contentScale = ContentScale.Fit,
+                                                            modifier = Modifier.fillMaxSize()
+                                                        )
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .align(Alignment.TopEnd)
+                                                                .padding(6.dp)
+                                                                .size(38.dp)
+                                                                .background(LightBlue, shape = MaterialTheme.shapes.small),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Filled.Clear,
+                                                                contentDescription = "Usuń zdjęcie",
+                                                                tint = Color.White,
+                                                                modifier = Modifier
+                                                                    .size(14.dp)
+                                                                    .clickable {
+                                                                        viewModel.onEvent(
+                                                                            MaterialsCreatingNewMaterialEvent.RequestImageDeletion(tile.image)
+                                                                        )
+                                                                    }
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                GridTile.Placeholder -> {
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .aspectRatio(1f)
+                                                            .padding(top = 8.dp)
+                                                            .background(
+                                                                color = LightBlue.copy(alpha = 0.08f),
+                                                                shape = MaterialTheme.shapes.small
+                                                            )
+                                                            .border(
+                                                                width = 1.dp,
+                                                                color = LightBlue,
+                                                                shape = MaterialTheme.shapes.small
+                                                            ),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Text(
+                                                            text = "Jeśli chcesz dodać obrazek,\nużyj przycisków poniżej",
+                                                            color = DarkBlue,
+                                                            fontSize = 14.sp,
+                                                            lineHeight = 18.sp,
+                                                            textAlign = TextAlign.Center,
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
+                                        // wypełnij wiersz pustymi miejscami, jeśli ma < 3 elementy
                                         repeat(3 - group.size) {
                                             Spacer(modifier = Modifier.weight(1f))
                                         }
                                     }
                                 }
+
                             }
                         }
                     }

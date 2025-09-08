@@ -8,7 +8,6 @@ sealed class ConfigurationEvent {
     data class ConfirmDelete(val configuration: Configuration) : ConfigurationEvent()
     data class ActivateRequested(val configuration: Configuration) : ConfigurationEvent()
     data class ConfirmActivate(val configuration: Configuration) : ConfigurationEvent()
-    data class CopyRequested(val configuration: Configuration) : ConfigurationEvent()
     data class EditRequested(val configuration: Configuration) : ConfigurationEvent()
     //data class MarkShouldScrollToBottom(val scroll: Boolean) : ConfigurationEvent()
     object CreateRequested : ConfigurationEvent()
@@ -17,6 +16,8 @@ sealed class ConfigurationEvent {
     data class SetNewlyAddedId(val id: Long) : ConfigurationEvent()
     //data class ShowInfo(val message: String) : ConfigurationEvent()
     object DismissDialogs : ConfigurationEvent()
+    data class CopyRequested(val configuration: Configuration) : ConfigurationEvent()
+    data class ConfirmCopy(val configuration: Configuration) : ConfigurationEvent()
     object ScrollHandled : ConfigurationEvent()
     data class SetActiveMode(val configuration: Configuration, val mode: String) : ConfigurationEvent()
 

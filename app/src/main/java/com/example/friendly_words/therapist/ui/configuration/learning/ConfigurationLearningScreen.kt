@@ -198,7 +198,7 @@ fun ConfigurationLearningScreen(
                     modifier = Modifier
                 ) {
                     Text(
-                        text = "Czytanie polecenia",
+                        text = "Głosowe odtwarzanie polecenia",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
@@ -220,7 +220,7 @@ fun ConfigurationLearningScreen(
 
                 NumberSelector(
                     label = "Pokaż podpowiedź po (sekundach):",
-                    minValue = 3,
+                    minValue = 1,
                     maxValue = 9,
                     value = state.timeCount,
                     onValueChange = { onEvent(ConfigurationLearningEvent.SetTimeCount(it)) }
