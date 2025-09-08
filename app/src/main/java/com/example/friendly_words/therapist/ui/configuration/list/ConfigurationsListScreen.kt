@@ -8,6 +8,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+import com.example.friendly_words.child_app.main.MainActivityChild
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -53,6 +57,7 @@ fun ConfigurationsListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         val handle = navController.currentBackStackEntry?.savedStateHandle
@@ -210,34 +215,64 @@ fun ConfigurationsListScreen(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                TextField(
-                    value = state.searchQuery,
-                    onValueChange = { viewModel.onEvent(ConfigurationEvent.SearchChanged(it)) },
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.2f)
-                        .padding(16.dp),
-                    placeholder = { Text("Wyszukaj", fontSize = calculateResponsiveFontSize(35.sp)) },
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "Search Icon", tint = Color.Gray)
-                    },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                        }
-                    ),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color.White,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = state.searchQuery,
+                        onValueChange = { viewModel.onEvent(ConfigurationEvent.SearchChanged(it)) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 56.dp), // żeby ładnie się wyrównało z przyciskiem
+                        placeholder = { Text("Wyszukaj", fontSize = calculateResponsiveFontSize(35.sp)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon", tint = Color.Gray) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                            }
+                        ),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Gray,
+                            cursorColor = Color.Black,
+                            focusedLabelColor = DarkBlue,
+                            unfocusedLabelColor = Color.Gray
+                        ),
+                        shape = RoundedCornerShape(10)
+                    )
+
+                    Spacer(Modifier.width(12.dp))
+
+
+                    IconButton(
+                        onClick = {
+                            val intent = Intent(context, MainActivityChild::class.java).apply {
+
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF0B930B).copy(alpha = 0.15f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Uruchom aplikację dziecka",
+                            tint = Color(0xFF0B930B),
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                }
+
+
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.width(20.dp))
