@@ -50,6 +50,7 @@ fun MainScreen() {
         navController = navController,
         startDestination = NavRoutes.MAIN
     ) {
+
         composable(NavRoutes.MAIN) {
             MainContent(
                 onConfigClick = { navController.navigate(NavRoutes.CONFIG_LIST) },
@@ -196,37 +197,38 @@ fun MainContent(
                     fontSize = 25.sp
                 )
 
-                Button(
-                    onClick = onMaterialsClick,
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = LightBlue2,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier
-                        .width((LocalConfiguration.current.screenWidthDp * 0.7f).dp)
-                        .height(85.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    Button(
+                        onClick = onMaterialsClick,
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = LightBlue2,
+                            contentColor = Color.Black
+                        ),
+                        modifier = Modifier
+                            .width((LocalConfiguration.current.screenWidthDp * 0.7f).dp)
+                            .height(85.dp)
                     ) {
-
-                        Text("MATERIAŁY EDUKACYJNE", fontSize = 25.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(
-                            onClick = { showMaterialsInfo = true },
-                            modifier = Modifier.size(40.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Informacje o materiałach edukacyjnych",
-                                tint = DarkBlue,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
 
+                            Text("MATERIAŁY EDUKACYJNE", fontSize = 25.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(
+                                onClick = { showMaterialsInfo = true },
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = "Informacje o materiałach edukacyjnych",
+                                    tint = DarkBlue,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        }
                     }
-                }
+
+
 
                 Button(
                     onClick = onConfigClick,
@@ -251,7 +253,9 @@ fun MainContent(
                             modifier = Modifier.size(32.dp)
                         )
                     }
+
                 }
+
             }
         }
     }

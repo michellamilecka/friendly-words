@@ -102,7 +102,7 @@ fun ImageSelectionWithCheckbox(
                         ) {
                             Checkbox(
                                 checked = inLearningStates[index],
-                                enabled = selectedImages[index],
+                                //enabled = selectedImages[index],
                                 onCheckedChange = { newLearning ->
                                     val currentTest = inTestStates[index]
                                     val shouldSelectImage = newLearning || currentTest
@@ -124,7 +124,7 @@ fun ImageSelectionWithCheckbox(
                             Spacer(modifier = Modifier.width(35.dp))
                             Checkbox(
                                 checked = inTestStates[index],
-                                enabled = selectedImages[index],
+                                //enabled = selectedImages[index],
                                 onCheckedChange = { newTest ->
                                     val currentLearning = inLearningStates[index]
                                     val shouldSelectImage = newTest || currentLearning
@@ -486,7 +486,7 @@ fun ConfigurationMaterialScreen(
                                     if (filteredWords.isEmpty()) {
                                         item {
                                             Text(
-                                                "BRAK WYNIKÓW",
+                                                "BRAK WYNIKÓW\nDODAJ MATERIAŁY W SEKCJI MATERIAŁY EDUKACYJNE",
                                                 fontSize = 16.sp,
                                                 color = Color.Gray,
                                                 modifier = Modifier.padding(vertical = 8.dp)

@@ -45,7 +45,7 @@ fun ConfigurationReinforcementScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Pochwały słowne",
+                    text = "Wzmocnienia słowne",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue,
@@ -129,7 +129,7 @@ fun ConfigurationReinforcementScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Pochwały wizualne",
+                    text = "Wzmocnienia wizualne",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue,
