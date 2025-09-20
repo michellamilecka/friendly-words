@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalFocusManager
@@ -52,6 +53,8 @@ fun MaterialsListScreen(
     viewModel: MaterialsListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    var expandedImagePath by remember { mutableStateOf<String?>(null) }
+
 
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
@@ -196,7 +199,8 @@ fun MaterialsListScreen(
                         focusedLabelColor = DarkBlue,
                         unfocusedLabelColor = Color.Gray,
                         cursorColor = Color.Black
-                    )
+                    ),
+                    shape = RoundedCornerShape(10)
                 )
 
                 Row(
@@ -354,6 +358,7 @@ fun MaterialsListScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .aspectRatio(1f)
+                                        .clickable { expandedImagePath = image.path }
                                 )
                             }
                         }
@@ -364,6 +369,33 @@ fun MaterialsListScreen(
             }
         }
     }
+    if (expandedImagePath != null) {
+        // Opcjonalnie: obsługa wstecz, by zamykać overlay przy Back
+        androidx.activity.compose.BackHandler(enabled = true) {
+            expandedImagePath = null
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.95f))
+                .clickable { expandedImagePath = null }, // <- tap anywhere to close
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(expandedImagePath),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(16.dp)
+                    .clickable { expandedImagePath = null }, // <- tap image to close
+                alignment = Alignment.Center,
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit
+            )
+        }
+    }
+
 
     // Dialog potwierdzający usunięcie
     val materialToDelete = state.materialToDelete
