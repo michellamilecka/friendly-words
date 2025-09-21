@@ -5,87 +5,74 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.times
+import kotlin.math.ceil
+import kotlin.math.min
 
 @Composable
 fun RoundOptionsLayout(
     options: List<OptionData>,
-    numberOfItems: Int, // 1–6
+    numberOfItems: Int, // faktyczna liczba elementów do wyświetlenia
     isDimmed: (OptionData) -> Boolean,
     isScaled: (OptionData) -> Boolean,
     animateCorrect: (OptionData) -> Boolean,
     outlineCorrect: (OptionData) -> Boolean,
     onClick: (OptionData) -> Unit
 ) {
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        // Obliczamy dynamiczny rozmiar obrazka w zależności od szerokości ekranu i liczby elementów
-        val spacing = 32.dp
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val spacing = 24.dp
         val horizontalPadding = 24.dp
-        val totalSpacing = spacing * (minOf(numberOfItems, options.size) - 1)
-        val availableWidth = maxWidth - 2 * horizontalPadding - totalSpacing
-        val itemSize = availableWidth / minOf(numberOfItems, options.size)
+        val verticalPadding = 24.dp
 
-        when (options.size) {
-            1 -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ImageOptionBox(
-                        imageRes = options[0].imageRes,
-                        label = options[0].label,
-                        size = itemSize,
-                        isDimmed = isDimmed(options[0]),
-                        isScaled = isScaled(options[0]),
-                        animateCorrect = animateCorrect(options[0]),
-                        outlineCorrect = outlineCorrect(options[0]),
-                        onClick = { onClick(options[0]) }
-                    )
-                }
-            }
-            2, 3, 4, 5, 6 -> {
-                // Tutaj możesz użyć swojej logiki rzędy / kolumny jak wcześniej
-                // tylko teraz ImageOptionBox bierze size = itemSize
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing),
+        // liczba elementów, które faktycznie wyświetlimy
+        val displayItems = options.take(numberOfItems)
+
+        // liczba kolumn: max 3
+        val columns = min(3, numberOfItems)
+        val rows = ceil(numberOfItems / 3.0).toInt()
+
+        // dynamiczny rozmiar obrazka w zależności od dostępnego miejsca
+        val itemWidth = (maxWidth - horizontalPadding * 2 - spacing * (columns - 1)) / columns
+        val itemHeight = (maxHeight - verticalPadding * 2 - spacing * (rows - 1)) / rows
+        val itemSize = min(itemWidth, itemHeight)
+
+        // podział na rzędy
+        val rowsList = displayItems.chunked(columns)
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(spacing),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+        ) {
+            rowsList.forEach { rowItems ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(spacing),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Prosta logika: np. dla 5 – 3 na górze, 2 na dole
-                    val rows = when (options.size) {
-                        2, 3, 4 -> listOf(options)
-                        5 -> listOf(options.take(3), options.takeLast(2))
-                        6 -> listOf(options.take(3), options.drop(3).take(3))
-                        else -> listOf(options)
+                    Spacer(Modifier.weight(1f))
+                    rowItems.forEach { item ->
+                        ImageOptionBox(
+                            imageRes = item.imageRes,
+                            label = item.label,
+                            size = itemSize, // cała kratka, razem z ramką i paddingiem
+                            isDimmed = isDimmed(item),
+                            isScaled = isScaled(item),
+                            animateCorrect = animateCorrect(item),
+                            outlineCorrect = outlineCorrect(item),
+                            onClick = { onClick(item) }
+                        )
                     }
 
-                    rows.forEach { rowItems ->
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(spacing),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Spacer(Modifier.weight(1f))
-                            rowItems.forEach { item ->
-                                ImageOptionBox(
-                                    imageRes = item.imageRes,
-                                    label = item.label,
-                                    size = itemSize,
-                                    isDimmed = isDimmed(item),
-                                    isScaled = isScaled(item),
-                                    animateCorrect = animateCorrect(item),
-                                    outlineCorrect = outlineCorrect(item),
-                                    onClick = { onClick(item) }
-                                )
-                            }
-                            Spacer(Modifier.weight(1f))
-                        }
-                    }
+                    Spacer(Modifier.weight(1f))
                 }
             }
         }
     }
 }
-
 
 data class OptionData(
     val imageRes: Int,

@@ -9,8 +9,8 @@ enum class InstructionType(val format: (String) -> String) {
 }
 
 object GameSettings {
-    var numberOfPicturesPerRound: Int = 4
-    var numberOfWordsToTeach = 3
+    var numberOfPicturesPerRound: Int = 1
+    var numberOfWordsToTeach = gameItems.size
     var repetitionsPerWord = 1
     var isTestMode: Boolean = false
     var instructionType: InstructionType = InstructionType.SHOW_ME

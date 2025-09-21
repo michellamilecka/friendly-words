@@ -186,7 +186,7 @@ fun GameScreen(
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(Modifier.height(80.dp))
+                Spacer(Modifier.height(48.dp))
 
                 RoundOptionsLayout(
                     options = currentRound.options.map { OptionData(it.imageRes, it.label) },
