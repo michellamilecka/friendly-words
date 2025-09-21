@@ -86,8 +86,8 @@ fun ConfigurationSaveScreen(
                 modifier = Modifier
                     .weight(0.3f)
                     .fillMaxHeight()
-                    .padding(end = 16.dp),
-                verticalArrangement = Arrangement.Center,
+                    .padding(top = 80.dp,end = 16.dp),
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
 
             ) {

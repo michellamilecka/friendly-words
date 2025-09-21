@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class Resource(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val learnedWord: String
+    val learnedWord: String,
+    val category: String = ""
 )

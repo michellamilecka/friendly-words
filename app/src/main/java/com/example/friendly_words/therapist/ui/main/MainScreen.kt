@@ -263,7 +263,18 @@ fun MainContent(
         AlertDialog(
             onDismissRequest = { showMaterialsInfo = false },
             title = { Text("Materiały edukacyjne") },
-            text = { Text("Tekst do wklejenia od Pani z Insytutu.") },
+            text = {
+                Text(
+                    "Materiały edukacyjne to obrazki połączone ze słowami, które je opisują.\n\n"
+                            + "W aplikacji można:\n" +
+                            "- tworzyć nowe materiały (używając obrazków z galerii oraz robiąc zdjęcie w danym momencie),\n" + "" +
+                            "- edytować utworzone wcześniej materiały,\n" +
+                            "- usuwać materiały,\n" +
+                            "- przeglądać zawartość istniejących materiałów,\n" +
+                            "- wyszukiwać materiały po nazwie lub po kategorii, do której należą.\n\n"
+                            + "Materiały edukacyjne tworzy się raz i można ich używać wielokrotnie w różnych krokach uczenia."
+                )
+            },
             confirmButton = {
                 TextButton(onClick = { showMaterialsInfo = false }) {
                     Text("OK", color = DarkBlue)
@@ -275,7 +286,22 @@ fun MainContent(
         AlertDialog(
             onDismissRequest = { showConfigInfo = false },
             title = { Text("Kroki uczenia") },
-            text = { Text("Tekst do wklejenia od Pani z Insytutu.") },
+            text = {
+                Text(
+                    "Kroki uczenia to zestawy ćwiczeń przygotowane na podstawie wcześniej dodanych materiałów edukacyjnych.\n\n"
+                    +"W każdym kroku określa się:\n" +
+                            "- które materiały edukacyjne zostaną użyte,\n" +
+                            "- parametry ćwiczeń, takie jak czas na odpowiedź, liczba powtórzeń itd. (dokładne ustawienia można dostosować na etapie tworzenia lub edycji kroku uczenia),\n\n"
+                    +"W aplikacji można:\n" +
+                            "- tworzyć kroki uczenia,\n" +
+                            "- edytować istniejące kroki uczenia,\n" +
+                            "- usuwać kroki uczenia,\n" +
+                            "- przeglądać szczegóły kroków uczenia,\n" +
+                            "- wyszukiwać kroki uczenia po nazwie,\n"+
+                            "- aktywować wybrany krok w wybranym trybie pracy (nauka lub test dla dziecka),\n" +
+                            "- przejść do aplikacji dla dziecka z aktywowanym krokiem uczenia w celu rozpoczęcia nauki/testu.\n\n"
+                )
+            },
             confirmButton = {
                 TextButton(onClick = { showConfigInfo = false }) {
                     Text("OK", color = DarkBlue)
@@ -289,7 +315,17 @@ fun MainContent(
             title = { Text("Na czym polega aplikacja?") },
             text = {
                 Text(
-                    "Tekst przygotowany przez Insytut."
+                    "Aplikacja służy do nauki słów z wykorzystaniem obrazków.\n" +
+                            "\n" +
+                            "Na początku przygotowuje się materiały edukacyjne - czyli obrazki wraz ze słowami, które je opisują." +
+                            "Następnie tworzy się kroki uczenia, czyli zestawy ćwiczeń, w których wybiera się materiały z listy wcześniej utworzonych oraz ustala sposób ich wykorzystania.\n" +
+                            "\n" +
+                            "Po utworzeniu materiałów i kroków uczenia należy aktywować ten, z którego chcemy skorzystać i wybrać tryb pracy z dzieckiem - naukę lub test.  \n" +
+                            "\n" +
+                            "Po aktywowaniu wybranego kroku i ustawieniu trybu wystarczy nacisnąć zielony przycisk Play znajdujący się nad listą kroków uczenia.Przycisk ten przeniesie Cię bezpośrednio do aplikacji dla dziecka. Możesz też samodzielnie otworzyć aplikację dla dziecka i tam kliknąć Play, aby rozpocząć ćwiczenia.\n\n"+
+                            "W trybie nauki dorosły wspiera dziecko i pomaga mu w razie trudności.\n" +
+                            "W trybie testu dorosły obserwuje samodzielne działania dziecka, aby sprawdzić jego postępy.\n"
+
                 )
             },
             confirmButton = {

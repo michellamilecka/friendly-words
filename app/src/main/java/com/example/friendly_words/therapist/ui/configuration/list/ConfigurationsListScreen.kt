@@ -419,6 +419,7 @@ fun ConfigurationsListScreen(
                 state.showActivateDialogFor?.let { configToActivate ->
                     YesNoDialogWithName(
                         show = true,
+                        info = "Tylko jeden krok uczenia może być aktywny w danym momecnie.",
                         message = "Czy chcesz aktywować krok uczenia:",
                         name = "${configToActivate.name}?",
                         onConfirm = {
@@ -482,8 +483,15 @@ fun ConfigurationItem(
                     Column {
                         Spacer(modifier = Modifier.height(13.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(configuration.name, fontSize = 30.sp)
-
+                            Text(
+                                configuration.name,
+                                fontSize = 30.sp,
+                                modifier = Modifier.clickable {
+                                    if (!isActive) {
+                                        onActivateRequest()
+                                    }
+                                }
+                            )
                             // 🔹 Ikona informacji dla przykładów
                             if (configuration.isExample) {
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -549,7 +557,7 @@ fun ConfigurationItem(
                             uncheckedThumbColor = DarkBlue
                         )
                     )
-                    Text("Test", fontSize = 18.sp)
+                    Text("Test dla ucznia", fontSize = 18.sp)
                 }
             }
 
