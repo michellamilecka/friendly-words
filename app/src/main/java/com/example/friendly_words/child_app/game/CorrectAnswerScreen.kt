@@ -10,12 +10,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.child_app.data.GameItem
 import com.example.friendly_words.child_app.theme.Blue
 import kotlinx.coroutines.delay
 
 @Composable
 fun CorrectAnswerScreen(
-    correctItem: com.example.friendly_words.child_app.data.GameItem,
+    correctItem: GameItem,
     praiseText: String,          // ← przekazujemy wylosowaną pochwałę
     speakPraise: () -> Unit,     // ← lambda, która odtwarza TTS
     onTimeout: () -> Unit
