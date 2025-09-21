@@ -68,7 +68,8 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     it.copy(
                         resourceName = resource.name,
                         learnedWord = TextFieldValue(resource.learnedWord, selection = TextRange(resource.learnedWord.length)),
-                        images = images
+                        images = images,
+                        category = resource.category
                     )
                 }
             }
@@ -118,6 +119,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 viewModelScope.launch {
                     val name = state.value.resourceName.trim()
                     val learnedWord = state.value.learnedWord.text.trim()
+                    val category = state.value.category.trim()
 
                     if (name.isBlank() && learnedWord.isBlank()) {
                         _state.update { it.copy(showEmptyTextFieldsDialog = true) }
@@ -137,9 +139,9 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                     }
 
                     val resourceId = if (resourceIdToEdit == null) {
-                        resourceRepository.insert(Resource(name = name, learnedWord = learnedWord))
+                        resourceRepository.insert(Resource(name = name, learnedWord = learnedWord, category = category))
                     } else {
-                        resourceRepository.update(Resource(id = resourceIdToEdit, name = name, learnedWord = learnedWord))
+                        resourceRepository.update(Resource(id = resourceIdToEdit, name = name, learnedWord = learnedWord, category = category))
                         resourceIdToEdit
                     }
 
@@ -228,6 +230,9 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             }
             is MaterialsCreatingNewMaterialEvent.DismissEmptyFieldsDialog -> {
                 _state.update { it.copy(showEmptyTextFieldsDialog = false) }
+            }
+            is MaterialsCreatingNewMaterialEvent.CategoryChanged -> {
+                _state.update { it.copy(category = event.newCategory) }
             }
         }
     }

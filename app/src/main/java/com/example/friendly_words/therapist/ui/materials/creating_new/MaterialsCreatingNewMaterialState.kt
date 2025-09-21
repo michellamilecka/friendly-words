@@ -16,6 +16,6 @@ data class MaterialsCreatingNewMaterialState (
     val learnedWord: TextFieldValue = TextFieldValue(""),
     val allowEditingResourceName: Boolean = false,
     val imageToConfirmDelete: Image? = null,
-    val confirmingDuplicateSave: Boolean = false
-
+    val confirmingDuplicateSave: Boolean = false,
+    val category: String = ""
 )

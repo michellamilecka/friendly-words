@@ -239,6 +239,30 @@ fun MaterialsCreatingNewMaterialScreen(
                         )
                     )
 
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Kategoria", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = state.category, // <-- wymaga pola 'category' w stanie
+                        onValueChange = { viewModel.onEvent(MaterialsCreatingNewMaterialEvent.CategoryChanged(it)) },
+                        label = { Text("Wpisz kategorię (np. zwierzę)") },
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f),
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            backgroundColor = Color.White,
+                            disabledTextColor = Color.DarkGray,
+                            disabledBorderColor = Color.Gray,
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = DarkBlue,
+                            unfocusedLabelColor = Color.DarkGray,
+                            cursorColor = Color.Black
+                        )
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 

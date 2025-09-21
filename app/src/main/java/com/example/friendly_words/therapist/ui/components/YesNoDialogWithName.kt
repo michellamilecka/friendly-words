@@ -22,7 +22,8 @@ fun YesNoDialogWithName(
     message: String,
     name:String,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    info: String? = null
 ) {
     if (show) {
         Dialog(
@@ -41,6 +42,19 @@ fun YesNoDialogWithName(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // info – tylko jeśli podane
+                    if (!info.isNullOrBlank()) {
+                        Text(
+                            text = info,
+                            fontSize = 18.sp,
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
                     Text(
                         text = message,
                         fontSize = 24.sp,
