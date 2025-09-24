@@ -10,5 +10,8 @@ data class GameItem(
 val gameItems = listOf(
     GameItem("Misiu", R.drawable.misiu_1),
     GameItem("Kredka", R.drawable.kredka_1),
-    GameItem("But", R.drawable.but_1)
+    GameItem("But", R.drawable.but_1),
+    GameItem("Parasol", R.drawable.parasol_1),
+    GameItem("Tablet", R.drawable.tablet_1),
+    GameItem("Misiu 2", R.drawable.misiu_2)
 )

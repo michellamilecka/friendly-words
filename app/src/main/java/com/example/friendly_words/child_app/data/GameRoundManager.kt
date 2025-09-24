@@ -12,7 +12,9 @@ fun generateGameRounds(): List<GameRound> {
 
     selectedWords.forEach { word ->
         repeat(GameSettings.repetitionsPerWord) {
-            val distractors = gameItems.filter { it != word }.shuffled().take(2)
+            val distractors = gameItems.filter { it != word }
+                .shuffled()
+                .take(GameSettings.numberOfPicturesPerRound - 1)
             val options = (distractors + word).shuffled()
             rounds.add(GameRound(correctItem = word, options = options))
         }

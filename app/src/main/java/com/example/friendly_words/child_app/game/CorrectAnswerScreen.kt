@@ -10,19 +10,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.child_app.data.GameItem
 import com.example.friendly_words.child_app.theme.Blue
 import kotlinx.coroutines.delay
 
 @Composable
 fun CorrectAnswerScreen(
-    correctItem: com.example.friendly_words.child_app.data.GameItem,
-    praiseText: String,          // ← przekazujemy wylosowaną pochwałę
-    speakPraise: () -> Unit,     // ← lambda, która odtwarza TTS
+    correctItem: GameItem,
+    praiseText: String,
+    speakPraise: () -> Unit,
     onTimeout: () -> Unit
 ) {
-    // uruchamiamy TTS i timer tylko raz
+    // uruchamiamy TTS i timer
     LaunchedEffect(Unit) {
-        speakPraise()            // ← mówimy pochwałę
+        speakPraise()
         delay(3000)
         onTimeout()
     }
