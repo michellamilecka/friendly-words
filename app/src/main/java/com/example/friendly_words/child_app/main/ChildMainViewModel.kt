@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class ChildMainViewModel @Inject constructor() : ViewModel() {
+class ChildMainViewModel @Inject constructor(
+    val configurationDao: com.example.shared.data.daos.ConfigurationDao
+) : ViewModel() {
 
     private val _state = MutableStateFlow(ChildMainState())
     val state: StateFlow<ChildMainState> = _state

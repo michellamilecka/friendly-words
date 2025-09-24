@@ -17,13 +17,13 @@ import kotlinx.coroutines.delay
 @Composable
 fun CorrectAnswerScreen(
     correctItem: GameItem,
-    praiseText: String,          // ← przekazujemy wylosowaną pochwałę
-    speakPraise: () -> Unit,     // ← lambda, która odtwarza TTS
+    praiseText: String,
+    speakPraise: () -> Unit,
     onTimeout: () -> Unit
 ) {
-    // uruchamiamy TTS i timer tylko raz
+    // uruchamiamy TTS i timer
     LaunchedEffect(Unit) {
-        speakPraise()            // ← mówimy pochwałę
+        speakPraise()
         delay(3000)
         onTimeout()
     }

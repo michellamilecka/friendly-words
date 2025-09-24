@@ -28,7 +28,10 @@ fun GameScreen(
     val rounds by viewModel.rounds
     val currentRound = rounds[currentRoundIndex]
     val correctItem = currentRound.correctItem
-    val instructionText = com.example.friendly_words.child_app.data.GameSettings.instructionType.getInstructionText(correctItem.label)
+    val instructionText =
+        com.example.friendly_words.child_app.data.GameSettings.instructionType.getInstructionText(
+            correctItem.label
+        )
 
     val context = LocalContext.current
     var ttsReady by remember { mutableStateOf(false) }
@@ -66,7 +69,9 @@ fun GameScreen(
     }
 
     DisposableEffect(Unit) {
-        onDispose { tts.stop(); tts.shutdown() }
+        onDispose {
+            tts.stop(); tts.shutdown()
+        }
     }
 
     // ---------- OBSŁUGA KLIKNIĘĆ ----------
@@ -77,7 +82,8 @@ fun GameScreen(
 
         if (com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             if (!viewModel.answerJudged.value) {
-                if (isCorrect) viewModel.correctAnswersCount.value++ else viewModel.wrongAnswersCount.value++
+                if (isCorrect) viewModel.correctAnswersCount.value++
+                else viewModel.wrongAnswersCount.value++
                 viewModel.answerJudged.value = true
                 viewModel.goNextAfterCongrats.value = true
             }
@@ -106,7 +112,8 @@ fun GameScreen(
     if (viewModel.showCongratsScreen.value) {
         LaunchedEffect(viewModel.showCongratsScreen.value) {
             if (viewModel.showCongratsScreen.value) {
-                currentPraise = com.example.friendly_words.child_app.data.GameSettings.praises.random()
+                currentPraise =
+                    com.example.friendly_words.child_app.data.GameSettings.praises.random()
                 speakPraise(currentPraise)
             }
         }
@@ -116,7 +123,10 @@ fun GameScreen(
             praiseText = currentPraise,
             speakPraise = { speakPraise(currentPraise) },
             onTimeout = {
-                viewModel.showCongratsScreen.value = false
+                viewModel.goNextAfterCongrats.value = true
+
+                // UWAGA: usunęliśmy viewModel.showCongratsScreen.value = false stąd,
+                // teraz ekran gratulacji będzie trwał aż do przełączenia rundy.
 
                 when (viewModel.repeatStage.value) {
                     0 -> {
@@ -127,22 +137,26 @@ fun GameScreen(
                             viewModel.repeatStage.value = 1
                         }
                     }
+
                     1 -> {
                         if (viewModel.hadMistakeThisRound.value) {
                             val list = rounds.toMutableList()
                             list.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = list
                         } else {
-                            val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
+                            val shuffledRound =
+                                currentRound.copy(options = currentRound.options.shuffled())
                             val list = rounds.toMutableList()
                             list.add(currentRoundIndex + 1, shuffledRound)
                             viewModel.rounds.value = list
                             viewModel.repeatStage.value = 2
                         }
                     }
+
                     2 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
+                            val shuffledRound =
+                                currentRound.copy(options = currentRound.options.shuffled())
                             val list = rounds.toMutableList()
                             list.add(currentRoundIndex + 1, shuffledRound)
                             viewModel.rounds.value = list
@@ -153,7 +167,6 @@ fun GameScreen(
                 }
 
                 viewModel.hadMistakeThisRound.value = false
-                viewModel.goNextAfterCongrats.value = true
             }
         )
     }
@@ -161,14 +174,14 @@ fun GameScreen(
     // ---------- PRZEJŚCIE DO KOLEJNEJ RUNDY ----------
     LaunchedEffect(viewModel.goNextAfterCongrats.value) {
         if (viewModel.goNextAfterCongrats.value) {
-            delay(300)
             viewModel.goNextAfterCongrats.value = false
+            viewModel.showCongratsScreen.value = false // <- PRZENIESIONE TUTAJ
             viewModel.goToNext(onGameFinished)
         }
     }
 
     // ---------- UI RUNDY ----------
-    if (!viewModel.showCongratsScreen.value) {
+    if (!viewModel.showCongratsScreen.value && !viewModel.goNextAfterCongrats.value) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -177,7 +190,9 @@ fun GameScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize().padding(24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
             ) {
                 Text(
                     text = instructionText,
@@ -191,15 +206,26 @@ fun GameScreen(
                 RoundOptionsLayout(
                     options = currentRound.options.map { OptionData(it.imageRes, it.label) },
                     numberOfItems = GameSettings.numberOfPicturesPerRound,
-                    isDimmed = { item -> viewModel.dimIncorrect.value && currentRound.options.any { it.label == item.label && it != currentRound.correctItem } },
-                    isScaled = { item -> viewModel.scaleCorrect.value && currentRound.correctItem.label == item.label },
-                    animateCorrect = { item -> viewModel.animateCorrect.value && currentRound.correctItem.label == item.label },
-                    outlineCorrect = { item -> viewModel.outlineCorrect.value && currentRound.correctItem.label == item.label },
+                    isDimmed = { item ->
+                        viewModel.dimIncorrect.value &&
+                                currentRound.options.any {
+                                    it.label == item.label && it != currentRound.correctItem
+                                }
+                    },
+                    isScaled = { item ->
+                        viewModel.scaleCorrect.value && currentRound.correctItem.label == item.label
+                    },
+                    animateCorrect = { item ->
+                        viewModel.animateCorrect.value && currentRound.correctItem.label == item.label
+                    },
+                    outlineCorrect = { item ->
+                        viewModel.outlineCorrect.value && currentRound.correctItem.label == item.label
+                    },
                     onClick = { item ->
-                        currentRound.options.find { it.label == item.label }?.let { handleAnswer(it) }
+                        currentRound.options.find { it.label == item.label }
+                            ?.let { handleAnswer(it) }
                     }
                 )
-
             }
         }
     }

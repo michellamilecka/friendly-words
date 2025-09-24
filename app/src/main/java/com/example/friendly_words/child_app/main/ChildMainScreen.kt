@@ -20,12 +20,15 @@ fun ScreenNavigationGame(viewModel: ChildMainViewModel) {
             InformationScreen()
         }
         "main" -> {
-            MainScreen(onPlayClick = {
-                viewModel.onEvent(ChildMainEvent.GoToNextScreen)
-            })
+            MainScreen(
+                configurationDao = viewModel.configurationDao,
+                onPlayClick = {
+                    viewModel.onEvent(ChildMainEvent.GoToNextScreen)
+                }
+            )
         }
         "game" -> {
-            val gameViewModel: GameViewModel = hiltViewModel()  // pobranie ViewModel przez Hilt
+            val gameViewModel: GameViewModel = hiltViewModel()
             GameScreen(
                 viewModel = gameViewModel,
                 onGameFinished = { correct, wrong ->
