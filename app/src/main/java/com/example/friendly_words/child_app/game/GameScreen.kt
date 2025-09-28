@@ -66,11 +66,11 @@ fun GameScreen(
         viewModel.hadMistakeThisRound.value = false
         viewModel.showCongratsScreen.value = false
         viewModel.goNextAfterCongrats.value = false
-        viewModel.showHint.value = false // reset podpowiedzi
+        viewModel.showHint.value = false
 
         if (!com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             delay(hintDelayMillis)
-            viewModel.showHint.value = true // pokazanie podpowiedzi po czasie
+            viewModel.showHint.value = true
         }
     }
 
@@ -123,10 +123,14 @@ fun GameScreen(
     if (viewModel.showCongratsScreen.value) {
         LaunchedEffect(viewModel.showCongratsScreen.value) {
             if (viewModel.showCongratsScreen.value) {
-                currentPraise = com.example.friendly_words.child_app.data.GameSettings.praises.random()
-                speakPraise(currentPraise)
+                val praises = viewModel.activeLearningSettings.value?.typesOfPraises ?: emptyList()
+                if (praises.isNotEmpty()) {
+                    currentPraise = praises.random()
+                    speakPraise(currentPraise)
+                }
             }
         }
+
 
         CorrectAnswerScreen(
             correctItem = correctItem,
