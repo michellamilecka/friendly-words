@@ -223,8 +223,9 @@ fun MaterialsListScreen(
                             selectedMaterial?.let { material ->
                                 // Znajdź indeks w filtrowanej liście
                                 val filteredMaterials = state.materials.filter {
-                                    it.name.contains(searchQuery, ignoreCase = true)
+                                    it.name.contains(searchQuery, ignoreCase = true) || it.category.contains(searchQuery, ignoreCase = true)
                                 }
+
                                 val filteredIndex = filteredMaterials.indexOf(material)
 
                                 // Scrolluj tylko jeśli materiał jest widoczny w filtrowanej liście
@@ -252,7 +253,7 @@ fun MaterialsListScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             val filteredMaterials = state.materials.filter {
-                                it.name.contains(searchQuery, ignoreCase = true)
+                                it.name.contains(searchQuery, ignoreCase = true) || it.category.contains(searchQuery, ignoreCase = true)
                             }
 
                             // POPRAWIONE: używamy filteredMaterials zamiast state.materials
@@ -280,12 +281,26 @@ fun MaterialsListScreen(
                                             .padding(vertical = 8.dp, horizontal = 12.dp)
                                             .height(55.dp)
                                     ) {
-                                        Text(
-                                            material.name,
-                                            fontSize = 28.sp,
-                                            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                        Row(
+                                            modifier = Modifier.weight(1f),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                material.name,
+                                                fontSize = 28.sp,
+                                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+                                            )
+                                            if (material.category.isNotBlank()) {
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    "(${material.category})",
+                                                    fontSize = 22.sp,
+                                                    color = Color.Gray,
+                                                    fontWeight = FontWeight.Normal
+                                                )
+                                            }
+                                        }
+
                                         IconButton(onClick = {
                                             onEditClick(material.id)
                                         }) {
@@ -364,8 +379,19 @@ fun MaterialsListScreen(
                         }
                     }
                 } else {
-                    Text("Wybierz materiał z listy", fontSize = 25.sp)
-                }
+                    if (state.materials.isEmpty()) {
+                        Text(
+                            "Brak materiałów do wyświetlenia. Dodaj nowy materiał klikając przycisk DODAJ.",
+                            fontSize = 25.sp,
+                            color = Color.Black
+                        )
+                    } else {
+                        Text(
+                            "Wybierz materiał z listy",
+                            fontSize = 25.sp,
+                            color = Color.Black
+                        )
+                    }}
             }
         }
     }
