@@ -1,16 +1,23 @@
 package com.example.shared.data.repositories
 
+import com.example.shared.data.another.ResourceWithImages
 import com.example.shared.data.daos.ConfigurationDao
+import com.example.shared.data.daos.ResourceDao
 import com.example.shared.data.entities.Configuration
 import com.example.shared.data.entities.ConfigurationImageUsage
 import com.example.shared.data.entities.ConfigurationResource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.example.shared.data.another.ConfigurationMaterialState
+import com.example.shared.data.another.VocabularyItem
+import com.example.shared.data.another.ConfigurationReinforcementState
 
 @Singleton
 class ConfigurationRepository @Inject constructor(
-    private val dao: ConfigurationDao
+    private val dao: ConfigurationDao,
+    private val resourceDao: ResourceDao
 ) {
 
     // metody dla konfiguracji
@@ -55,4 +62,48 @@ class ConfigurationRepository @Inject constructor(
     suspend fun getImageUsages(configurationId: Long): List<ConfigurationImageUsage> = dao.getConfigurationImageUsages(configurationId)
 
     suspend fun deleteImageUsagesByConfigId(configId: Long) { dao.deleteConfigurationImageUsagesByConfigId(configId) }
+
+    suspend fun getResourcesWithImagesForActiveConfig(): List<ResourceWithImages> {
+        val activeConfig = dao.getActiveConfiguration().firstOrNull() ?: return emptyList()
+
+        // Pobierz wszystkie powiązania ConfigurationResource
+        val configResources = dao.getConfigurationResources(activeConfig.id)
+        val resourceIds = configResources.map { it.resourceId }
+
+        // Pobierz wszystkie zasoby z obrazami i filtruj po resourceIds
+        val allResourcesWithImages = resourceDao.getResourcesWithImages()
+        return allResourcesWithImages.filter { it.resource.id in resourceIds }
+    }
+
+    suspend fun getMaterialState(configId: Long): ConfigurationMaterialState {
+        val resources = getResourcesWithImagesForActiveConfig()
+        return ConfigurationMaterialState(
+            vocabItems = resources.map { res ->
+                VocabularyItem(
+                    id = res.resource.id,
+                    word = res.resource.name,
+                    learnedWord = res.resource.learnedWord,
+                    selectedImages = List(res.images.size) { true },
+                    inLearningStates = List(res.images.size) { true },
+                    inTestStates = List(res.images.size) { false },
+                    imagePaths = res.images.map { it.path }
+                )
+            }
+        )
+    }
+
+    suspend fun getReinforcementState(configId: Long): ConfigurationReinforcementState {
+        // Tymczasowo np. stałe wartości:
+        return ConfigurationReinforcementState(
+            praiseStates = mapOf(
+                "dobrze" to true,
+                "super" to true,
+                "świetnie" to true,
+                "ekstra" to true,
+                "rewelacja" to true,
+                "brawo" to true
+            ),
+            animationsEnabled = true
+        )
+    }
 }

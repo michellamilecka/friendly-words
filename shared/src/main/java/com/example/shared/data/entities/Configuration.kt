@@ -3,6 +3,8 @@ package com.example.shared.data.entities
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.shared.data.another.ConfigurationMaterialState
+import com.example.shared.data.another.ConfigurationReinforcementState
 
 @Entity(tableName = "configurations")
 data class Configuration(
@@ -19,3 +21,23 @@ data class Configuration(
     @Embedded(prefix = "test_")
     val testSettings: TestSettings = TestSettings()
 )
+
+fun Configuration.toLearningSettings(
+    materialState: ConfigurationMaterialState = ConfigurationMaterialState(emptyList()),
+    reinforcementState: ConfigurationReinforcementState = ConfigurationReinforcementState()
+): LearningSettings {
+    val ls = this.learningSettings
+    return LearningSettings(
+        numberOfWords = materialState.vocabItems.size,
+        displayedImagesCount = ls.displayedImagesCount,
+        repetitionPerWord = ls.repetitionPerWord,
+        commandType = ls.commandType,
+        showLabelsUnderImages = ls.showLabelsUnderImages,
+        readCommand = ls.readCommand,
+        hintAfterSeconds = ls.hintAfterSeconds,
+        typesOfHints = ls.typesOfHints,
+        typesOfPraises = ls.typesOfPraises,
+        animationsEnabled = ls.animationsEnabled
+    )
+}
+

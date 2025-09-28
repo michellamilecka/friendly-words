@@ -24,7 +24,12 @@ fun ConfigurationLearningState.toLearningSettings(
         //materials = emptyList(), // jeśli chcesz później dodać obrazy — tu je podstawisz
         displayedImagesCount = this.imageCount,
         repetitionPerWord = this.repetitionCount,
-        commandType = this.selectedPrompt,
+        commandType = when (this.selectedPrompt) {
+            "{Słowo}" -> "SHORT"
+            "Gdzie jest {Słowo}" -> "WHERE_IS"
+            "Pokaż gdzie jest {Słowo}" -> "SHOW_ME"
+            else -> "SHORT"
+        },
         showLabelsUnderImages = this.captionsEnabled,
         readCommand = this.readingEnabled,
         hintAfterSeconds = this.timeCount,

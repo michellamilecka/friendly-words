@@ -6,26 +6,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
-import androidx.compose.ui.unit.times
+import com.example.friendly_words.child_app.data.GameItem
 import kotlin.math.ceil
 import kotlin.math.min
 
 @Composable
 fun RoundOptionsLayout(
-    options: List<OptionData>,
+    options: List<GameItem>,
     numberOfItems: Int, // faktyczna liczba elementów do wyświetlenia
-    isDimmed: (OptionData) -> Boolean,
-    isScaled: (OptionData) -> Boolean,
-    animateCorrect: (OptionData) -> Boolean,
-    outlineCorrect: (OptionData) -> Boolean,
-    onClick: (OptionData) -> Unit
+    isDimmed: (GameItem) -> Boolean,
+    isScaled: (GameItem) -> Boolean,
+    animateCorrect: (GameItem) -> Boolean,
+    outlineCorrect: (GameItem) -> Boolean,
+    showLabels: Boolean = true,
+    onClick: (GameItem) -> Unit
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val spacing = 24.dp
         val horizontalPadding = 24.dp
         val verticalPadding = 24.dp
 
-        // liczba elementów, które faktycznie wyświetlimy
         val displayItems = options.take(numberOfItems)
 
         // liczba kolumn: max 3
@@ -49,32 +49,25 @@ fun RoundOptionsLayout(
         ) {
             rowsList.forEach { rowItems ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing),
+                    horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Spacer(Modifier.weight(1f))
                     rowItems.forEach { item ->
                         ImageOptionBox(
-                            imageRes = item.imageRes,
+                            imagePath = item.imagePath,
                             label = item.label,
-                            size = itemSize, // cała kratka, razem z ramką i paddingiem
+                            size = itemSize,
                             isDimmed = isDimmed(item),
                             isScaled = isScaled(item),
                             animateCorrect = animateCorrect(item),
                             outlineCorrect = outlineCorrect(item),
+                            showLabel = showLabels,
                             onClick = { onClick(item) }
                         )
                     }
-
-                    Spacer(Modifier.weight(1f))
                 }
             }
         }
     }
 }
-
-data class OptionData(
-    val imageRes: Int,
-    val label: String
-)

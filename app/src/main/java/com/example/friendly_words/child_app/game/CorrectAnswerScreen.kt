@@ -48,7 +48,7 @@ fun CorrectAnswerScreen(
             Spacer(Modifier.height(48.dp))
 
             com.example.friendly_words.child_app.components.ImageOptionBox(
-                imageRes = correctItem.imageRes,
+                imagePath = correctItem.imagePath,
                 label = correctItem.label,
                 size = 500.dp,
                 isDimmed = false,

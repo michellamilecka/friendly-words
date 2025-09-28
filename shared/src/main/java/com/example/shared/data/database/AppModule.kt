@@ -46,6 +46,6 @@ object AppModule {
     fun provideConfigurationDao(db: AppDatabase): ConfigurationDao =
         db.configurationDao()
     @Provides
-    fun provideConfigurationRepository(dao: ConfigurationDao): ConfigurationRepository =
-        ConfigurationRepository(dao)
+    fun provideConfigurationRepository(dao: ConfigurationDao,  resourceDao: ResourceDao): ConfigurationRepository =
+        ConfigurationRepository(dao, resourceDao)
 }
