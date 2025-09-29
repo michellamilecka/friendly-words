@@ -14,21 +14,23 @@ import com.example.friendly_words.child_app.theme.Blue
 import com.example.friendly_words.child_app.theme.LightBlue
 
 @Composable
-fun MainScreen(onPlayClick: () -> Unit) {
-    var isTestMode by remember { mutableStateOf(com.example.friendly_words.child_app.data.GameSettings.isTestMode) }
+fun MainScreen(
+    configurationDao: com.example.shared.data.daos.ConfigurationDao,
+    onPlayClick: () -> Unit
+) {
+    val activeConfig by configurationDao.getActiveConfiguration().collectAsState(initial = null)
+    val isTestMode = activeConfig?.activeMode == "test"
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Blue)
+        modifier = Modifier.fillMaxSize().background(Blue)
     ) {
         Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth(0.9f),
+            modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.9f),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text(
                 text = "Przyjazne Słowa",
                 fontSize = 50.sp,
@@ -37,40 +39,14 @@ fun MainScreen(onPlayClick: () -> Unit) {
             )
 
             Text(
-                text = "Aktywna konfiguracja: 1 konfiguracja NA STAŁE (tryb: ${if (isTestMode) "test" else "uczenie"})",
+                text = "Aktywna konfiguracja: ${activeConfig?.name ?: "brak"} (tryb: ${if (isTestMode) "test" else "uczenie"})",
                 fontSize = 20.sp,
                 color = LightBlue
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(15.dp))
 
             com.example.friendly_words.child_app.components.PlayButton(onClick = onPlayClick)
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = if (isTestMode) "Tryb: Test" else "Tryb: Uczenie",
-                color = Color.White,
-                fontSize = 16.sp
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Switch(
-                checked = isTestMode,
-                onCheckedChange = {
-                    isTestMode = it
-                    com.example.friendly_words.child_app.data.GameSettings.isTestMode = it
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = LightBlue
-                )
-            )
         }
     }
 }

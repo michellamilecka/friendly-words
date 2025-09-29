@@ -20,7 +20,12 @@ fun LearningSettings.toConfigurationLearningState(): ConfigurationLearningState 
     return ConfigurationLearningState(
         imageCount       = displayedImagesCount,
         repetitionCount  = repetitionPerWord,
-        selectedPrompt   = commandType,
+        selectedPrompt   = when (commandType) {
+            "SHORT" -> "{Słowo}"
+            "WHERE_IS" -> "Gdzie jest {Słowo}"
+            "SHOW_ME" -> "Pokaż gdzie jest {Słowo}"
+            else -> "{Słowo}"
+        },
         captionsEnabled  = showLabelsUnderImages,
         readingEnabled   = readCommand,
         timeCount        = hintAfterSeconds,

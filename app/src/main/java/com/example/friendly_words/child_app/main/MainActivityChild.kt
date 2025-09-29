@@ -23,65 +23,24 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.Dp
-import com.example.friendly_words.child_app.game.GameScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.friendly_words.R
 import com.example.friendly_words.child_app.theme.LightBlue
-import com.example.friendly_words.child_app.game.GameEndScreen
-import kotlinx.coroutines.delay
+import dagger.hilt.android.AndroidEntryPoint
 import java.lang.Math.sqrt
 
+@AndroidEntryPoint
 class MainActivityChild : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val viewModel: ChildMainViewModel = hiltViewModel()
             MaterialTheme {
-                ScreenNavigationGame()
+                ScreenNavigationGame(viewModel)
             }
         }
     }
 }
-
-@Composable
-fun ScreenNavigationGame() {
-    var screenState by remember { mutableStateOf("info") }
-
-    var correctAnswers by remember { mutableStateOf(0) }
-    var wrongAnswers by remember { mutableStateOf(0) }
-
-    when (screenState) {
-        "info" -> {
-            LaunchedEffect(Unit) {
-                delay(5000L)
-                screenState = "main"
-            }
-            InformationScreen()
-        }
-        "main" -> {
-            MainScreen(onPlayClick = { screenState = "game" })
-        }
-        "game" -> {
-            GameScreen(onGameFinished = { correct, wrong ->
-                correctAnswers = correct
-                wrongAnswers = wrong
-                screenState = "end"
-            })
-        }
-        "end" -> {
-            // Przekaż wyniki do GameEndScreen
-            GameEndScreen(
-                correctAnswers = correctAnswers,
-                wrongAnswers = wrongAnswers,
-                onPlayAgain = {
-                    screenState = "info"
-                    // Reset wyników na potrzeby nowej gry (opcjonalne)
-                    correctAnswers = 0
-                    wrongAnswers = 0
-                }
-            )
-        }
-    }
-}
-
 
 @Composable
 fun calculateResponsiveFontSize(referenceFontSize: TextUnit): TextUnit {
