@@ -26,7 +26,7 @@ class ConfigurationSaveViewModel @Inject constructor() : ViewModel() {
                     state.copy(stepName = event.name, showNameError = false)
                 }
                 is ConfigurationSaveEvent.ValidateName -> {
-                    val isBlank = state.stepName.trim().isBlank()
+                    val isBlank = state.stepName.text.trim().isBlank()
                     if (isBlank) {
                         state.copy(
                             showNameError = true,

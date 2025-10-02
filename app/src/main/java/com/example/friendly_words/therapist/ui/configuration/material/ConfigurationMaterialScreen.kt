@@ -420,7 +420,8 @@ fun ConfigurationMaterialScreen(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
-                            // Pochłaniamy kliknięcia wewnątrz dialogu - nie robimy nic
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
                         },
                     elevation = 8.dp,
                     color = Color.White,
@@ -468,7 +469,8 @@ fun ConfigurationMaterialScreen(
 
                         // Lista słów
                         val filteredWords = state.availableWordsToAdd.filter {
-                            it.name.contains(searchQuery, ignoreCase = true)
+                            it.name.contains(searchQuery, ignoreCase = true) ||
+                                    it.category.contains(searchQuery, ignoreCase = true)
                         }.sortedWith { a, b -> a.name.compareTo(b.name, ignoreCase = true) }
 
                         Box(
@@ -494,17 +496,31 @@ fun ConfigurationMaterialScreen(
                                         }
                                     } else {
                                         items(filteredWords) { resource ->
-                                            Text(
-                                                text = resource.name,
+                                            Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
                                                     .clickable {
                                                         closeDialog()
                                                         onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
                                                     }
-                                                    .padding(vertical = 8.dp),
-                                                fontSize = 18.sp
-                                            )
+                                                    .padding(vertical = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = resource.name,
+                                                    fontSize = 18.sp,
+                                                    fontWeight = FontWeight.Normal,
+                                                    color = Color.Black
+                                                )
+                                                if (resource.category.isNotBlank()) {
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = "(${resource.category})",
+                                                        fontSize = 16.sp,
+                                                        color = Color.Gray
+                                                    )
+                                                }
+                                            }
+
                                         }
                                     }
                                 }

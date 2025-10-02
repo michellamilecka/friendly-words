@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 fun NewConfigurationTopTabs(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
-    tabTitles: List<String> = listOf("MATERIAŁ", "UCZENIE", "WZMOCNIENIA", "TEST", "PODSUMOWANIE")
+    tabTitles: List<String> = listOf("MATERIAŁ", "UCZENIE", "WZMOCNIENIA", "TEST DLA UCZNIA", "PODSUMOWANIE")
 ) {
     Column {
         Row(modifier = Modifier.height(50.dp)) {

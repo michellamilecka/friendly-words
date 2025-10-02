@@ -81,7 +81,7 @@ fun ConfigurationSettingsScreen(
     Scaffold(
         topBar = {
             NewConfigurationTopBar(
-                title = "Nowy krok uczenia: ${state.saveState.stepName}",
+                title = "Nowy krok uczenia: ${state.saveState.stepName.text}",
                 onBackClick = {
                     viewModel.onEvent(ConfigurationSettingsEvent.ShowExitDialog)
                 }
