@@ -253,8 +253,11 @@ fun ConfigurationsListScreen(
                     IconButton(
                         onClick = {
                             val intent = Intent(context, MainActivityChild::class.java).apply {
+                                addFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                )
 
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             }
                             context.startActivity(intent)
                         },
