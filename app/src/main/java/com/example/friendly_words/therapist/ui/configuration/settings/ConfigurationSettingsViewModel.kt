@@ -1,6 +1,8 @@
 package com.example.friendly_words.therapist.ui.configuration.settings
 
 import android.util.Log
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shared.data.entities.Configuration
@@ -389,7 +391,14 @@ class ConfigurationSettingsViewModel @Inject constructor(
                     learningState = learningState,
                     testState = finalTestState,
                     reinforcementState = reinforcementState,
-                    saveState = it.saveState.copy(stepName = config.name, editingConfigId = config.id)
+                    saveState = it.saveState.copy(
+                        stepName = TextFieldValue(
+                            text = config.name,
+                            selection = TextRange(config.name.length)
+                        ),
+                        editingConfigId = config.id
+                    )
+
                 )
             }
 

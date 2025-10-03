@@ -516,7 +516,7 @@ fun ConfigurationItem(
                                                     .padding(10.dp)
                                             ) {
                                                 Text(
-                                                    text = "Przykładowy krok uczenia jest niedotykalny.\n W celu zobaczenia co jest w środku, zrób kopię przyciskiem obok.",
+                                                    text = "Edycja przykładowego kroku uczenia nie jest możliwa.\n W celu zobaczenia co jest w środku, zrób kopię przyciskiem obok.",
                                                     fontSize = 20.sp
                                                 )
                                             }
@@ -527,9 +527,10 @@ fun ConfigurationItem(
                         }
                         Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            if (isActive) "(aktywny krok w trybie: $activeMode)" else "(krok nieaktywny)",
+                            if (isActive) "(aktywny krok w trybie: ${activeMode?.let { if (it == "test") "test dla ucznia" else it }})" else "(krok nieaktywny)",
                             fontSize = 20.sp
                         )
+
                     }
                 }
             }

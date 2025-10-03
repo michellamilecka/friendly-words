@@ -16,8 +16,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,6 +66,11 @@ fun ConfigurationSaveScreen(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboardController?.show()
+
+        val text = saveState.stepName.text
+        onEvent(ConfigurationSaveEvent.SetStepName(
+            TextFieldValue(text = text, selection = TextRange(text.length))
+        ))
     }
 
     Scaffold(
@@ -101,7 +108,9 @@ fun ConfigurationSaveScreen(
 
                 OutlinedTextField(
                     value = saveState.stepName,
-                    onValueChange = { onEvent(ConfigurationSaveEvent.SetStepName(it)) },
+                    onValueChange = { newValue ->
+                        onEvent(ConfigurationSaveEvent.SetStepName(newValue))
+                    },
                     label = { Text("Wpisz nazwę kroku") },
                     modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
@@ -124,10 +133,10 @@ fun ConfigurationSaveScreen(
                     onClick = {
                         onEvent(ConfigurationSaveEvent.ValidateName)
 
-                        if (saveState.stepName.trim().isNotBlank()) {
+                        if (saveState.stepName.text.trim().isNotBlank()) {
                             onSettingsEvent(
                                 ConfigurationSettingsEvent.Save(
-                                    ConfigurationSaveEvent.SaveConfiguration(name = saveState.stepName.trim())
+                                    ConfigurationSaveEvent.SaveConfiguration(name = saveState.stepName.text.trim())
                                 )
                             )
                         }
