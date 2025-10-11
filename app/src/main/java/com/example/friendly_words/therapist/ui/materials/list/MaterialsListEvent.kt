@@ -9,5 +9,6 @@ sealed class MaterialsListEvent {
     object DismissDeleteDialog : MaterialsListEvent()
     object ClearInfoMessage : MaterialsListEvent()
     data class SelectByResourceId(val resourceId: Long) : MaterialsListEvent()
+    data class ToggleHideExamples(val hide: Boolean) : MaterialsListEvent()
 }
 

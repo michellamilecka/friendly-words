@@ -8,5 +8,6 @@ data class Resource(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val learnedWord: String,
-    val category: String = ""
+    val category: String = "",
+    val isExample:Boolean = false,
 )
