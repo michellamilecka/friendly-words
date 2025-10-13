@@ -202,7 +202,29 @@ fun MaterialsListScreen(
                     ),
                     shape = RoundedCornerShape(10)
                 )
-
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Checkbox(
+                        checked = state.hideExamples,
+                        onCheckedChange = { checked ->
+                            viewModel.onEvent(MaterialsListEvent.ToggleHideExamples(checked))
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = DarkBlue,
+                            uncheckedColor = Color.Gray,
+                            checkmarkColor = Color.White
+                        )
+                    )
+                    Text(
+                        text = "Ukryj przykładowe materiały",
+                        fontSize = 20.sp,
+                        color = Color.Gray
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -253,11 +275,12 @@ fun MaterialsListScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             val filteredMaterials = state.materials.filter {
-                                it.name.contains(searchQuery, ignoreCase = true) || it.category.contains(searchQuery, ignoreCase = true)
+                                (it.name.contains(searchQuery, ignoreCase = true) ||
+                                        it.category.contains(searchQuery, ignoreCase = true)) &&
+                                        (!state.hideExamples || !it.isExample)
                             }
-
                             // POPRAWIONE: używamy filteredMaterials zamiast state.materials
-                            itemsIndexed(filteredMaterials) { filteredIndex, material ->
+                            itemsIndexed(filteredMaterials) { _, material ->
                                 // Znajdź oryginalny indeks w pełnej liście
                                 val originalIndex = state.materials.indexOf(material)
                                 val isSelected = state.selectedIndex == originalIndex

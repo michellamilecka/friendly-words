@@ -23,7 +23,7 @@ import com.example.shared.data.entities.Resource
         ConfigurationImageUsage::class
         // todo dodanie reszty encji jak juz dao beda zrobione
     ],
-    version = 16,
+    version = 18,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
