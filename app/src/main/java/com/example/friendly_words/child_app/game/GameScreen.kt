@@ -49,6 +49,8 @@ fun GameScreen(
 
     // ---------- START NOWEJ RUNDY ----------
     LaunchedEffect(currentRoundIndex, ttsReady) {
+        viewModel.noteCorrectPos(currentRound)
+
         if (
             ttsReady &&
             !com.example.friendly_words.child_app.data.GameSettings.isTestMode &&
@@ -65,8 +67,6 @@ fun GameScreen(
         viewModel.goNextAfterCongrats.value = false
         viewModel.showHint.value = false
 
-        // Timer podpowiedzi: pokaż tylko jeśli do tego czasu nie było poprawnego kliknięcia
-        // i podpowiedź nie została już wymuszona błędnym kliknięciem. // NEW
         if (!com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             delay(hintDelayMillis)
             if (!viewModel.correctClicked.value &&
@@ -83,7 +83,6 @@ fun GameScreen(
     // ---------- LICZENIE BŁĘDÓW PO POKAZANIU PODPOWIEDZI ----------
     LaunchedEffect(showHint) {
         if (showHint && !viewModel.hadMistakeThisRound.value && !viewModel.correctClicked.value) {
-            // Podpowiedź pojawiła się bez wcześniejszego złego kliku -> policz błąd (raz).
             viewModel.wrongAnswersCount.value++
             viewModel.hadMistakeThisRound.value = true
             viewModel.answerJudged.value = true
@@ -106,25 +105,15 @@ fun GameScreen(
         }
 
         if (isCorrect && !viewModel.correctClicked.value) {
-            // poprawna odpowiedź
             viewModel.correctClicked.value = true
             if (!viewModel.hadMistakeThisRound.value) viewModel.correctAnswersCount.value++
             viewModel.showCongratsScreen.value = true
             viewModel.answerJudged.value = true
         } else if (!isCorrect) {
-            // błędne kliknięcie -> licz błąd i natychmiast pokaż podpowiedź, jeśli jeszcze nie widać // NEW
-            viewModel.wrongAnswersCount.value++
-            viewModel.hadMistakeThisRound.value = true
             if (!viewModel.showHint.value) {
                 viewModel.showHint.value = true
             }
-            // nie ustawiamy answerJudged, aby pozwolić na dalsze próby w tej rundzie,
-            // ale i tak runda wejdzie w ścieżkę powtórzeń przez hadMistakeThisRound
         }
-    }
-
-    fun speakPraise(text: String) {
-        if (ttsReady) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     // ---------- EKRAN GRATULACJI ----------
@@ -132,25 +121,29 @@ fun GameScreen(
         LaunchedEffect(viewModel.showCongratsScreen.value) {
             if (viewModel.showCongratsScreen.value) {
                 val praises = viewModel.activeLearningSettings.value?.typesOfPraises ?: emptyList()
-                if (praises.isNotEmpty()) {
-                    currentPraise = praises.random()
-                    speakPraise(currentPraise)
-                } else {
-                    currentPraise = "" // brak pochwał w bazie -> nie mówimy nic
-                }
+                currentPraise = praises.randomOrNull().orEmpty()
             }
         }
 
         CorrectAnswerScreen(
             correctItem = correctItem,
-            praiseText = currentPraise,
-            speakPraise = { if (currentPraise.isNotBlank()) speakPraise(currentPraise) },
+            displayWord = correctItem.label,
+            speakWordAndPraise = {
+                if (ttsReady) {
+                    tts.speak(correctItem.label, TextToSpeech.QUEUE_FLUSH, null, "word")
+                    if (currentPraise.isNotBlank()) {
+                        tts.speak(currentPraise, TextToSpeech.QUEUE_ADD, null, "praise")
+                    }
+                }
+            },
             onTimeout = {
                 viewModel.goNextAfterCongrats.value = true
                 val roundsList = rounds.toMutableList()
+
                 when (viewModel.repeatStage.value) {
                     0 -> {
                         if (viewModel.hadMistakeThisRound.value) {
+                            // 1. powtórka -> ten sam układ
                             roundsList.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 1
@@ -158,10 +151,13 @@ fun GameScreen(
                     }
                     1 -> {
                         if (viewModel.hadMistakeThisRound.value) {
+                            // 2. powtórka -> nadal ten sam układ
                             roundsList.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = roundsList
                         } else {
-                            val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
+                            // bezbłędnie -> 3. raz pseudolosowo, z wykluczeniem dotychczasowych pozycji
+                            val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
                             roundsList.add(currentRoundIndex + 1, shuffledRound)
                             viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 2
@@ -169,7 +165,8 @@ fun GameScreen(
                     }
                     2 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
+                            val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
                             roundsList.add(currentRoundIndex + 1, shuffledRound)
                             viewModel.rounds.value = roundsList
                         } else {
@@ -178,7 +175,8 @@ fun GameScreen(
                     }
                 }
                 viewModel.hadMistakeThisRound.value = false
-            }
+            },
+            showLabels = showLabels
         )
     }
 
