@@ -22,5 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "friendly-words"
 include(":app")
-include(":child_app")
 include(":shared")

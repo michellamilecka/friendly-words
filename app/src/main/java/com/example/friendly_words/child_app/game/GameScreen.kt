@@ -37,7 +37,6 @@ fun GameScreen(
     val hintDelayMillis = ((viewModel.activeLearningSettings.value?.hintAfterSeconds ?: 1) * 1000L)
     val showLabels = viewModel.activeLearningSettings.value?.showLabelsUnderImages ?: true
 
-
     val context = LocalContext.current
     var ttsReady by remember { mutableStateOf(false) }
     var currentPraise by remember { mutableStateOf("") }
@@ -46,9 +45,7 @@ fun GameScreen(
             if (status == TextToSpeech.SUCCESS) ttsReady = true
         }
     }
-    LaunchedEffect(ttsReady) {
-        if (ttsReady) tts.language = Locale("pl", "PL")
-    }
+    LaunchedEffect(ttsReady) { if (ttsReady) tts.language = Locale("pl", "PL") }
 
     // ---------- START NOWEJ RUNDY ----------
     LaunchedEffect(currentRoundIndex, ttsReady) {
@@ -60,7 +57,7 @@ fun GameScreen(
             tts.speak(commandText, TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
-        // reset logiki odpowiedzi
+        // reset stanu
         viewModel.answerJudged.value = false
         viewModel.correctClicked.value = false
         viewModel.hadMistakeThisRound.value = false
@@ -68,9 +65,16 @@ fun GameScreen(
         viewModel.goNextAfterCongrats.value = false
         viewModel.showHint.value = false
 
+        // Timer podpowiedzi: pokaż tylko jeśli do tego czasu nie było poprawnego kliknięcia
+        // i podpowiedź nie została już wymuszona błędnym kliknięciem. // NEW
         if (!com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             delay(hintDelayMillis)
-            viewModel.showHint.value = true
+            if (!viewModel.correctClicked.value &&
+                !viewModel.answerJudged.value &&
+                !viewModel.showHint.value
+            ) {
+                viewModel.showHint.value = true
+            }
         }
     }
 
@@ -79,7 +83,7 @@ fun GameScreen(
     // ---------- LICZENIE BŁĘDÓW PO POKAZANIU PODPOWIEDZI ----------
     LaunchedEffect(showHint) {
         if (showHint && !viewModel.hadMistakeThisRound.value && !viewModel.correctClicked.value) {
-            // Podpowiedź się pojawiła, a gracz nie kliknął poprawnie
+            // Podpowiedź pojawiła się bez wcześniejszego złego kliku -> policz błąd (raz).
             viewModel.wrongAnswersCount.value++
             viewModel.hadMistakeThisRound.value = true
             viewModel.answerJudged.value = true
@@ -102,16 +106,20 @@ fun GameScreen(
         }
 
         if (isCorrect && !viewModel.correctClicked.value) {
-            // Poprawna odpowiedź
+            // poprawna odpowiedź
             viewModel.correctClicked.value = true
             if (!viewModel.hadMistakeThisRound.value) viewModel.correctAnswersCount.value++
             viewModel.showCongratsScreen.value = true
             viewModel.answerJudged.value = true
         } else if (!isCorrect) {
-            // Każde kliknięcie błędnego elementu zwiększa liczbę błędów
+            // błędne kliknięcie -> licz błąd i natychmiast pokaż podpowiedź, jeśli jeszcze nie widać // NEW
             viewModel.wrongAnswersCount.value++
             viewModel.hadMistakeThisRound.value = true
-            // NIE ustawiamy answerJudged, żeby można było dalej klikać i powtarzać rundę
+            if (!viewModel.showHint.value) {
+                viewModel.showHint.value = true
+            }
+            // nie ustawiamy answerJudged, aby pozwolić na dalsze próby w tej rundzie,
+            // ale i tak runda wejdzie w ścieżkę powtórzeń przez hadMistakeThisRound
         }
     }
 
@@ -127,46 +135,43 @@ fun GameScreen(
                 if (praises.isNotEmpty()) {
                     currentPraise = praises.random()
                     speakPraise(currentPraise)
+                } else {
+                    currentPraise = "" // brak pochwał w bazie -> nie mówimy nic
                 }
             }
         }
 
-
         CorrectAnswerScreen(
             correctItem = correctItem,
             praiseText = currentPraise,
-            speakPraise = { speakPraise(currentPraise) },
+            speakPraise = { if (currentPraise.isNotBlank()) speakPraise(currentPraise) },
             onTimeout = {
                 viewModel.goNextAfterCongrats.value = true
-
+                val roundsList = rounds.toMutableList()
                 when (viewModel.repeatStage.value) {
                     0 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, currentRound)
-                            viewModel.rounds.value = list
+                            roundsList.add(currentRoundIndex + 1, currentRound)
+                            viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 1
                         }
                     }
                     1 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, currentRound)
-                            viewModel.rounds.value = list
+                            roundsList.add(currentRoundIndex + 1, currentRound)
+                            viewModel.rounds.value = roundsList
                         } else {
                             val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, shuffledRound)
-                            viewModel.rounds.value = list
+                            roundsList.add(currentRoundIndex + 1, shuffledRound)
+                            viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 2
                         }
                     }
                     2 -> {
                         if (viewModel.hadMistakeThisRound.value) {
                             val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, shuffledRound)
-                            viewModel.rounds.value = list
+                            roundsList.add(currentRoundIndex + 1, shuffledRound)
+                            viewModel.rounds.value = roundsList
                         } else {
                             viewModel.repeatStage.value = 0
                         }
@@ -196,7 +201,9 @@ fun GameScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize().padding(24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
             ) {
                 Text(
                     text = commandText,
