@@ -336,30 +336,35 @@ fun MaterialsListScreen(
                                             )
                                         }
 
-                                        IconButton(onClick = {
-                                            onEditClick(material.id)
-                                        }) {
-                                            Icon(
-                                                Icons.Default.Edit,
-                                                contentDescription = "Edytuj",
-                                                tint = DarkBlue,
-                                                modifier = Modifier.size(35.dp)
-                                            )
-                                        }
-                                        IconButton(onClick = {
-                                            viewModel.onEvent(
-                                                MaterialsListEvent.RequestDelete(
-                                                    originalIndex, // Używamy oryginalnego indeksu
-                                                    material
+                                        if (!material.isExample) {
+                                            IconButton(onClick = {
+                                                onEditClick(material.id)
+                                            }) {
+                                                Icon(
+                                                    Icons.Default.Edit,
+                                                    contentDescription = "Edytuj",
+                                                    tint = DarkBlue,
+                                                    modifier = Modifier.size(35.dp)
                                                 )
-                                            )
-                                        }) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Usuń",
-                                                tint = DarkBlue,
-                                                modifier = Modifier.size(35.dp)
-                                            )
+                                            }
+                                        }
+
+                                        if (!material.isExample) {
+                                            IconButton(onClick = {
+                                                viewModel.onEvent(
+                                                    MaterialsListEvent.RequestDelete(
+                                                        originalIndex, // Używamy oryginalnego indeksu
+                                                        material
+                                                    )
+                                                )
+                                            }) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    contentDescription = "Usuń",
+                                                    tint = DarkBlue,
+                                                    modifier = Modifier.size(35.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }
