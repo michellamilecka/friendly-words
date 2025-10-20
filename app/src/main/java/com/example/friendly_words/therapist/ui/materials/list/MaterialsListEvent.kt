@@ -10,5 +10,9 @@ sealed class MaterialsListEvent {
     object ClearInfoMessage : MaterialsListEvent()
     data class SelectByResourceId(val resourceId: Long) : MaterialsListEvent()
     data class ToggleHideExamples(val hide: Boolean) : MaterialsListEvent()
+    data class CopyRequested(val resource: Resource) : MaterialsListEvent()
+    data class ConfirmCopy(val resource: Resource) : MaterialsListEvent()
+    object DismissCopyDialog : MaterialsListEvent()
+
 }
 

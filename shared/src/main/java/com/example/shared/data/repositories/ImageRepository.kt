@@ -2,6 +2,7 @@ package com.example.shared.data.repositories
 
 import com.example.shared.data.daos.ImageDao
 import com.example.shared.data.entities.Image
+import com.example.shared.data.entities.ResourceImage
 import javax.inject.Inject
 
 class ImageRepository @Inject constructor(private val imageDao: ImageDao) {
@@ -11,12 +12,23 @@ class ImageRepository @Inject constructor(private val imageDao: ImageDao) {
     suspend fun getAll() = imageDao.getAll()
     suspend fun getByResourceId(resourceId: Long): List<Image> = imageDao.getByResourceId(resourceId)
     suspend fun deleteUnassignedImages() {
-        imageDao.getAll().forEach {
-            if (it.resourceId == null) {
-                imageDao.delete(it)
-            }
+        val images = imageDao.getAll()
+        for (image in images) {
+            val refs = imageDao.getReferenceCount(image.id)
+            if (refs == 0) imageDao.delete(image)
         }
     }
+    suspend fun linkImagesToResource(resourceId: Long, imageIds: List<Long>) {
+        imageDao.deleteImageLinksForResource(resourceId)
+        imageDao.insertResourceImageLinks(
+            imageIds.map { imageId -> ResourceImage(resourceId = resourceId, imageId = imageId) }
+        )
+    }
+
+    suspend fun unlinkImagesFromResource(resourceId: Long, imageIds: List<Long>) {
+        imageDao.deleteSpecificImageLinks(resourceId, imageIds)
+    }
+
 
 
 }

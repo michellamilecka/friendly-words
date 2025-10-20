@@ -32,7 +32,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
 )  : ViewModel() {
 
     private val resourceIdToEdit = savedStateHandle.get<Long?>("resourceId")
-    private val imagesToDelete = mutableListOf<Image>()
+    private val imagesToUnlink = mutableListOf<Image>()
 
     private val _state = MutableStateFlow(
         MaterialsCreatingNewMaterialState(
@@ -85,10 +85,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 viewModelScope.launch {
                     val localPath = copyImageToInternalStorage(event.uri)
 
-                    val image = Image(
-                        path = localPath,
-                        resourceId = null // jeszcze nie przypisujemy — dopiero po SaveClicked
-                    )
+                    val image = Image(path = localPath)
 
                     _state.update {
                         it.copy(images = it.images + image)
@@ -97,7 +94,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             }
             is MaterialsCreatingNewMaterialEvent.RemoveImage -> {
                 if (resourceIdToEdit != null && event.image.id != 0L) {
-                    imagesToDelete.add(event.image) // dodaj do usunięcia przy zapisie
+                    imagesToUnlink.add(event.image) // dodaj do usunięcia przy zapisie
                 }
                 _state.update {
                     it.copy(images = it.images.filterNot { img -> img.path == event.image.path })
@@ -145,13 +142,21 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                         resourceIdToEdit
                     }
 
-                    state.value.images.forEach { image ->
-                        val updated = image.copy(resourceId = resourceId)
-                        imageRepository.insert(updated)
+                    val imageIds = state.value.images.map { image ->
+                        if (image.id == 0L) imageRepository.insert(image) else image.id
                     }
 
-                    imagesToDelete.forEach { imageRepository.delete(it) }
-                    imagesToDelete.clear()
+                    // tworzenie nowych powiązań (linkImagesToResource usuwa stare połączenia automatycznie)
+                    imageRepository.linkImagesToResource(resourceId, imageIds)
+
+                    // jeśli coś zostało oznaczone do odłączenia – usuwamy tylko powiązanie
+                    if (imagesToUnlink.isNotEmpty()) {
+                        val unlinkIds = imagesToUnlink.map { it.id }
+                        imageRepository.unlinkImagesFromResource(resourceId!!, unlinkIds)
+                        imagesToUnlink.clear()
+                    }
+
+                    imageRepository.deleteUnassignedImages()
 
                     _state.update {
                         it.copy(
@@ -218,7 +223,7 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
                 val image = state.value.imageToConfirmDelete
                 if (image != null) {
                     if (resourceIdToEdit != null && image.id != 0L) {
-                        imagesToDelete.add(image)
+                        imagesToUnlink.add(image)
                     }
                     _state.update {
                         it.copy(
@@ -236,13 +241,13 @@ class MaterialsCreatingNewMaterialViewModel @Inject constructor(
             }
         }
     }
-    private suspend fun reloadImages() {
-        val id = resourceIdToEdit
-        val images = if (id != null) {
-            imageRepository.getByResourceId(id)
-        } else {
-            imageRepository.getAll().filter { it.resourceId == null }
-        }
-        _state.update { it.copy(images = images) }
-    }
+//    private suspend fun reloadImages() {
+//        val id = resourceIdToEdit
+//        val images = if (id != null) {
+//            imageRepository.getByResourceId(id)
+//        } else {
+//            imageRepository.getAll().filter { it.resourceId == null }
+//        }
+//        _state.update { it.copy(images = images) }
+//    }
 }

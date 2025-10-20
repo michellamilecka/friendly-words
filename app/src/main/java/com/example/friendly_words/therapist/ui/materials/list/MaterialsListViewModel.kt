@@ -149,9 +149,9 @@ class MaterialsListViewModel @Inject constructor(
                 "file:///android_asset/exemplary_photos/${baseName}_${index}.png"
             }
 
-            val images = imagePaths.map { path ->
-                Image(path = path, resourceId = resourceId)
-            }
+            val images = imagePaths.map { path -> Image(path = path) }
+            val insertedImageIds = images.map { imageRepository.insert(it) }
+            imageRepository.linkImagesToResource(resourceId, insertedImageIds)
 
             imageRepository.insertMany(images)
         }
@@ -199,7 +199,7 @@ class MaterialsListViewModel @Inject constructor(
                     onEvent(MaterialsListEvent.SelectMaterial(idx))
                 }
             }
-            MaterialsListEvent.ConfirmDelete -> {
+            is MaterialsListEvent.ConfirmDelete -> {
                 val (index, resource) = _uiState.value.materialToDelete ?: return
                 val currentSelected = _uiState.value.selectedIndex
                 viewModelScope.launch {
@@ -223,13 +223,59 @@ class MaterialsListViewModel @Inject constructor(
                 }
 
             }
-
-            MaterialsListEvent.DismissDeleteDialog -> {
+            is MaterialsListEvent.DismissDeleteDialog -> {
                 _uiState.update {it.copy(
                     showDeleteDialog = false,
                     materialToDelete = null
                 )}
             }
+            is MaterialsListEvent.CopyRequested -> {
+                _uiState.update { it.copy(showCopyDialogFor = event.resource) }
+            }
+            is MaterialsListEvent.ConfirmCopy -> {
+                viewModelScope.launch {
+                    val original = event.resource
+                    val allNames = _uiState.value.materials.map { it.name }
+                    val newName = generateCopyName(original.name, allNames)
+
+                    val newId = resourceRepository.insert(
+                        original.copy(
+                            id = 0,
+                            name = newName,
+                            isExample = false
+                        )
+                    )
+
+                    val images = imageRepository.getByResourceId(original.id)
+                    val imageIds = images.map { it.id }
+                    imageRepository.linkImagesToResource(newId, imageIds)
+
+                    _uiState.update {
+                        it.copy(
+                            showCopyDialogFor = null,
+                            infoMessage = "Skopiowano materiał: ${original.name}"
+                        )
+                    }
+                }
+            }
+            is MaterialsListEvent.DismissCopyDialog -> {
+                _uiState.update {
+                    it.copy(showCopyDialogFor = null)
+                }
+            }
+
+
         }
+    }
+    private fun generateCopyName(original: String, existing: List<String>): String {
+        if (original !in existing) return original
+
+        var index = 1
+        var newName: String
+        do {
+            newName = "${original}_$index"
+            index++
+        } while (newName in existing)
+        return newName
     }
 }
