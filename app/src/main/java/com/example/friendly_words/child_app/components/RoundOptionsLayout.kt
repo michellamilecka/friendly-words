@@ -28,16 +28,19 @@ fun RoundOptionsLayout(
 
         val displayItems = options.take(numberOfItems)
 
-        // liczba kolumn: max 3
-        val columns = min(3, numberOfItems)
-        val rows = ceil(numberOfItems / 3.0).toInt()
+        val columns = when (numberOfItems) {
+            4 -> 2
+            else -> min(3, numberOfItems)
+        }
+        val rows = when (numberOfItems) {
+            4 -> 2
+            else -> ceil(numberOfItems / columns.toDouble()).toInt()
+        }
 
-        // dynamiczny rozmiar obrazka w zależności od dostępnego miejsca
         val itemWidth = (maxWidth - horizontalPadding * 2 - spacing * (columns - 1)) / columns
         val itemHeight = (maxHeight - verticalPadding * 2 - spacing * (rows - 1)) / rows
         val itemSize = min(itemWidth, itemHeight)
 
-        // podział na rzędy
         val rowsList = displayItems.chunked(columns)
 
         Column(

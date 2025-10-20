@@ -37,7 +37,6 @@ fun GameScreen(
     val hintDelayMillis = ((viewModel.activeLearningSettings.value?.hintAfterSeconds ?: 1) * 1000L)
     val showLabels = viewModel.activeLearningSettings.value?.showLabelsUnderImages ?: true
 
-
     val context = LocalContext.current
     var ttsReady by remember { mutableStateOf(false) }
     var currentPraise by remember { mutableStateOf("") }
@@ -46,12 +45,12 @@ fun GameScreen(
             if (status == TextToSpeech.SUCCESS) ttsReady = true
         }
     }
-    LaunchedEffect(ttsReady) {
-        if (ttsReady) tts.language = Locale("pl", "PL")
-    }
+    LaunchedEffect(ttsReady) { if (ttsReady) tts.language = Locale("pl", "PL") }
 
     // ---------- START NOWEJ RUNDY ----------
     LaunchedEffect(currentRoundIndex, ttsReady) {
+        viewModel.noteCorrectPos(currentRound)
+
         if (
             ttsReady &&
             !com.example.friendly_words.child_app.data.GameSettings.isTestMode &&
@@ -60,7 +59,7 @@ fun GameScreen(
             tts.speak(commandText, TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
-        // reset logiki odpowiedzi
+        // reset stanu
         viewModel.answerJudged.value = false
         viewModel.correctClicked.value = false
         viewModel.hadMistakeThisRound.value = false
@@ -70,7 +69,12 @@ fun GameScreen(
 
         if (!com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
             delay(hintDelayMillis)
-            viewModel.showHint.value = true
+            if (!viewModel.correctClicked.value &&
+                !viewModel.answerJudged.value &&
+                !viewModel.showHint.value
+            ) {
+                viewModel.showHint.value = true
+            }
         }
     }
 
@@ -79,7 +83,6 @@ fun GameScreen(
     // ---------- LICZENIE BŁĘDÓW PO POKAZANIU PODPOWIEDZI ----------
     LaunchedEffect(showHint) {
         if (showHint && !viewModel.hadMistakeThisRound.value && !viewModel.correctClicked.value) {
-            // Podpowiedź się pojawiła, a gracz nie kliknął poprawnie
             viewModel.wrongAnswersCount.value++
             viewModel.hadMistakeThisRound.value = true
             viewModel.answerJudged.value = true
@@ -102,21 +105,15 @@ fun GameScreen(
         }
 
         if (isCorrect && !viewModel.correctClicked.value) {
-            // Poprawna odpowiedź
             viewModel.correctClicked.value = true
             if (!viewModel.hadMistakeThisRound.value) viewModel.correctAnswersCount.value++
             viewModel.showCongratsScreen.value = true
             viewModel.answerJudged.value = true
         } else if (!isCorrect) {
-            // Każde kliknięcie błędnego elementu zwiększa liczbę błędów
-            viewModel.wrongAnswersCount.value++
-            viewModel.hadMistakeThisRound.value = true
-            // NIE ustawiamy answerJudged, żeby można było dalej klikać i powtarzać rundę
+            if (!viewModel.showHint.value) {
+                viewModel.showHint.value = true
+            }
         }
-    }
-
-    fun speakPraise(text: String) {
-        if (ttsReady) tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     // ---------- EKRAN GRATULACJI ----------
@@ -124,56 +121,62 @@ fun GameScreen(
         LaunchedEffect(viewModel.showCongratsScreen.value) {
             if (viewModel.showCongratsScreen.value) {
                 val praises = viewModel.activeLearningSettings.value?.typesOfPraises ?: emptyList()
-                if (praises.isNotEmpty()) {
-                    currentPraise = praises.random()
-                    speakPraise(currentPraise)
-                }
+                currentPraise = praises.randomOrNull().orEmpty()
             }
         }
 
-
         CorrectAnswerScreen(
             correctItem = correctItem,
-            praiseText = currentPraise,
-            speakPraise = { speakPraise(currentPraise) },
+            displayWord = correctItem.label,
+            speakWordAndPraise = {
+                if (ttsReady) {
+                    tts.speak(correctItem.label, TextToSpeech.QUEUE_FLUSH, null, "word")
+                    if (currentPraise.isNotBlank()) {
+                        tts.speak(currentPraise, TextToSpeech.QUEUE_ADD, null, "praise")
+                    }
+                }
+            },
             onTimeout = {
                 viewModel.goNextAfterCongrats.value = true
+                val roundsList = rounds.toMutableList()
 
                 when (viewModel.repeatStage.value) {
                     0 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, currentRound)
-                            viewModel.rounds.value = list
+                            // 1. powtórka -> ten sam układ
+                            roundsList.add(currentRoundIndex + 1, currentRound)
+                            viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 1
                         }
                     }
                     1 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, currentRound)
-                            viewModel.rounds.value = list
+                            // 2. powtórka -> nadal ten sam układ
+                            roundsList.add(currentRoundIndex + 1, currentRound)
+                            viewModel.rounds.value = roundsList
                         } else {
-                            val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, shuffledRound)
-                            viewModel.rounds.value = list
+                            // bezbłędnie -> 3. raz pseudolosowo, z wykluczeniem dotychczasowych pozycji
+                            val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
+                            roundsList.add(currentRoundIndex + 1, shuffledRound)
+                            viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 2
                         }
                     }
                     2 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val shuffledRound = currentRound.copy(options = currentRound.options.shuffled())
-                            val list = rounds.toMutableList()
-                            list.add(currentRoundIndex + 1, shuffledRound)
-                            viewModel.rounds.value = list
+                            val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
+                            roundsList.add(currentRoundIndex + 1, shuffledRound)
+                            viewModel.rounds.value = roundsList
                         } else {
                             viewModel.repeatStage.value = 0
                         }
                     }
                 }
                 viewModel.hadMistakeThisRound.value = false
-            }
+            },
+            showLabels = showLabels
         )
     }
 
@@ -196,7 +199,9 @@ fun GameScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxSize().padding(24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
             ) {
                 Text(
                     text = commandText,

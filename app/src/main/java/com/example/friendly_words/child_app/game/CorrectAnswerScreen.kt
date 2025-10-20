@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.child_app.components.RoundOptionsLayout
 import com.example.friendly_words.child_app.data.GameItem
 import com.example.friendly_words.child_app.theme.Blue
 import kotlinx.coroutines.delay
@@ -17,13 +18,14 @@ import kotlinx.coroutines.delay
 @Composable
 fun CorrectAnswerScreen(
     correctItem: GameItem,
-    praiseText: String,
-    speakPraise: () -> Unit,
-    onTimeout: () -> Unit
+    displayWord: String,
+    speakWordAndPraise: () -> Unit,
+    onTimeout: () -> Unit,
+    showLabels: Boolean
 ) {
-    // uruchamiamy TTS i timer
     LaunchedEffect(Unit) {
-        speakPraise()
+        // mówimy słowo i pochwałę
+        speakWordAndPraise()
         delay(3000)
         onTimeout()
     }
@@ -39,7 +41,7 @@ fun CorrectAnswerScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = praiseText,
+                text = displayWord,
                 fontSize = 64.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -47,18 +49,16 @@ fun CorrectAnswerScreen(
 
             Spacer(Modifier.height(48.dp))
 
-            com.example.friendly_words.child_app.components.ImageOptionBox(
-                imagePath = correctItem.imagePath,
-                label = correctItem.label,
-                size = 500.dp,
-                isDimmed = false,
-                isScaled = false,
-                animateCorrect = false,
-                outlineCorrect = false,
+            RoundOptionsLayout(
+                options = listOf(correctItem),
+                numberOfItems = 1,
+                isDimmed = { false },
+                isScaled = { false },
+                animateCorrect = { false },
+                outlineCorrect = { false },
+                showLabels = showLabels,
                 onClick = {}
             )
         }
     }
 }
-
-
