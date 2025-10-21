@@ -12,8 +12,16 @@ data class ConfigurationLearningState(
     val outlineCorrect: Boolean = false,
     val animateCorrect: Boolean = false,
     val scaleCorrect: Boolean = false,
-    val dimIncorrect: Boolean = true
+    val dimIncorrect: Boolean = true,
+    val availableImagesForLearning: Int = 0
+
 )
+private fun clampDisplayedImagesCount(requested: Int, available: Int): Int {
+    if (available <= 0) return 0
+    val maxAllowed = minOf(6, available)
+    val minAllowed = 1
+    return requested.coerceIn(minAllowed, maxAllowed)
+}
 
 fun ConfigurationLearningState.toLearningSettings(
     materialState: ConfigurationMaterialState,

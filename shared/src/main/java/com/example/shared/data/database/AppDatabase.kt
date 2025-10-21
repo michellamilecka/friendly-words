@@ -24,7 +24,7 @@ import com.example.shared.data.entities.ResourceImage
         ConfigurationImageUsage::class,
         ResourceImage::class
     ],
-    version = 21,
+    version = 22,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

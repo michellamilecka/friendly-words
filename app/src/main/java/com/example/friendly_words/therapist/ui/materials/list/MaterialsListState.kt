@@ -13,5 +13,7 @@ data class MaterialsListState(
     val pendingSelectId: Long? = null,
     val infoMessage: String? = null,
     val hideExamples: Boolean = false,
-    val showCopyDialogFor: Resource? = null
+    val showCopyDialogFor: Resource? = null,
+    val usedInSteps: List<String>? = null
+
 )
