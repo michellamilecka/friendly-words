@@ -35,7 +35,6 @@ interface ResourceDao {
     @Update
     suspend fun update(resource: Resource)
 
-
     @Transaction
     @Query("SELECT * FROM resources")
     suspend fun getResourcesWithImages(): List<ResourceWithImages>

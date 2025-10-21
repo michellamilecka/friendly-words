@@ -12,6 +12,7 @@ import com.example.shared.data.entities.ConfigurationImageUsage
 import com.example.shared.data.entities.ConfigurationResource
 import com.example.shared.data.entities.Image
 import com.example.shared.data.entities.Resource
+import com.example.shared.data.entities.ResourceImage
 
 
 @Database(
@@ -20,10 +21,10 @@ import com.example.shared.data.entities.Resource
         Image::class,
         Configuration::class,
         ConfigurationResource::class,
-        ConfigurationImageUsage::class
-        // todo dodanie reszty encji jak juz dao beda zrobione
+        ConfigurationImageUsage::class,
+        ResourceImage::class
     ],
-    version = 18,
+    version = 21,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

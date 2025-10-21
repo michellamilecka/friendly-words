@@ -12,5 +12,6 @@ data class MaterialsListState(
     val imagesForSelected: Map<Long, List<Image>> = emptyMap(),
     val pendingSelectId: Long? = null,
     val infoMessage: String? = null,
-    val hideExamples: Boolean = false
+    val hideExamples: Boolean = false,
+    val showCopyDialogFor: Resource? = null
 )

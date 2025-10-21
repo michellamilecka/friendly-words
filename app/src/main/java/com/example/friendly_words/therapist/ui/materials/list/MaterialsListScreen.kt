@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -325,29 +326,45 @@ fun MaterialsListScreen(
                                         }
 
                                         IconButton(onClick = {
-                                            onEditClick(material.id)
+                                            viewModel.onEvent(MaterialsListEvent.CopyRequested(material))
                                         }) {
                                             Icon(
-                                                Icons.Default.Edit,
-                                                contentDescription = "Edytuj",
+                                                Icons.Default.FileCopy,
+                                                contentDescription = "Kopiuj",
                                                 tint = DarkBlue,
                                                 modifier = Modifier.size(35.dp)
                                             )
                                         }
-                                        IconButton(onClick = {
-                                            viewModel.onEvent(
-                                                MaterialsListEvent.RequestDelete(
-                                                    originalIndex, // Używamy oryginalnego indeksu
-                                                    material
+
+                                        if (!material.isExample) {
+                                            IconButton(onClick = {
+                                                onEditClick(material.id)
+                                            }) {
+                                                Icon(
+                                                    Icons.Default.Edit,
+                                                    contentDescription = "Edytuj",
+                                                    tint = DarkBlue,
+                                                    modifier = Modifier.size(35.dp)
                                                 )
-                                            )
-                                        }) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Usuń",
-                                                tint = DarkBlue,
-                                                modifier = Modifier.size(35.dp)
-                                            )
+                                            }
+                                        }
+
+                                        if (!material.isExample) {
+                                            IconButton(onClick = {
+                                                viewModel.onEvent(
+                                                    MaterialsListEvent.RequestDelete(
+                                                        originalIndex, // Używamy oryginalnego indeksu
+                                                        material
+                                                    )
+                                                )
+                                            }) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    contentDescription = "Usuń",
+                                                    tint = DarkBlue,
+                                                    modifier = Modifier.size(35.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -458,4 +475,14 @@ fun MaterialsListScreen(
             )
         }
     }
+
+    state.showCopyDialogFor?.let { material ->
+        YesNoDialog(
+            show = true,
+            message = "Czy na pewno chcesz skopiować materiał: ${material.name}?",
+            onConfirm = { viewModel.onEvent(MaterialsListEvent.ConfirmCopy(material)) },
+            onDismiss = { viewModel.onEvent(MaterialsListEvent.DismissCopyDialog) }
+        )
+    }
+
 }

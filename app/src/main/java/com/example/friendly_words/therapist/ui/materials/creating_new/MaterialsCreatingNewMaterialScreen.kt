@@ -160,8 +160,7 @@ fun MaterialsCreatingNewMaterialScreen(
                     }
 
                     val image = Image(
-                        path = file.absolutePath,
-                        resourceId = null
+                        path = file.absolutePath
                     )
 
                     viewModel.onEvent(MaterialsCreatingNewMaterialEvent.ImageTakenFromCamera(image))
