@@ -11,4 +11,6 @@ sealed class ConfigurationLearningEvent {
     data class ToggleAnimateCorrect(val enabled: Boolean) : ConfigurationLearningEvent()
     data class ToggleScaleCorrect(val enabled: Boolean) : ConfigurationLearningEvent()
     data class ToggleDimIncorrect(val enabled: Boolean) : ConfigurationLearningEvent()
+
+
 }

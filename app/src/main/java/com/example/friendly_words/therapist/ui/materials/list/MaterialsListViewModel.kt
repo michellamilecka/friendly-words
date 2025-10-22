@@ -144,7 +144,7 @@ class MaterialsListViewModel @Inject constructor(
         {
             val resourceId = resourceRepository.insert(resource)
 
-            val baseName = normalizeName(resource.name.lowercase())
+            val baseName = normalizeName(resource.name.lowercase().replace(" ", "_"))
             val imagePaths = (1..3).map { index ->
                 "file:///android_asset/exemplary_photos/${baseName}_${index}.png"
             }
