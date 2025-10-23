@@ -20,9 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.window.Dialog
 import com.example.friendly_words.therapist.ui.theme.LightBlue
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -56,17 +54,41 @@ fun MaterialsListScreen(
     val state by viewModel.uiState.collectAsState()
     var expandedImagePath by remember { mutableStateOf<String?>(null) }
 
-
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     var searchQuery by remember { mutableStateOf("") }
 
+    // --- JEDNORAZOWY MOSTEK DLA NOWO DODANEGO MATERIAŁU ---
+    // Pobierz ID nowo utworzonego materiału z backStackEntry i od razu wyczyść.
+    val newlySavedId = remember {
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.get<Long>("newlySavedResourceId")
+    }.also {
+        navController.currentBackStackEntry
+            ?.savedStateHandle
+            ?.remove<Long>("newlySavedResourceId")
+    }
+    // Pozwoli odpalić efekt tylko raz (nie nadpisze zaznaczenia po późniejszych zmianach listy)
+    var newIdConsumed by remember { mutableStateOf(false) }
+    LaunchedEffect(newlySavedId, state.materials) {
+        if (!newIdConsumed && newlySavedId != null) {
+            // odpal dopiero gdy nowy zasób jest naprawdę na liście
+            val exists = state.materials.any { it.id == newlySavedId }
+            if (exists) {
+                viewModel.onEvent(MaterialsListEvent.SelectByResourceId(newlySavedId))
+                newIdConsumed = true
+            }
+        }
+    }
+    // ------------------------------------------------------
+
+    // Pokazanie komunikatu przekazanego przez nawigację (np. z ekranu edycji)
     LaunchedEffect(Unit) {
         val message = navController.currentBackStackEntry
             ?.savedStateHandle
             ?.get<String>("message")
-        val index=navController.currentBackStackEntry
         message?.let {
             snackbarHostState.showSnackbar(
                 message = it,
@@ -77,6 +99,8 @@ fun MaterialsListScreen(
                 ?.remove<String>("message")
         }
     }
+
+    // Snackbar na infoMessage z ViewModelu + czyszczenie po wyświetleniu
     LaunchedEffect(state.infoMessage) {
         state.infoMessage?.let {
             snackbarHostState.showSnackbar(
@@ -86,23 +110,7 @@ fun MaterialsListScreen(
             viewModel.onEvent(MaterialsListEvent.ClearInfoMessage)
         }
     }
-    val newlySavedId = remember {
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.get<Long>("newlySavedResourceId")
-    }.also {
-        // od razu usuń, żeby już się nie pojawiło przy kolejnych rekonfiguracjach
-        navController.currentBackStackEntry
-            ?.savedStateHandle
-            ?.remove<Long>("newlySavedResourceId")
-    }
 
-// Uruchom, gdy mamy both: nowy ID **i** już załadowane materiały
-    LaunchedEffect(newlySavedId, state.materials) {
-        if (newlySavedId != null && state.materials.isNotEmpty()) {
-            viewModel.onEvent(MaterialsListEvent.SelectByResourceId(newlySavedId))
-        }
-    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -145,15 +153,15 @@ fun MaterialsListScreen(
                 Snackbar(
                     modifier = Modifier
                         .padding(16.dp)
-                        .height(80.dp),  // Zwiększona wysokość
+                        .height(80.dp),
                     backgroundColor = Color.DarkGray,
                     contentColor = Color.White
                 ) {
                     Text(
                         text = snackbarData.message,
-                        fontSize = 28.sp,                  // Większa czcionka
-                        textAlign = TextAlign.Center,      // Wyrównanie do środka
-                        modifier = Modifier.fillMaxWidth() // Zajmuje całą szerokość
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -236,22 +244,22 @@ fun MaterialsListScreen(
                     Text("AKCJE", fontSize = 20.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                 }
 
-
                 val listState = rememberLazyListState()
                 val scrollAreaState = rememberScrollAreaState(listState)
-                LaunchedEffect(state.selectedIndex, searchQuery) {
+
+                // Scroll do aktualnie wybranego elementu
+                LaunchedEffect(state.selectedIndex, searchQuery, state.hideExamples) {
                     state.selectedIndex?.let { selectedIdx ->
                         if (selectedIdx >= 0) {
                             val selectedMaterial = state.materials.getOrNull(selectedIdx)
                             selectedMaterial?.let { material ->
-                                // Znajdź indeks w filtrowanej liście
                                 val filteredMaterials = state.materials.filter {
-                                    it.name.contains(searchQuery, ignoreCase = true) || it.category.contains(searchQuery, ignoreCase = true)
+                                    (it.name.contains(searchQuery, ignoreCase = true) ||
+                                            it.category.contains(searchQuery, ignoreCase = true)) &&
+                                            (!state.hideExamples || !it.isExample)
                                 }
-
                                 val filteredIndex = filteredMaterials.indexOf(material)
 
-                                // Scrolluj tylko jeśli materiał jest widoczny w filtrowanej liście
                                 if (filteredIndex >= 0) {
                                     Log.d(
                                         "MaterialsListScreen",
@@ -259,10 +267,7 @@ fun MaterialsListScreen(
                                     )
                                     listState.animateScrollToItem(filteredIndex)
                                 } else {
-                                    Log.d(
-                                        "MaterialsListScreen",
-                                        "Selected material not visible in filtered list"
-                                    )
+                                    Log.d("MaterialsListScreen", "Selected material not visible in filtered list")
                                 }
                             }
                         }
@@ -280,9 +285,7 @@ fun MaterialsListScreen(
                                         it.category.contains(searchQuery, ignoreCase = true)) &&
                                         (!state.hideExamples || !it.isExample)
                             }
-                            // POPRAWIONE: używamy filteredMaterials zamiast state.materials
                             itemsIndexed(filteredMaterials) { _, material ->
-                                // Znajdź oryginalny indeks w pełnej liście
                                 val originalIndex = state.materials.indexOf(material)
                                 val isSelected = state.selectedIndex == originalIndex
 
@@ -292,9 +295,7 @@ fun MaterialsListScreen(
                                         .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
                                         .clickable {
                                             viewModel.onEvent(
-                                                MaterialsListEvent.SelectMaterial(
-                                                    originalIndex // Używamy oryginalnego indeksu
-                                                )
+                                                MaterialsListEvent.SelectMaterial(originalIndex)
                                             )
                                         }
                                 ) {
@@ -353,7 +354,7 @@ fun MaterialsListScreen(
                                             IconButton(onClick = {
                                                 viewModel.onEvent(
                                                     MaterialsListEvent.RequestDelete(
-                                                        originalIndex, // Używamy oryginalnego indeksu
+                                                        originalIndex,
                                                         material
                                                     )
                                                 )
@@ -393,10 +394,7 @@ fun MaterialsListScreen(
                     val word = state.materials[state.selectedIndex!!]
                     val images = state.imagesForSelected[word.id] ?: emptyList()
 
-
                     Column(modifier = Modifier.fillMaxSize()) {
-                        //Text("Obrazki dla: $word", fontSize = 24.sp, modifier = Modifier.padding(bottom = 12.dp))
-
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(3),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -431,12 +429,13 @@ fun MaterialsListScreen(
                             fontSize = 25.sp,
                             color = Color.Black
                         )
-                    }}
+                    }
+                }
             }
         }
     }
+
     if (expandedImagePath != null) {
-        // Opcjonalnie: obsługa wstecz, by zamykać overlay przy Back
         androidx.activity.compose.BackHandler(enabled = true) {
             expandedImagePath = null
         }
@@ -445,7 +444,7 @@ fun MaterialsListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.95f))
-                .clickable { expandedImagePath = null }, // <- tap anywhere to close
+                .clickable { expandedImagePath = null },
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -455,18 +454,17 @@ fun MaterialsListScreen(
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .padding(16.dp)
-                    .clickable { expandedImagePath = null }, // <- tap image to close
+                    .clickable { expandedImagePath = null },
                 alignment = Alignment.Center,
                 contentScale = androidx.compose.ui.layout.ContentScale.Fit
             )
         }
     }
 
-
     // Dialog potwierdzający usunięcie
     val materialToDelete = state.materialToDelete
     if (state.showDeleteDialog && materialToDelete != null) {
-        materialToDelete.let { (index, name) ->
+        materialToDelete.let { (_, name) ->
             YesNoDialog(
                 show = true,
                 message = "Czy na pewno chcesz usunąć materiał: ${name.name}?",
@@ -484,5 +482,4 @@ fun MaterialsListScreen(
             onDismiss = { viewModel.onEvent(MaterialsListEvent.DismissCopyDialog) }
         )
     }
-
 }
