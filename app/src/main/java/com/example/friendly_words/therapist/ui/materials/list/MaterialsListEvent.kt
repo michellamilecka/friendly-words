@@ -13,7 +13,6 @@ sealed class MaterialsListEvent {
     data class CopyRequested(val resource: Resource) : MaterialsListEvent()
     data class ConfirmCopy(val resource: Resource) : MaterialsListEvent()
     object DismissCopyDialog : MaterialsListEvent()
-    data class ShowUsedInStepsDialog(val resource: Resource, val steps: List<String>) : MaterialsListEvent()
 
 
 }

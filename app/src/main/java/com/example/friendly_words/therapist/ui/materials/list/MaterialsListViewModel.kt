@@ -253,11 +253,15 @@ class MaterialsListViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             showCopyDialogFor = null,
-                            infoMessage = "Skopiowano materiał: ${original.name}"
+                            infoMessage = "Skopiowano materiał: ${original.name}",
+                            // ⬇ kluczowe – odpali zaznaczenie i scroll identycznie jak przy „nowym”:
+                            pendingSelectId = newId
                         )
                     }
                 }
             }
+
+
             is MaterialsListEvent.DismissCopyDialog -> {
                 _uiState.update {
                     it.copy(showCopyDialogFor = null)
