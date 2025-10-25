@@ -140,7 +140,7 @@ class GameViewModel @Inject constructor(
                     }
 
                     rounds.value = if (roundSettings != null) {
-                        generateGameRounds(configurationRepository, roundSettings)
+                        generateGameRounds(configurationRepository, roundSettings, isTestMode.value)
                     } else emptyList()
                 } else {
                     println("NO ACTIVE CONFIGURATION!")
@@ -167,7 +167,7 @@ class GameViewModel @Inject constructor(
                     activeLearningSettings.value?.asRoundSettings()
                 }
                 rounds.value = if (roundSettings != null) {
-                    generateGameRounds(configurationRepository, roundSettings)
+                    generateGameRounds(configurationRepository, roundSettings, isTestMode.value)
                 } else emptyList()
             }
         }

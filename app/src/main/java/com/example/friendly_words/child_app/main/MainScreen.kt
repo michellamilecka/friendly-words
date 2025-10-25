@@ -53,7 +53,7 @@ fun MainScreen(
 
             if (!canPlay) {
                 Text(
-                    text = "Brak materiałow w kroku uczenia. Dodaj materiały lub zmień konfigurację w aplikacji terapeuty.",
+                    text = "Brak materiałów w kroku uczenia. Dodaj materiały lub zmień konfigurację w aplikacji terapeuty.",
                     fontSize = 24.sp,
                     color = Color.White
                 )
