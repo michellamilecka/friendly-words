@@ -143,7 +143,7 @@ fun GameScreen(
                 when (viewModel.repeatStage.value) {
                     0 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            // 1. powtórka -> ten sam układ
+                            //powtórka - ten sam układ
                             roundsList.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 1
@@ -151,11 +151,11 @@ fun GameScreen(
                     }
                     1 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            // 2. powtórka -> nadal ten sam układ
+                            //powtórka - ten sam układ
                             roundsList.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = roundsList
                         } else {
-                            // bezbłędnie -> 3. raz pseudolosowo, z wykluczeniem dotychczasowych pozycji
+                            //powtóka - inny układ
                             val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
                             val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
                             roundsList.add(currentRoundIndex + 1, shuffledRound)

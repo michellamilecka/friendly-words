@@ -106,4 +106,9 @@ class ConfigurationRepository @Inject constructor(
             animationsEnabled = true
         )
     }
+
+    suspend fun hasMaterialsForActiveConfig(): Boolean {
+        val resources = getResourcesWithImagesForActiveConfig()
+        return resources.isNotEmpty()
+    }
 }
