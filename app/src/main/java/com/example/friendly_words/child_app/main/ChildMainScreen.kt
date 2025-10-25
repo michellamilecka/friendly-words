@@ -20,11 +20,18 @@ fun ScreenNavigationGame(viewModel: ChildMainViewModel) {
             InformationScreen()
         }
         "main" -> {
+            LaunchedEffect(Unit) {
+                viewModel.refreshCanPlay()
+            }
+
             MainScreen(
                 configurationDao = viewModel.configurationDao,
                 onPlayClick = {
-                    viewModel.onEvent(ChildMainEvent.GoToNextScreen)
-                }
+                    if (state.canPlay) { // <-- dodatkowy bezpiecznik
+                        viewModel.onEvent(ChildMainEvent.GoToNextScreen)
+                    }
+                },
+                canPlay = state.canPlay
             )
         }
         "game" -> {

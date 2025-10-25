@@ -10,7 +10,6 @@ import com.example.shared.data.another.ConfigurationReinforcementState
 data class Configuration(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-
     val isActive: Boolean = false,
     val activeMode: String? = null,
     val isExample:Boolean=false,

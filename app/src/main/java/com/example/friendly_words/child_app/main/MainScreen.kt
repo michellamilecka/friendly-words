@@ -16,10 +16,12 @@ import com.example.friendly_words.child_app.theme.LightBlue
 @Composable
 fun MainScreen(
     configurationDao: com.example.shared.data.daos.ConfigurationDao,
-    onPlayClick: () -> Unit
+    onPlayClick: () -> Unit,
+    canPlay: Boolean
 ) {
     val activeConfig by configurationDao.getActiveConfiguration().collectAsState(initial = null)
     val isTestMode = activeConfig?.activeMode == "test"
+    //val canPlayState = canPlay
 
     Box(
         modifier = Modifier.fillMaxSize().background(Blue)
@@ -29,7 +31,7 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Przyjazne Słowa",
@@ -44,9 +46,19 @@ fun MainScreen(
                 color = LightBlue
             )
 
-            Spacer(modifier = Modifier.height(15.dp))
+            com.example.friendly_words.child_app.components.PlayButton(
+                onClick = onPlayClick,
+                enabled = canPlay
+            )
 
-            com.example.friendly_words.child_app.components.PlayButton(onClick = onPlayClick)
+            if (!canPlay) {
+                Text(
+                    text = "Brak materiałów w kroku uczenia. Dodaj materiały lub zmień konfigurację w aplikacji terapeuty.",
+                    fontSize = 24.sp,
+                    color = Color.White
+                )
+            }
+
         }
     }
 }

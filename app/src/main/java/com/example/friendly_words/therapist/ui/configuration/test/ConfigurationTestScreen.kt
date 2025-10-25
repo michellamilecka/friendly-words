@@ -320,7 +320,7 @@ fun ConfigurationTestScreen(
                         modifier = Modifier
                     ) {
                         Text(
-                            text = "Czytanie polecenia",
+                            text = "Głosowe odtwarzanie polecenia",
                             fontSize = 20.sp,
                             fontWeight = if (state.testEditEnabled) FontWeight.Medium else FontWeight.Normal,
                             color = if (state.testEditEnabled) Color.Black else Color.Gray

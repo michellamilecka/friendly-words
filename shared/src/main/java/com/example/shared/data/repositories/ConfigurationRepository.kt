@@ -106,4 +106,33 @@ class ConfigurationRepository @Inject constructor(
             animationsEnabled = true
         )
     }
+
+    suspend fun hasMaterialsForActiveConfig(isTestMode: Boolean): Boolean {
+        return getResourcesWithImagesForActiveConfigFiltered(isTestMode).isNotEmpty()
+    }
+
+    suspend fun getResourcesWithImagesForActiveConfigFiltered(isTestMode: Boolean): List<ResourceWithImages> {
+        val activeConfig = dao.getActiveConfiguration().firstOrNull() ?: return emptyList()
+
+        // zasoby przypięte do tej konfiguracji
+        val configResources = dao.getConfigurationResources(activeConfig.id)
+        val resourceIds = configResources.map { it.resourceId }.toSet()
+
+        // usage obrazów dla tej konfiguracji
+        val usages = dao.getConfigurationImageUsages(activeConfig.id)
+        val allowedImageIds = usages
+            .filter { usage -> if (isTestMode) usage.inTest else usage.inLearning }
+            .map { it.imageId }
+            .toSet()
+
+        // pełna lista zasobów z obrazami
+        val all = resourceDao.getResourcesWithImages()
+
+        // filtr: tylko zasoby z konfiguracji + odfiltrowane obrazy wg trybu
+        return all
+            .filter { it.resource.id in resourceIds }
+            .map { rwi -> rwi.copy(images = rwi.images.filter { it.id in allowedImageIds }) }
+            .filter { it.images.isNotEmpty() }
+    }
+
 }
