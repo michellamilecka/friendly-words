@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.friendly_words.child_app.data.GameRound
 import com.example.friendly_words.child_app.data.generateGameRounds
 import com.example.shared.data.entities.LearningSettings
+import com.example.shared.data.entities.asRoundSettings
 import com.example.shared.data.entities.toLearningSettings
 import com.example.shared.data.repositories.ConfigurationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,8 @@ import jakarta.inject.Inject
 class GameViewModel @Inject constructor(
     private val configurationRepository: ConfigurationRepository,
 ) : ViewModel() {
+
+    var isTestMode = mutableStateOf(false)
 
     // ---------- DANE GRY ----------
     var rounds = mutableStateOf<List<GameRound>>(emptyList())
@@ -36,6 +39,7 @@ class GameViewModel @Inject constructor(
 
     // ---------- AKTYWNE USTAWIENIA ----------
     var activeLearningSettings = mutableStateOf<LearningSettings?>(null)
+    var activeTestSettings = mutableStateOf<com.example.shared.data.entities.TestSettings?>(null)
 
     // ---------- PODPOWIEDZI z LearningSettings ----------
     val dimIncorrect: State<Boolean> = derivedStateOf {
@@ -53,11 +57,20 @@ class GameViewModel @Inject constructor(
 
     // ---------- OBSERWOWANY COMMAND TYPE ----------
     val commandType: State<String> = derivedStateOf {
-        when (activeLearningSettings.value?.commandType) {
-            "SHORT" -> "{Słowo}"
-            "WHERE_IS" -> "Gdzie jest {Słowo}"
-            "SHOW_ME" -> "Pokaż gdzie jest {Słowo}"
-            else -> "{Słowo}"
+        if (isTestMode.value) {
+            when (activeTestSettings.value?.commandType) {
+                "SHORT" -> "{Słowo}"
+                "WHERE_IS" -> "Gdzie jest {Słowo}"
+                "SHOW_ME" -> "Pokaż gdzie jest {Słowo}"
+                else -> "{Słowo}"
+            }
+        } else {
+            when (activeLearningSettings.value?.commandType) {
+                "SHORT" -> "{Słowo}"
+                "WHERE_IS" -> "Gdzie jest {Słowo}"
+                "SHOW_ME" -> "Pokaż gdzie jest {Słowo}"
+                else -> "{Słowo}"
+            }
         }
     }
 
@@ -66,7 +79,6 @@ class GameViewModel @Inject constructor(
 
     private fun keyFor(round: GameRound): String = round.correctItem.label
 
-    // Zapisz aktualny indeks poprawnej opcji dla tej rundy (pozycji).
     fun noteCorrectPos(round: GameRound) {
         val idx = round.options.indexOf(round.correctItem)
         if (idx >= 0) {
@@ -75,13 +87,8 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Zwraca kopię rundy z potasowanymi opcjami tak, żeby poprawna opcja
-     * NIE trafiła na żadną z wcześniej użytych pozycji (o ile to możliwe).
-     * Wyjątek: gdy na ekranie jest 1 obrazek, nie wymuszamy zmiany pozycji.
-     */
     fun shuffledRoundAvoidingPrevious(round: GameRound, displayedImages: Int): GameRound {
-        if (displayedImages <= 1) return round // nic nie wymuszamy dla 1 kafelka
+        if (displayedImages <= 1) return round
 
         val key = keyFor(round)
         val avoid = correctPosHistory[key] ?: emptySet()
@@ -89,13 +96,11 @@ class GameViewModel @Inject constructor(
         val options = round.options
         val correct = round.correctItem
 
-        // jeśli zapełniliśmy wszystkie możliwe pozycje – i tak potasujemy "jakkolwiek"
         if (avoid.size >= options.size) {
             return round.copy(options = options.shuffled())
         }
 
         var best = options.shuffled()
-        // spróbuj kilka razy znaleźć układ, w którym indeks poprawnej nie jest w "avoid"
         repeat(50) {
             val candidate = options.shuffled()
             val idx = candidate.indexOf(correct)
@@ -113,20 +118,34 @@ class GameViewModel @Inject constructor(
                 println("CONFIG FROM REPO: $config")
 
                 if (config != null) {
+                    isTestMode.value = (config.activeMode == "test")
+
                     val materialState = configurationRepository.getMaterialState(config.id)
                     val reinforcementState = configurationRepository.getReinforcementState(config.id)
 
+                    // learning
                     activeLearningSettings.value = config.toLearningSettings(
                         materialState = materialState,
                         reinforcementState = reinforcementState
                     )
-                    println("ACTIVE LEARNING SETTINGS: ${activeLearningSettings.value}")
 
-                    rounds.value = generateGameRounds(configurationRepository)
-                    println("ROUNDS GENERATED: ${rounds.value.size}")
+                    // test (bierzesz bezpośrednio z configu)
+                    activeTestSettings.value = config.testSettings
+
+                    // wybór parametrów rund:
+                    val roundSettings = if (isTestMode.value) {
+                        activeTestSettings.value?.asRoundSettings()
+                    } else {
+                        activeLearningSettings.value?.asRoundSettings()
+                    }
+
+                    rounds.value = if (roundSettings != null) {
+                        generateGameRounds(configurationRepository, roundSettings)
+                    } else emptyList()
                 } else {
                     println("NO ACTIVE CONFIGURATION!")
                 }
+
             }
         }
     }
@@ -142,7 +161,14 @@ class GameViewModel @Inject constructor(
             currentRoundIndex.value = 0
             repeatStage.value = 0
             viewModelScope.launch {
-                rounds.value = generateGameRounds(configurationRepository)
+                val roundSettings = if (isTestMode.value) {
+                    activeTestSettings.value?.asRoundSettings()
+                } else {
+                    activeLearningSettings.value?.asRoundSettings()
+                }
+                rounds.value = if (roundSettings != null) {
+                    generateGameRounds(configurationRepository, roundSettings)
+                } else emptyList()
             }
         }
 

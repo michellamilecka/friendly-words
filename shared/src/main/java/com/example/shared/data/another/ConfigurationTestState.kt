@@ -5,7 +5,7 @@ import com.example.shared.data.entities.TestSettings
 data class ConfigurationTestState(
     val imageCount: Int = 3,
     val repetitionCount: Int = 0,
-    val answerTime: Int = 0, // todo: chyba trzeba dodac komponent do ustawiania czasu na odpowiedz w teście
+    val answerTime: Int = 0,
     val testEditEnabled: Boolean = false,
     val selectedPrompt: String = "{Słowo}",
     val captionsEnabled: Boolean = true,
@@ -19,9 +19,15 @@ fun ConfigurationTestState.toTestSettings(
         numberOfWords = materialState.vocabItems.size,
         displayedImagesCount = this.imageCount,
         repetitionPerWord = this.repetitionCount,
-        commandType = this.selectedPrompt,
+        commandType = when (this.selectedPrompt) {
+            "{Słowo}" -> "SHORT"
+            "Gdzie jest {Słowo}" -> "WHERE_IS"
+            "Pokaż gdzie jest {Słowo}" -> "SHOW_ME"
+            else -> "SHORT"
+        },
         showLabelsUnderImages = this.captionsEnabled,
-        readCommand = this.readingEnabled
+        readCommand = this.readingEnabled,
+        answerTimeSeconds      = this.answerTime
     )
 }
 fun ConfigurationLearningState.toDerivedTestState(): ConfigurationTestState {
@@ -31,7 +37,8 @@ fun ConfigurationLearningState.toDerivedTestState(): ConfigurationTestState {
         selectedPrompt = this.selectedPrompt,
         captionsEnabled = this.captionsEnabled,
         readingEnabled = this.readingEnabled,
-        testEditEnabled = false
+        testEditEnabled = false,
+        answerTime      = this.timeCount
     )
 }
 

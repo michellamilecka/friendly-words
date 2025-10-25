@@ -21,7 +21,7 @@ fun MainScreen(
 ) {
     val activeConfig by configurationDao.getActiveConfiguration().collectAsState(initial = null)
     val isTestMode = activeConfig?.activeMode == "test"
-    val canPlayState = canPlay
+    //val canPlayState = canPlay
 
     Box(
         modifier = Modifier.fillMaxSize().background(Blue)

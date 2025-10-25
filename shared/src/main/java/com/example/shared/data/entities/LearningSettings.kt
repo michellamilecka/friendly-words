@@ -2,6 +2,7 @@ package com.example.shared.data.entities
 
 import com.example.shared.data.another.ConfigurationLearningState
 import com.example.shared.data.another.ConfigurationReinforcementState
+import com.example.shared.data.another.RoundSettings
 
 data class LearningSettings (
     val numberOfWords: Int = 0,
@@ -44,3 +45,10 @@ fun LearningSettings.toConfigurationReinforcementState(): ConfigurationReinforce
         animationsEnabled = animationsEnabled
     )
 }
+
+fun LearningSettings.asRoundSettings(): RoundSettings = object : RoundSettings {
+    override val numberOfWords = this@asRoundSettings.numberOfWords
+    override val displayedImagesCount = this@asRoundSettings.displayedImagesCount
+    override val repetitionPerWord = this@asRoundSettings.repetitionPerWord
+}
+
