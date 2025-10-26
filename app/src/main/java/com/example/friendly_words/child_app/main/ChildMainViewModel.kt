@@ -1,19 +1,34 @@
 package com.example.friendly_words.child_app.main
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.shared.data.daos.ConfigurationDao
+import com.example.shared.data.repositories.ConfigurationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChildMainViewModel @Inject constructor(
-    val configurationDao: com.example.shared.data.daos.ConfigurationDao
+    val configurationDao: ConfigurationDao,
+    private val configurationRepository: ConfigurationRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ChildMainState())
     val state: StateFlow<ChildMainState> = _state
+
+    fun refreshCanPlay() {
+        viewModelScope.launch {
+            val active = configurationDao.getActiveConfiguration().firstOrNull()
+            val isTest = active?.activeMode == "test"
+            val canPlay = configurationRepository.hasMaterialsForActiveConfig(isTest)
+            _state.update { it.copy(canPlay = canPlay) }
+        }
+    }
 
     fun onEvent(event: ChildMainEvent) {
         _state.update { currentState ->

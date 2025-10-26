@@ -1,6 +1,6 @@
 package com.example.friendly_words.child_app.data
 
-import com.example.shared.data.entities.toLearningSettings
+import com.example.shared.data.another.RoundSettings
 import com.example.shared.data.repositories.ConfigurationRepository
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -9,44 +9,49 @@ data class GameRound(
     val options: List<GameItem>
 )
 
-suspend fun generateGameRounds(repository: ConfigurationRepository): List<GameRound> {
+suspend fun generateGameRounds(
+    repository: ConfigurationRepository,
+    settings: RoundSettings,
+    isTestMode: Boolean
+): List<GameRound> {
     val activeConfig = repository.getActiveConfiguration().firstOrNull() ?: return emptyList()
-    val materialState = repository.getMaterialState(activeConfig.id)
-    val reinforcementState = repository.getReinforcementState(activeConfig.id)
-    val settings = activeConfig.toLearningSettings(materialState, reinforcementState)
 
-    // Pobierz zasoby z obrazami
-    val allResources = repository.getResourcesWithImagesForActiveConfig()
-    println("generateGameRounds → resources: ${allResources.size}")
+    val allResources = repository.getResourcesWithImagesForActiveConfigFiltered(isTestMode)
     if (allResources.isEmpty()) return emptyList()
 
-    // Wybierz losowo tyle słów ile potrzebujemy
-    val selectedResources = allResources.shuffled().take(settings.numberOfWords)
+    val numberOfWords = settings.numberOfWords.coerceAtMost(allResources.size)
+    val selectedResources = allResources.shuffled().take(numberOfWords)
+
     val rounds = mutableListOf<GameRound>()
 
-    selectedResources.forEach { resource ->
-        repeat(settings.repetitionPerWord) {
-            // Poprawny item
+    selectedResources.forEach { res ->
+        val allowedImagesForCorrect = res.images
+        if (allowedImagesForCorrect.isEmpty()) return@forEach
+
+        repeat(settings.repetitionPerWord.coerceAtLeast(1)) {
+            val correctImage = allowedImagesForCorrect.random()
             val correctItem = GameItem(
-                label = resource.resource.learnedWord,
-                imagePath = resource.images.firstOrNull()?.path ?: ""
+                label = res.resource.learnedWord,
+                imagePath = correctImage.path
             )
 
-            // Distraktory
-            val distractors = allResources
-                .filter { it != resource && it.images.isNotEmpty() }
+            val distractorResources = (allResources - res)
+                .filter { it.images.isNotEmpty() }
                 .shuffled()
-                .take(settings.displayedImagesCount - 1)
-                .map { GameItem(it.resource.learnedWord, it.images.first().path) }
+                .take((settings.displayedImagesCount - 1).coerceAtLeast(0))
 
-            // Opcje rundy: correctItem + distractors
+            val distractors = distractorResources.map { dr ->
+                val img = dr.images.random()
+                GameItem(
+                    label = dr.resource.learnedWord,
+                    imagePath = img.path
+                )
+            }
+
             val options = (distractors + correctItem).shuffled()
-
-            // Dodaj rundę
-            rounds.add(GameRound(correctItem = correctItem, options = options))
+            rounds.add(GameRound(correctItem, options))
         }
     }
 
-    println("generateGameRounds → rounds.size: ${rounds.size}")
     return rounds.shuffled()
 }

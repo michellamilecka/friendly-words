@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.friendly_words.child_app.theme.YellowFrames
@@ -22,16 +23,20 @@ import com.example.friendly_words.child_app.theme.YellowFrames
 @Composable
 fun PlayButton(
     onClick: () -> Unit,
-    size: Dp = 500.dp,
+    size: Dp = 475.dp,
     outerBorderColor: Color = YellowFrames,
     innerCircleColor: Color = Color.White,
-    iconColor: Color = Color(0xFF0B930B)
+    iconColor: Color = Color(0xFF0B930B),
+    enabled: Boolean = true
 ) {
+    val alpha = if (enabled) 1f else 0.4f
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(size)
-            .clickable(onClick = onClick)
+            .graphicsLayer(alpha = alpha)
+            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokeWidth = 2.dp.toPx()

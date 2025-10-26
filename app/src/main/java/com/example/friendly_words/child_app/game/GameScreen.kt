@@ -26,6 +26,7 @@ fun GameScreen(
     val currentRoundIndex by viewModel.currentRoundIndex
     val rounds by viewModel.rounds
     val showHint by viewModel.showHint
+    val isTest = viewModel.isTestMode.value
 
     if (rounds.isEmpty() || currentRoundIndex >= rounds.size) return
 
@@ -33,10 +34,26 @@ fun GameScreen(
     val correctItem = currentRound.correctItem
     val commandType = viewModel.commandType.value
     val commandText = commandType.replace("{Słowo}", correctItem.label)
-    val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
-    val hintDelayMillis = ((viewModel.activeLearningSettings.value?.hintAfterSeconds ?: 1) * 1000L)
-    val showLabels = viewModel.activeLearningSettings.value?.showLabelsUnderImages ?: true
+    val roundTimeoutMillis =
+        ((viewModel.activeLearningSettings.value?.hintAfterSeconds ?: 1) * 1000L)
 
+    // ===== Parametry zależne od trybu =====
+    val displayedImages = if (isTest)
+        viewModel.activeTestSettings.value?.displayedImagesCount ?: 4
+    else
+        viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+
+    val showLabels = if (isTest)
+        viewModel.activeTestSettings.value?.showLabelsUnderImages ?: false
+    else
+        viewModel.activeLearningSettings.value?.showLabelsUnderImages ?: true
+
+    val readCommand = if (isTest)
+        viewModel.activeTestSettings.value?.readCommand ?: false
+    else
+        viewModel.activeLearningSettings.value?.readCommand ?: true
+
+    // ===== TTS =====
     val context = LocalContext.current
     var ttsReady by remember { mutableStateOf(false) }
     var currentPraise by remember { mutableStateOf("") }
@@ -51,11 +68,8 @@ fun GameScreen(
     LaunchedEffect(currentRoundIndex, ttsReady) {
         viewModel.noteCorrectPos(currentRound)
 
-        if (
-            ttsReady &&
-            !com.example.friendly_words.child_app.data.GameSettings.isTestMode &&
-            (viewModel.activeLearningSettings.value?.readCommand == true)
-        ) {
+        // Czytanie polecenia tylko gdy włączone
+        if (ttsReady && readCommand) {
             tts.speak(commandText, TextToSpeech.QUEUE_FLUSH, null, null)
         }
 
@@ -67,13 +81,20 @@ fun GameScreen(
         viewModel.goNextAfterCongrats.value = false
         viewModel.showHint.value = false
 
-        if (!com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
-            delay(hintDelayMillis)
+        if (!isTest && roundTimeoutMillis > 0L) {
+            delay(roundTimeoutMillis)
             if (!viewModel.correctClicked.value &&
                 !viewModel.answerJudged.value &&
                 !viewModel.showHint.value
             ) {
                 viewModel.showHint.value = true
+            }
+        }else if (isTest && roundTimeoutMillis > 0L) {
+            delay(roundTimeoutMillis)
+            if (!viewModel.correctClicked.value && !viewModel.answerJudged.value) {
+                viewModel.wrongAnswersCount.value++
+                viewModel.answerJudged.value = true
+                viewModel.goNextAfterCongrats.value = true
             }
         }
     }
@@ -82,7 +103,7 @@ fun GameScreen(
 
     // ---------- LICZENIE BŁĘDÓW PO POKAZANIU PODPOWIEDZI ----------
     LaunchedEffect(showHint) {
-        if (showHint && !viewModel.hadMistakeThisRound.value && !viewModel.correctClicked.value) {
+        if (!isTest && showHint && !viewModel.hadMistakeThisRound.value && !viewModel.correctClicked.value) {
             viewModel.wrongAnswersCount.value++
             viewModel.hadMistakeThisRound.value = true
             viewModel.answerJudged.value = true
@@ -93,31 +114,27 @@ fun GameScreen(
     fun handleAnswer(item: GameItem) {
         if (viewModel.showCongratsScreen.value) return
 
-        val isCorrect = item == correctItem
+        val isCorrectClick = item == correctItem
 
-        if (com.example.friendly_words.child_app.data.GameSettings.isTestMode) {
-            if (!viewModel.answerJudged.value) {
-                if (isCorrect) viewModel.correctAnswersCount.value++ else viewModel.wrongAnswersCount.value++
-                viewModel.answerJudged.value = true
-                viewModel.goNextAfterCongrats.value = true
-            }
-            return
-        }
-
-        if (isCorrect && !viewModel.correctClicked.value) {
+        if (isCorrectClick && !viewModel.correctClicked.value) {
             viewModel.correctClicked.value = true
             if (!viewModel.hadMistakeThisRound.value) viewModel.correctAnswersCount.value++
-            viewModel.showCongratsScreen.value = true
+
+            if (isTest) {
+                viewModel.goNextAfterCongrats.value = true
+            } else {
+                viewModel.showCongratsScreen.value = true
+            }
             viewModel.answerJudged.value = true
-        } else if (!isCorrect) {
-            if (!viewModel.showHint.value) {
+        } else if (!isCorrectClick) {
+            if (!isTest && !viewModel.showHint.value) {
                 viewModel.showHint.value = true
             }
         }
     }
 
-    // ---------- EKRAN GRATULACJI ----------
-    if (viewModel.showCongratsScreen.value) {
+    // ---------- EKRAN GRATULACJI (tylko UCZENIE) ----------
+    if (!isTest && viewModel.showCongratsScreen.value) {
         LaunchedEffect(viewModel.showCongratsScreen.value) {
             if (viewModel.showCongratsScreen.value) {
                 val praises = viewModel.activeLearningSettings.value?.typesOfPraises ?: emptyList()
@@ -143,7 +160,7 @@ fun GameScreen(
                 when (viewModel.repeatStage.value) {
                     0 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            // 1. powtórka -> ten sam układ
+                            // powtórka - ten sam układ
                             roundsList.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 1
@@ -151,13 +168,13 @@ fun GameScreen(
                     }
                     1 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            // 2. powtórka -> nadal ten sam układ
+                            // powtórka - ten sam układ
                             roundsList.add(currentRoundIndex + 1, currentRound)
                             viewModel.rounds.value = roundsList
                         } else {
-                            // bezbłędnie -> 3. raz pseudolosowo, z wykluczeniem dotychczasowych pozycji
-                            val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
-                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
+                            // powtórka - pseudolosowy inny układ (unikamy poprzednich pozycji poprawnej)
+                            val displayed = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayed)
                             roundsList.add(currentRoundIndex + 1, shuffledRound)
                             viewModel.rounds.value = roundsList
                             viewModel.repeatStage.value = 2
@@ -165,8 +182,8 @@ fun GameScreen(
                     }
                     2 -> {
                         if (viewModel.hadMistakeThisRound.value) {
-                            val displayedImages = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
-                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayedImages)
+                            val displayed = viewModel.activeLearningSettings.value?.displayedImagesCount ?: 4
+                            val shuffledRound = viewModel.shuffledRoundAvoidingPrevious(currentRound, displayed)
                             roundsList.add(currentRoundIndex + 1, shuffledRound)
                             viewModel.rounds.value = roundsList
                         } else {
@@ -190,7 +207,7 @@ fun GameScreen(
     }
 
     // ---------- UI RUNDY ----------
-    if (!viewModel.showCongratsScreen.value && !viewModel.goNextAfterCongrats.value) {
+    if ((!viewModel.showCongratsScreen.value || isTest) && !viewModel.goNextAfterCongrats.value) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -216,17 +233,28 @@ fun GameScreen(
                     options = currentRound.options.map { GameItem(it.label, it.imagePath) },
                     numberOfItems = displayedImages,
                     isDimmed = { item ->
-                        viewModel.dimIncorrect.value &&
-                                showHint && currentRound.options.any { it.label == item.label && it != currentRound.correctItem }
+                        !isTest &&
+                                viewModel.dimIncorrect.value &&
+                                viewModel.showHint.value &&
+                                currentRound.options.any { it.label == item.label && it != currentRound.correctItem }
                     },
                     isScaled = { item ->
-                        viewModel.scaleCorrect.value && showHint && currentRound.correctItem.label == item.label
+                        !isTest &&
+                                viewModel.scaleCorrect.value &&
+                                viewModel.showHint.value &&
+                                currentRound.correctItem.label == item.label
                     },
                     animateCorrect = { item ->
-                        viewModel.animateCorrect.value && showHint && currentRound.correctItem.label == item.label
+                        !isTest &&
+                                viewModel.animateCorrect.value &&
+                                viewModel.showHint.value &&
+                                currentRound.correctItem.label == item.label
                     },
                     outlineCorrect = { item ->
-                        viewModel.outlineCorrect.value && showHint && currentRound.correctItem.label == item.label
+                        !isTest &&
+                                viewModel.outlineCorrect.value &&
+                                viewModel.showHint.value &&
+                                currentRound.correctItem.label == item.label
                     },
                     showLabels = showLabels,
                     onClick = { item ->
