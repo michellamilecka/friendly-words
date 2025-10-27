@@ -261,7 +261,7 @@ fun ConfigurationSaveScreen(
     )
     InfoDialog(
         show = saveState.showDuplicateNameDialog,
-        message = "Konfiguracja o takiej nazwie już istnieje.",
+        message = "Krok uczenia o takiej nazwie już istnieje.",
         onDismiss = { onEvent(ConfigurationSaveEvent.DismissDuplicateNameDialog) }
     )
 

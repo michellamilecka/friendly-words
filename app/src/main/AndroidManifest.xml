@@ -13,8 +13,8 @@
             android:name=".therapist.ui.main.MainActivity"
             android:exported="true"
             android:label="Przyjazne Słowa Ustawienia"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
+            android:icon="@drawable/friendly_words_settings"
+            android:roundIcon="@drawable/friendly_words_settings"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Friendlywords"
             android:taskAffinity="com.example.friendly_words.therapist.ui.main.MainActivity">
@@ -27,8 +27,8 @@
             android:name="com.example.friendly_words.child_app.main.MainActivityChild"
             android:exported="true"
             android:label="Przyjazne Słowa Gra"
-            android:icon="@drawable/iwrd_logo"
-            android:roundIcon="@drawable/iwrd_logo"
+            android:icon="@drawable/friendly_words"
+            android:roundIcon="@drawable/friendly_words"
             android:theme="@style/Theme.Friendlywords"
             android:launchMode="singleTask"
             android:taskAffinity="com.example.friendly_words.child_app.main.MainActivityChild">
