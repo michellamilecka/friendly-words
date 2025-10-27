@@ -54,6 +54,9 @@ class GameViewModel @Inject constructor(
     val outlineCorrect: State<Boolean> = derivedStateOf {
         activeLearningSettings.value?.typesOfHints?.contains("Obramuj poprawną") == true
     }
+    val animationsEnabled: State<Boolean> = derivedStateOf {
+        activeLearningSettings.value?.animationsEnabled == true
+    }
 
     // ---------- OBSERWOWANY COMMAND TYPE ----------
     val commandType: State<String> = derivedStateOf {

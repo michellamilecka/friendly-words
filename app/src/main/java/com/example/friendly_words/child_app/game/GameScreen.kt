@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.friendly_words.R
 import com.example.friendly_words.child_app.components.RoundOptionsLayout
 import com.example.friendly_words.child_app.data.GameItem
 import com.example.friendly_words.child_app.theme.Blue
@@ -30,6 +31,7 @@ fun GameScreen(
 
     if (rounds.isEmpty() || currentRoundIndex >= rounds.size) return
 
+    val animationsEnabled by viewModel.animationsEnabled
     val currentRound = rounds[currentRoundIndex]
     val correctItem = currentRound.correctItem
     val commandType = viewModel.commandType.value
@@ -142,6 +144,12 @@ fun GameScreen(
             }
         }
 
+        val spritesFlowers = listOf(
+            R.drawable.flower_orange,
+            R.drawable.flower_pink,
+            R.drawable.flower_purple
+        )
+
         CorrectAnswerScreen(
             correctItem = correctItem,
             displayWord = correctItem.label,
@@ -193,7 +201,10 @@ fun GameScreen(
                 }
                 viewModel.hadMistakeThisRound.value = false
             },
-            showLabels = showLabels
+            showLabels = showLabels,
+            overlaySprites = if (animationsEnabled) spritesFlowers else emptyList(),
+            overlayDirection = TravelDirection.UP,
+            overlayCount = 20
         )
     }
 
