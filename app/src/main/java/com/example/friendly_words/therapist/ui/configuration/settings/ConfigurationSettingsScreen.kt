@@ -86,9 +86,9 @@ fun ConfigurationSettingsScreen(
                 1 -> {
                     val material = state.materialState
 
-                    val availableForLearning = material.vocabItems.count { item ->
-                        item.inLearningStates.any { it == true }
-                    }
+                    val availableForLearning = material.vocabItems
+                        .count { item -> item.inLearningStates.any { it == true } }
+                        .coerceAtMost(6)
 
                     ConfigurationLearningScreen(
                         state = state.learningState,
@@ -113,13 +113,13 @@ fun ConfigurationSettingsScreen(
                     val testState = state.testState
                     val learningState = state.learningState
 
-                    val availableForLearning = material.vocabItems.count { item ->
-                        item.inLearningStates.any { it == true }
-                    }
+                    val availableForLearning = material.vocabItems
+                        .count { item -> item.inLearningStates.any { it == true } }
+                        .coerceAtMost(6)
 
-                    val availableForTest = material.vocabItems.count { item ->
-                        item.inTestStates.any { it == true }
-                    }
+                    val availableForTest = material.vocabItems
+                        .count { item -> item.inTestStates.any { it == true } }
+                        .coerceAtMost(6)
 
                     ConfigurationTestScreen(
                         state = testState,
