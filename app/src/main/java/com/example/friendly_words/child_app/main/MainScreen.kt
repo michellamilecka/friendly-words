@@ -41,7 +41,7 @@ fun MainScreen(
             )
 
             Text(
-                text = "Aktywna konfiguracja: ${activeConfig?.name ?: "brak"} (tryb: ${if (isTestMode) "test" else "uczenie"})",
+                text = "Aktywny krok uczenia: ${activeConfig?.name ?: "brak"} (tryb: ${if (isTestMode) "test" else "uczenie"})",
                 fontSize = 20.sp,
                 color = LightBlue
             )
@@ -53,7 +53,7 @@ fun MainScreen(
 
             if (!canPlay) {
                 Text(
-                    text = "Brak materiałów w kroku uczenia. Dodaj materiały lub zmień konfigurację w aplikacji terapeuty.",
+                    text = "Brak materiałów w kroku uczenia. Dodaj materiały lub zmień krok uczenia w aplikacji terapeuty.",
                     fontSize = 24.sp,
                     color = Color.White
                 )

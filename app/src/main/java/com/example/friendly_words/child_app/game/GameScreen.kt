@@ -150,6 +150,29 @@ fun GameScreen(
             R.drawable.flower_purple
         )
 
+        val spritesBalloons = listOf(
+            R.drawable.balloon_blue,
+            R.drawable.balloon_yellow,
+            R.drawable.balloon_green,
+            R.drawable.balloon_red
+        )
+
+        val spritesCars = listOf(
+            R.drawable.car_red,
+            R.drawable.car_yellow,
+            R.drawable.car_green
+        )
+
+        val allSpriteSets = listOf(
+            spritesFlowers to TravelDirection.UP,
+            spritesBalloons to TravelDirection.UP,
+            spritesCars to TravelDirection.RIGHT
+        )
+
+        val (chosenSprites, chosenDirection) = if (animationsEnabled) {
+            allSpriteSets.random()
+        } else (emptyList<Int>() to TravelDirection.UP)
+
         CorrectAnswerScreen(
             correctItem = correctItem,
             displayWord = correctItem.label,
@@ -202,9 +225,13 @@ fun GameScreen(
                 viewModel.hadMistakeThisRound.value = false
             },
             showLabels = showLabels,
-            overlaySprites = if (animationsEnabled) spritesFlowers else emptyList(),
-            overlayDirection = TravelDirection.UP,
-            overlayCount = 20
+            overlaySprites = chosenSprites,
+            overlayDirection = chosenDirection,
+            overlayCount = when (chosenDirection) {
+                TravelDirection.RIGHT, TravelDirection.LEFT -> 7
+                else -> 20
+            }
+
         )
     }
 

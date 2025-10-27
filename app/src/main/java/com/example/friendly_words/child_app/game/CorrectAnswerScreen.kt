@@ -28,17 +28,20 @@ fun CorrectAnswerScreen(
     overlayDirection: TravelDirection = TravelDirection.UP,
     overlayCount: Int = 20,
 ) {
+    // --- Mówienie słowa i pochwały, potem przejście dalej ---
     LaunchedEffect(Unit) {
         speakWordAndPraise()
         delay(4000)
         onTimeout()
     }
 
+    // --- Główne tło ekranu ---
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Blue)
     ) {
+        // --- Centralny układ z tekstem i poprawną opcją ---
         Column(
             Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -65,6 +68,7 @@ fun CorrectAnswerScreen(
             )
         }
 
+        // --- Warstwa animacji (np. balony, kwiatki, samochody) ---
         if (overlaySprites.isNotEmpty()) {
             Popup(
                 alignment = Alignment.TopStart,
@@ -73,17 +77,23 @@ fun CorrectAnswerScreen(
                     usePlatformDefaultWidth = false
                 )
             ) {
-                Box(Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                ) {
                     FloatingSpritesLayer(
                         sprites = overlaySprites,
                         count = overlayCount,
                         direction = overlayDirection,
-                        baseTravelMs = 2500,
-                        rotate = true
+                        baseTravelMs = when (overlayDirection) {
+                            TravelDirection.RIGHT, TravelDirection.LEFT -> 4500 // samochody wolniejsze
+                            else -> 2500
+                        },
+                        rotate = overlayDirection == TravelDirection.UP || overlayDirection == TravelDirection.DOWN
                     )
                 }
             }
-
         }
     }
 }

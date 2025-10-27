@@ -174,7 +174,7 @@ fun ConfigurationTestScreen(
                     NumberSelector(
                         label = "Liczba powtórzeń dla każdego słowa:",
                         minValue = 1,
-                        maxValue = 5,
+                        maxValue = 3,
                         value = state.repetitionCount,
                         onValueChange = {
                             if (state.testEditEnabled) {

@@ -86,13 +86,9 @@ fun ConfigurationSettingsScreen(
                 1 -> {
                     val material = state.materialState
 
-                    // Ile obrazków wybrano do UCZENIA (selected && inLearning)
-                    val availableForLearning = material.vocabItems.sumOf { item ->
-                        item.imagePaths.indices.count { idx ->
-                            (item.selectedImages.getOrNull(idx) == true) &&
-                                    (item.inLearningStates.getOrNull(idx) == true)
-                        }
-                    }
+                    val availableForLearning = material.vocabItems
+                        .count { item -> item.inLearningStates.any { it == true } }
+                        .coerceAtMost(6)
 
                     ConfigurationLearningScreen(
                         state = state.learningState,
@@ -117,21 +113,13 @@ fun ConfigurationSettingsScreen(
                     val testState = state.testState
                     val learningState = state.learningState
 
-                    // dostępne dla UCZENIA
-                    val availableForLearning = material.vocabItems.sumOf { item ->
-                        item.imagePaths.indices.count { idx ->
-                            (item.selectedImages.getOrNull(idx) == true) &&
-                                    (item.inLearningStates.getOrNull(idx) == true)
-                        }
-                    }
+                    val availableForLearning = material.vocabItems
+                        .count { item -> item.inLearningStates.any { it == true } }
+                        .coerceAtMost(6)
 
-                    // dostępne dla TESTU (jeśli masz osobne flagi, użyj inTestStates)
-                    val availableForTest = material.vocabItems.sumOf { item ->
-                        item.imagePaths.indices.count { idx ->
-                            (item.selectedImages.getOrNull(idx) == true) &&
-                                    (item.inTestStates.getOrNull(idx) == true)   // <- jeśli nie masz, tymczasowo użyj inLearningStates
-                        }
-                    }
+                    val availableForTest = material.vocabItems
+                        .count { item -> item.inTestStates.any { it == true } }
+                        .coerceAtMost(6)
 
                     ConfigurationTestScreen(
                         state = testState,
