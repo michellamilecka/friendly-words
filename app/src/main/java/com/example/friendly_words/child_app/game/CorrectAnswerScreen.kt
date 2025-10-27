@@ -14,6 +14,8 @@ import com.example.friendly_words.child_app.components.RoundOptionsLayout
 import com.example.friendly_words.child_app.data.GameItem
 import com.example.friendly_words.child_app.theme.Blue
 import kotlinx.coroutines.delay
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 
 @Composable
 fun CorrectAnswerScreen(
@@ -21,12 +23,14 @@ fun CorrectAnswerScreen(
     displayWord: String,
     speakWordAndPraise: () -> Unit,
     onTimeout: () -> Unit,
-    showLabels: Boolean
+    showLabels: Boolean,
+    overlaySprites: List<Int> = emptyList(),
+    overlayDirection: TravelDirection = TravelDirection.UP,
+    overlayCount: Int = 20,
 ) {
     LaunchedEffect(Unit) {
-        // mówimy słowo i pochwałę
         speakWordAndPraise()
-        delay(3000)
+        delay(4000)
         onTimeout()
     }
 
@@ -59,6 +63,27 @@ fun CorrectAnswerScreen(
                 showLabels = showLabels,
                 onClick = {}
             )
+        }
+
+        if (overlaySprites.isNotEmpty()) {
+            Popup(
+                alignment = Alignment.TopStart,
+                properties = PopupProperties(
+                    focusable = false,
+                    usePlatformDefaultWidth = false
+                )
+            ) {
+                Box(Modifier.fillMaxSize()) {
+                    FloatingSpritesLayer(
+                        sprites = overlaySprites,
+                        count = overlayCount,
+                        direction = overlayDirection,
+                        baseTravelMs = 2500,
+                        rotate = true
+                    )
+                }
+            }
+
         }
     }
 }
