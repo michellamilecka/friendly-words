@@ -121,6 +121,16 @@ fun ConfigurationSettingsScreen(
                         .count { item -> item.inTestStates.any { it == true } }
                         .coerceAtMost(6)
 
+                    LaunchedEffect(Unit) {
+                        if (!testState.testEditEnabled) {
+                            viewModel.onEvent(
+                                ConfigurationSettingsEvent.Test(
+                                    ConfigurationTestEvent.SetEditEnabled(false)
+                                )
+                            )
+                        }
+                    }
+
                     ConfigurationTestScreen(
                         state = testState,
                         availableImagesForTest = availableForTest,

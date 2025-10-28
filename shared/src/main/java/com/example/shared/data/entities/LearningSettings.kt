@@ -31,7 +31,7 @@ fun LearningSettings.toConfigurationLearningState(): ConfigurationLearningState 
         readingEnabled   = readCommand,
         timeCount        = hintAfterSeconds,
         outlineCorrect   = "Obramuj poprawną"  in typesOfHints,
-        animateCorrect   = "Animuj poprawną"   in typesOfHints,
+        animateCorrect   = "Porusz poprawną"   in typesOfHints,
         scaleCorrect     = "Powiększ poprawną" in typesOfHints,
         dimIncorrect     = "Wyszarz niepoprawne" in typesOfHints
     )

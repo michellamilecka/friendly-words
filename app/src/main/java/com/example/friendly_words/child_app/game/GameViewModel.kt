@@ -49,7 +49,7 @@ class GameViewModel @Inject constructor(
         activeLearningSettings.value?.typesOfHints?.contains("Powiększ poprawną") == true
     }
     val animateCorrect: State<Boolean> = derivedStateOf {
-        activeLearningSettings.value?.typesOfHints?.contains("Animuj poprawną") == true
+        activeLearningSettings.value?.typesOfHints?.contains("Porusz poprawną") == true
     }
     val outlineCorrect: State<Boolean> = derivedStateOf {
         activeLearningSettings.value?.typesOfHints?.contains("Obramuj poprawną") == true

@@ -51,7 +51,6 @@ fun ConfigurationsListScreen(
     viewModel: ConfigurationViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    var hideExamples by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     val stateForScroll = rememberScrollAreaState(lazyListState)
     val snackbarHostState = remember { SnackbarHostState() }
@@ -98,10 +97,10 @@ fun ConfigurationsListScreen(
             viewModel.onEvent(ConfigurationEvent.ClearInfoMessage)
         }
     }
-    val filteredConfigurations = remember(state.searchQuery, state.configurations, hideExamples) {
+    val filteredConfigurations = remember(state.searchQuery, state.configurations, state.hideExamples) {
         state.configurations
             .filter { it.name.contains(state.searchQuery, ignoreCase = true) }
-            .filter { if (hideExamples) !it.isExample else true }
+            .filter { if (state.hideExamples) !it.isExample else true }
     }
 
     LaunchedEffect(state.newlyAddedConfigId, state.configurations.size) {
@@ -118,7 +117,7 @@ fun ConfigurationsListScreen(
 
             // Zawsze wyczyść filtry żeby nowa konfiguracja była widoczna
             viewModel.onEvent(ConfigurationEvent.SearchChanged(""))
-            hideExamples = false
+            viewModel.onEvent(ConfigurationEvent.ToggleHideExamples(false))
 
             // Poczekaj aż filtry się zaktualizują
             kotlinx.coroutines.delay(300)
@@ -310,8 +309,8 @@ fun ConfigurationsListScreen(
                         textAlign = TextAlign.Center,
                     )
                     Checkbox(
-                        checked = hideExamples,
-                        onCheckedChange = { hideExamples = it },
+                        checked = state.hideExamples,
+                        onCheckedChange = { viewModel.onEvent(ConfigurationEvent.ToggleHideExamples(it)) },
                         colors = CheckboxDefaults.colors(
                             checkedColor = DarkBlue,
                             uncheckedColor = Color.Gray,

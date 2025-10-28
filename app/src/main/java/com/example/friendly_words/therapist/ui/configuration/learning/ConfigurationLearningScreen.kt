@@ -37,6 +37,7 @@ fun ConfigurationLearningScreen(
 
     val available = availableImagesForLearning.coerceAtLeast(0)
     val minAllowed = if (available == 0) 0 else 1
+    val globalMaxAllowed = 6
     val maxAllowed = available
 
     LaunchedEffect(available) {
@@ -141,7 +142,12 @@ fun ConfigurationLearningScreen(
                                 blockedDialogMsg = "Nie można ustawić liczby obrazków na mniejszą niż $minAllowed."
                             },
                             onDisabledIncrementClick = {
-                                blockedDialogMsg = "Nie można ustawić liczby obrazków na większą niż $maxAllowed - tyle jest dostępnych obrazków w trybie uczenia."
+                                blockedDialogMsg = if (maxAllowed >= globalMaxAllowed) {
+                                    "Nie można ustawić liczby obrazków na większą niż $globalMaxAllowed - jest to maksymalna liczba do wyboru."
+                                } else {
+                                    "Nie można ustawić liczby obrazków na większą niż $available - tyle jest dostępnych obrazków w trybie uczenia."
+                                }
+
                             }
                         )
                     }

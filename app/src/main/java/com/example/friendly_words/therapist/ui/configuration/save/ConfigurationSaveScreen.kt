@@ -38,7 +38,7 @@ fun Boolean.toYesNo(): String = if (this) "Tak" else "Nie"
 fun ConfigurationLearningState.hintsSummary(): String {
     val hints = listOfNotNull(
         if (outlineCorrect) "Obramuj poprawną" else null,
-        if (animateCorrect) "Animuj poprawną" else null,
+        if (animateCorrect) "Porusz poprawną" else null,
         if (scaleCorrect) "Powiększ poprawną" else null,
         if (dimIncorrect) "Wyszarz niepoprawne" else null
     )

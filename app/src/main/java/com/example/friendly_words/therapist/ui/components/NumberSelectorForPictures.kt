@@ -43,7 +43,7 @@ fun NumberSelectorForPictures(
         Text(
             text = label,
             fontSize = 20.sp,
-            fontWeight = if (labelEnabled) FontWeight.Medium else FontWeight.Medium,
+            fontWeight = FontWeight.Medium,
             color = if (labelEnabled) labelColor else labelColor.copy(alpha = 0.5f),
             textAlign = TextAlign.Center
         )
@@ -76,7 +76,7 @@ fun NumberSelectorForPictures(
             Text(
                 text = value.toString(),
                 fontSize = 22.sp,
-                fontWeight = if (labelEnabled) FontWeight.Medium else FontWeight.Normal,
+                fontWeight = FontWeight.Bold,
                 color = if (labelEnabled) labelColor else labelColor.copy(alpha = 0.6f)
             )
 
