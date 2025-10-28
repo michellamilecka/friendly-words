@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.friendly_words.therapist.data.PreferencesRepository
 import com.example.shared.data.entities.Image
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -23,6 +24,7 @@ class MaterialsListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val resourceRepository: ResourceRepository,
     private val imageRepository: ImageRepository,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
 //    var uiState = mutableStateOf(MaterialsListState())
@@ -31,6 +33,14 @@ class MaterialsListViewModel @Inject constructor(
 
 
     init {
+
+        viewModelScope.launch {
+            preferencesRepository.hideExampleMaterialsFlow.collect { hide ->
+                _uiState.update {
+                    it.copy(hideExamples = hide)
+                }
+            }
+        }
 
         viewModelScope.launch {
             savedStateHandle
@@ -97,7 +107,9 @@ class MaterialsListViewModel @Inject constructor(
                 }
             }
             is MaterialsListEvent.ToggleHideExamples -> {
-                _uiState.update { it.copy(hideExamples = event.hide) }
+                viewModelScope.launch {
+                    preferencesRepository.setHideExampleMaterials(event.hide)
+                }
             }
             is MaterialsListEvent.RequestDelete -> {
                 _uiState.update {it.copy(
@@ -185,6 +197,7 @@ class MaterialsListViewModel @Inject constructor(
 
         }
     }
+
     private fun generateCopyName(original: String, existing: List<String>): String {
         if (original !in existing) return original
 
