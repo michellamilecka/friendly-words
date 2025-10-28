@@ -26,4 +26,15 @@ class PreferencesRepository(private val context: Context){
             preferences[SettingsPreferencesKeys.HIDE_EXAMPLE_MATERIALS] = hidden
         }
     }
+
+    val hideExampleStepsFlow: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[SettingsPreferencesKeys.HIDE_EXAMPLE_STEPS_KEY] ?: false
+        }
+
+    suspend fun setHideExampleSteps(hide: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[SettingsPreferencesKeys.HIDE_EXAMPLE_STEPS_KEY] = hide
+        }
+    }
 }

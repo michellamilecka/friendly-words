@@ -52,6 +52,7 @@ fun ConfigurationTestScreen(
         effectiveAvailable < 3 -> effectiveAvailable
         else -> 3
     }
+    val globalMaxAllowed = 6
 
     // UI zawsze pokazuje wartość w bieżącym zakresie testu
     val clampedValueForUI =
@@ -151,7 +152,11 @@ fun ConfigurationTestScreen(
                         },
                         onDisabledIncrementClick = {
                             if (effectiveAvailable > 0 && state.testEditEnabled) {
-                                dialogMessage = "Nie możesz ustawić więcej niż $maxAllowed – tyle masz dostępnych obrazków w teście."
+                                dialogMessage = if (maxAllowed >= globalMaxAllowed) {
+                                    "Nie możesz ustawić liczby obrazków na większą niż $globalMaxAllowed – jest to maksymalna liczba do wyboru."
+                                } else {
+                                    "Nie możesz ustawić liczby obrazków na większą niż $maxAllowed – tyle jest dostępnych obrazków w teście."
+                                }
                             }
                         }
                     )

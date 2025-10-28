@@ -12,6 +12,7 @@ data class ConfigurationState(
     val shouldScrollToBottom: Boolean=false,
     val infoMessage: String? = null,
     val newlyAddedConfigId: Long? = null,
-    val shouldScrollToTop: Boolean = false
+    val shouldScrollToTop: Boolean = false,
+    val hideExamples: Boolean = false
 )
 

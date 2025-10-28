@@ -1,5 +1,6 @@
 package com.example.friendly_words.therapist.ui.configuration.list
 
+import com.example.friendly_words.therapist.ui.materials.list.MaterialsListEvent
 import com.example.shared.data.entities.Configuration
 
 sealed class ConfigurationEvent {
@@ -20,6 +21,6 @@ sealed class ConfigurationEvent {
     data class ConfirmCopy(val configuration: Configuration) : ConfigurationEvent()
     object ScrollHandled : ConfigurationEvent()
     data class SetActiveMode(val configuration: Configuration, val mode: String) : ConfigurationEvent()
-
+    data class ToggleHideExamples(val hide: Boolean) : ConfigurationEvent()
 }
 

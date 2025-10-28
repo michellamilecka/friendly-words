@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.friendly_words.therapist.data.PreferencesRepository
+import com.example.friendly_words.therapist.ui.materials.list.MaterialsListEvent
 import com.example.shared.data.entities.Configuration
 import com.example.shared.data.entities.ConfigurationImageUsage
 import com.example.shared.data.entities.ConfigurationResource
@@ -19,7 +21,7 @@ import kotlinx.coroutines.flow.first
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
     private val configurationRepository: ConfigurationRepository,
-
+    private val preferencesRepository: PreferencesRepository
     ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationState())
@@ -27,7 +29,15 @@ class ConfigurationViewModel @Inject constructor(
 
 
     init {
-
+        viewModelScope.launch {
+            viewModelScope.launch {
+                preferencesRepository.hideExampleStepsFlow.collect { hide ->
+                    _state.update {
+                        it.copy(hideExamples = hide)
+                    }
+                }
+            }
+        }
         viewModelScope.launch {
             configurationRepository.getAll().collect { configurations ->
 
@@ -53,7 +63,11 @@ class ConfigurationViewModel @Inject constructor(
             is ConfigurationEvent.DeleteRequested -> _state.update {
                 it.copy(showDeleteDialogFor = event.configuration)
             }
-
+            is ConfigurationEvent.ToggleHideExamples -> {
+                viewModelScope.launch {
+                    preferencesRepository.setHideExampleSteps(event.hide)
+                }
+            }
             is ConfigurationEvent.ConfirmDelete -> viewModelScope.launch {
                 val deletingConfig = event.configuration
                 val isCurrentlyActive = deletingConfig.isActive
