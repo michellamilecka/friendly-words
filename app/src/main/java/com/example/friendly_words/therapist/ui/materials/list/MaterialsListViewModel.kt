@@ -45,9 +45,6 @@ class MaterialsListViewModel @Inject constructor(
         // 2. Nasłuchiwanie zmian w bazie zasobów
         viewModelScope.launch {
             resourceRepository.getAll().collect { rawResources ->
-                if (rawResources.isEmpty()) {
-                    insertExampleMaterialsWithImages()
-                }
 
                 val resources = rawResources.sortedBy { it.name.lowercase() }
                 val imagesById = buildMap {
@@ -71,89 +68,6 @@ class MaterialsListViewModel @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    private fun normalizeName(name: String): String {
-        val map = mapOf(
-            'ą' to 'a', 'ć' to 'c', 'ę' to 'e', 'ł' to 'l',
-            'ń' to 'n', 'ó' to 'o', 'ś' to 's', 'ź' to 'z', 'ż' to 'z',
-            'Ą' to 'A', 'Ć' to 'C', 'Ę' to 'E', 'Ł' to 'L',
-            'Ń' to 'N', 'Ó' to 'O', 'Ś' to 'S', 'Ź' to 'Z', 'Ż' to 'Z'
-        )
-        return name.map { map[it] ?: it }.joinToString("")
-    }
-
-
-    private suspend fun insertExampleMaterialsWithImages()
-    {
-        val exampleResources = listOf(
-            Resource(name = "Balonik", learnedWord = "Balonik", category = "zabawki", isExample = true),
-            Resource(name = "Banan", learnedWord = "Banan", category = "jedzenie", isExample = true),
-            Resource(name= "Bluzka", learnedWord = "Bluzka", category = "ubrania", isExample = true),
-            Resource(name= "Buty", learnedWord = "Buty", category = "ubrania", isExample = true),
-            Resource(name = "Bułka", learnedWord = "Bułka", category = "jedzenie", isExample = true),
-            Resource(name = "Ciastko", learnedWord = "Ciastko", category = "jedzenie", isExample = true),
-            Resource(name = "Ciężarówka", learnedWord = "Ciężarówka", category = "pojazdy", isExample = true),
-            Resource(name = "Czapka", learnedWord = "Czapka", category = "ubrania", isExample = true),
-            Resource(name = "Czesać", learnedWord = "Czesać", category = "czynności", isExample = true),
-            Resource(name = "Gotować", learnedWord = "Gotować", category = "czynności", isExample = true),
-            Resource(name = "Huśtać", learnedWord = "Huśtać", category = "czynności", isExample = true),
-            Resource(name = "Jabłko", learnedWord = "Jabłko", category = "jedzenie", isExample = true),
-            Resource(name = "Jajko", learnedWord = "Jajko", category = "jedzenie", isExample = true),
-            Resource(name = "Kąpać się", learnedWord = "Kąpać się", category = "czynności", isExample = true),
-            Resource(name = "Klocki", learnedWord = "Klocki", category = "zabawki", isExample = true),
-            Resource(name = "Koń", learnedWord = "Koń", category = "zwierzęta", isExample = true),
-            Resource(name = "Kot", learnedWord = "Kot", category = "zwierzęta", isExample = true),
-            Resource(name = "Kredki", learnedWord = "Kredki", category = "zabawki", isExample = true),
-            Resource(name = "Krowa", learnedWord = "Krowa", category = "zwierzęta", isExample = true),
-            Resource(name = "Książka", learnedWord = "Książka", category = "zabawki", isExample = true),
-            Resource(name = "Kubek", learnedWord = "Kubek", category = "przedmioty", isExample = true),
-            Resource(name = "Kuchnia", learnedWord = "Kuchnia", category = "pomieszczenia", isExample = true),
-            Resource(name = "Kura", learnedWord = "Kura", category = "zwierzęta", isExample = true),
-            Resource(name = "Lalka", learnedWord = "Lalka", category = "zabawki", isExample = true),
-            Resource(name = "Las", learnedWord = "Las", category = "miejsca", isExample = true),
-            Resource(name = "Łazienka", learnedWord = "Łazienka", category = "pomieszczenia", isExample = true),
-            Resource(name = "Lew", learnedWord = "Lew", category = "zwierzęta", isExample = true),
-            Resource(name = "Lodówka", learnedWord = "Lodówka", category = "sprzęty", isExample = true),
-            Resource(name = "Lody", learnedWord = "Lody", category = "jedzenie", isExample = true),
-            Resource(name = "Morze", learnedWord = "Morze", category = "miejsca", isExample = true),
-            Resource(name = "Ogórek", learnedWord = "Ogórek", category = "jedzenie", isExample = true),
-            Resource(name = "Ołówek", learnedWord = "Ołówek", category = "zabawki", isExample = true),
-            Resource(name = "Pies", learnedWord = "Pies", category = "zwierzęta", isExample = true),
-            Resource(name = "Piłka", learnedWord = "Piłka", category = "zabawki", isExample = true),
-            Resource(name = "Pociąg", learnedWord = "Pociąg", category = "pojazdy", isExample = true),
-            Resource(name = "Pokój", learnedWord = "Pokój", category = "pomieszczenie", isExample = true),
-            Resource(name = "Prasować", learnedWord = "Prasować", category = "czynności", isExample = true),
-            Resource(name = "Rękawiczki", learnedWord = "Rękawiczki", category = "ubrania", isExample = true),
-            Resource(name = "Rower", learnedWord = "Rower", category = "pojazdy", isExample = true),
-            Resource(name = "Ryba", learnedWord = "Ryba", category = "zwierzęta", isExample = true),
-            Resource(name = "Samochód", learnedWord = "Samochód", category = "pojazdy", isExample = true),
-            Resource(name = "Samolot", learnedWord = "Samolot", category = "pojazdy", isExample = true),
-            Resource(name = "Sklep", learnedWord = "Sklep", category = "miejsca", isExample = true),
-            Resource(name = "Słoń", learnedWord = "Słoń", category = "zwierzęta", isExample = true),
-            Resource(name = "Spać", learnedWord = "Spać", category = "czynności", isExample = true),
-            Resource(name = "Spodnie", learnedWord = "Spodnie", category = "ubrania", isExample = true),
-            Resource(name = "Stół", learnedWord = "Stół", category = "meble", isExample = true),
-            Resource(name = "Telewizor", learnedWord = "Telewizor", category = "sprzęty", isExample = true),
-            Resource(name = "Woda", learnedWord = "Woda", category = "napoje", isExample = true),
-            Resource(name = "Żaba", learnedWord = "Żaba", category = "zwierzęta", isExample = true)
-            )
-
-        for (resource in exampleResources)
-        {
-            val resourceId = resourceRepository.insert(resource)
-
-            val baseName = normalizeName(resource.name.lowercase().replace(" ", "_"))
-            val imagePaths = (1..3).map { index ->
-                "file:///android_asset/exemplary_photos/${baseName}_${index}.png"
-            }
-
-            val images = imagePaths.map { path -> Image(path = path) }
-            val insertedImageIds = images.map { imageRepository.insert(it) }
-            imageRepository.linkImagesToResource(resourceId, insertedImageIds)
-
-            imageRepository.insertMany(images)
         }
     }
 

@@ -30,11 +30,7 @@ class ConfigurationViewModel @Inject constructor(
 
         viewModelScope.launch {
             configurationRepository.getAll().collect { configurations ->
-                if (configurations.isEmpty()) {
-                    configurationRepository.insert(Configuration(name = "Krok przykładowy 1",isActive = true, activeMode = "uczenie", isExample = true))
-                    configurationRepository.insert(Configuration(name = "Krok przykładowy 2", isExample = true))
-                    configurationRepository.insert(Configuration(name = "Krok przykładowy 3", isExample = true))
-                }
+
                 val active = configurations.find { it.isActive }
                 val (examples, userConfigs) = configurations.partition { it.isExample }
 

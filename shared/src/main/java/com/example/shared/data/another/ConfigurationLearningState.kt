@@ -43,7 +43,7 @@ fun ConfigurationLearningState.toLearningSettings(
         hintAfterSeconds = this.timeCount,
         typesOfHints = buildList {
             if (outlineCorrect) add("Obramuj poprawną")
-            if (animateCorrect) add("Animuj poprawną")
+            if (animateCorrect) add("Porusz poprawną")
             if (scaleCorrect) add("Powiększ poprawną")
             if (dimIncorrect) add("Wyszarz niepoprawne")
         },
