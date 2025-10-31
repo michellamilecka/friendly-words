@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -53,6 +54,7 @@ fun MaterialsListScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var expandedImagePath by remember { mutableStateOf<String?>(null) }
+    var showHideExamplesInfo by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
@@ -229,9 +231,53 @@ fun MaterialsListScreen(
                         )
                     )
                     Text(
-                        text = "Ukryj przykładowe materiały",
-                        fontSize = 20.sp,
+                        text = "UKRYJ PRZYKŁADOWE\n MATERIAŁY",
+                        fontSize = 17.sp,
                         color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(35.dp))
+                    IconButton(
+                        onClick = { showHideExamplesInfo = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Informacja",
+                            tint = Color.Gray
+                        )
+                    }
+                }
+
+                if (showHideExamplesInfo) {
+                    AlertDialog(
+                        onDismissRequest = { showHideExamplesInfo = false },
+                        title = { Text("Ukryj przykładowe materiały") },
+                        text = {
+                            Text(
+                                "Zaznacz tę opcję, aby na liście nie wyświetlały się materiały oznaczone jako przykładowe. Podczas dodawania materiałów do kroku uczenia również nie będzie ich widać."
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showHideExamplesInfo = false }) {
+                                Box(
+                                    modifier = Modifier
+                                        .clickable(
+                                            indication = null, // ⬅️ wyłącza ripple
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        ) {
+                                            showHideExamplesInfo = false
+                                        }
+                                ) {
+                                    Text(
+                                        text = "OK",
+                                        color = DarkBlue,
+                                        fontSize = 18.sp,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                }
+
+                            }
+                        }
                     )
                 }
                 Row(
@@ -473,6 +519,21 @@ fun MaterialsListScreen(
             )
         }
     }
+    val material = state.showUsedInDialogFor
+    val configs = state.usedInConfigurations
+
+    if (material != null && configs != null) {
+        val configList = configs.joinToString(", ")
+
+        YesNoDialog(
+            show = true,
+            message = "Ten materiał jest wykorzystywany w tych konfiguracjach: $configList.\n\nCzy na pewno chcesz go usunąć?",
+            onConfirm = { viewModel.onEvent(MaterialsListEvent.ConfirmDelete) },
+            onDismiss = { viewModel.onEvent(MaterialsListEvent.DismissDeleteDialog) }
+        )
+    }
+
+
 
     state.showCopyDialogFor?.let { material ->
         YesNoDialog(

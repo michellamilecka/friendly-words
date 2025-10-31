@@ -23,6 +23,9 @@ interface ConfigurationDao {
     @Delete
     suspend fun delete(configuration: Configuration)
 
+    @Query("SELECT * FROM configurations WHERE id IN (:ids)")
+    suspend fun getByIds(ids: List<Long>): List<Configuration>
+
     @Update
     suspend fun update(configuration: Configuration)
 

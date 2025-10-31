@@ -14,6 +14,8 @@ data class MaterialsListState(
     val infoMessage: String? = null,
     val hideExamples: Boolean = false,
     val showCopyDialogFor: Resource? = null,
-    val usedInSteps: List<String>? = null
+    val usedInSteps: List<String>? = null,
+    val usedInConfigurations: List<String>? = null,
+    val showUsedInDialogFor: Resource? = null
 
 )

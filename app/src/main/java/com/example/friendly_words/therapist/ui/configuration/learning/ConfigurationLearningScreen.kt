@@ -299,7 +299,7 @@ fun ConfigurationLearningScreen(
                     NumberSelector(
                         label = "Pokaż podpowiedź po (sekundach):",
                         minValue = 1,
-                        maxValue = 9,
+                        maxValue = 10,
                         value = state.timeCount,
                         onValueChange = { onEvent(ConfigurationLearningEvent.SetTimeCount(it)) }
                     )

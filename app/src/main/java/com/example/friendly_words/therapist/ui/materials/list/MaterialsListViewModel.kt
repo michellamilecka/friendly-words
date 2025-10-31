@@ -10,11 +10,13 @@ import com.example.shared.data.entities.Image
 import kotlinx.coroutines.flow.filterNotNull
 
 import com.example.shared.data.entities.Resource
+import com.example.shared.data.repositories.ConfigurationRepository
 import com.example.shared.data.repositories.ImageRepository
 import com.example.shared.data.repositories.ResourceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,12 +26,14 @@ class MaterialsListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val resourceRepository: ResourceRepository,
     private val imageRepository: ImageRepository,
+    private val configurationRepository: ConfigurationRepository,
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
 //    var uiState = mutableStateOf(MaterialsListState())
     private val _uiState = MutableStateFlow(MaterialsListState())
     val uiState: StateFlow<MaterialsListState> = _uiState
+
 
 
     init {
@@ -111,12 +115,46 @@ class MaterialsListViewModel @Inject constructor(
                     preferencesRepository.setHideExampleMaterials(event.hide)
                 }
             }
-            is MaterialsListEvent.RequestDelete -> {
-                _uiState.update {it.copy(
-                    showDeleteDialog = true,
-                    materialToDelete = event.index to event.resource
-                )}
+            is MaterialsListEvent.ShowUsedInConfigurations -> {
+                _uiState.update {
+                    it.copy(
+                        showUsedInDialogFor = event.resource,
+                        usedInConfigurations = event.configurations
+                    )
+                }
             }
+
+            is MaterialsListEvent.RequestDelete -> {
+                viewModelScope.launch {
+                    val resource = event.resource
+
+                    // 🔸 tu jest cały klucz:
+                    val configurations = configurationRepository
+                        .getConfigurationNamesUsingResource(resource.id)
+
+                    if (configurations.isNotEmpty()) {
+                        // materiał jest używany → pokaż specjalny popup
+                        _uiState.update {
+                            it.copy(
+                                showUsedInDialogFor = resource,
+                                usedInConfigurations = configurations,
+                                // WAŻNE: zapamiętaj też co faktycznie chcieliśmy usunąć
+                                materialToDelete = event.index to event.resource
+                            )
+                        }
+                    } else {
+                        // nie jest używany → normalny popup
+                        _uiState.update {
+                            it.copy(
+                                showDeleteDialog = true,
+                                materialToDelete = event.index to event.resource
+                            )
+                        }
+                    }
+                }
+            }
+
+
             is MaterialsListEvent.SelectByResourceId -> {
                 // znajdź index po resourceId
                 val idx = _uiState.value.materials.indexOfFirst { it.id == event.resourceId }
@@ -144,6 +182,8 @@ class MaterialsListViewModel @Inject constructor(
                         selectedIndex = newSelectedIndex,
                         showDeleteDialog = false,
                         materialToDelete = null,
+                        showUsedInDialogFor = null,
+                        usedInConfigurations = null,
                         infoMessage = "Pomyślnie usunięto materiał"
                     )}
                 }
@@ -152,7 +192,9 @@ class MaterialsListViewModel @Inject constructor(
             is MaterialsListEvent.DismissDeleteDialog -> {
                 _uiState.update {it.copy(
                     showDeleteDialog = false,
-                    materialToDelete = null
+                    materialToDelete = null,
+                    showUsedInDialogFor = null,
+                    usedInConfigurations = null
                 )}
             }
             is MaterialsListEvent.CopyRequested -> {
