@@ -78,6 +78,7 @@ fun ConfigurationSettingsScreen(
                 // 0) MATERIAŁY
                 0 -> ConfigurationMaterialScreen(
                     state = state.materialState,
+                    hideExamples = state.hideExamples,
                     onEvent = { viewModel.onEvent(ConfigurationSettingsEvent.Material(it)) },
                     onBackClick = onBackClick
                 )

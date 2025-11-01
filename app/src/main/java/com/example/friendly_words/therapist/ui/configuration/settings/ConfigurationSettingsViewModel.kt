@@ -5,11 +5,12 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.friendly_words.therapist.data.PreferencesRepository   // 👈 DODANE
 import com.example.shared.data.entities.Configuration
 import com.example.shared.data.entities.ConfigurationResource
 import com.example.shared.data.entities.toConfigurationLearningState
-import com.example.shared.data.entities.toConfigurationTestState
 import com.example.shared.data.entities.toConfigurationReinforcementState
+import com.example.shared.data.entities.toConfigurationTestState
 import com.example.shared.data.repositories.ConfigurationRepository
 import com.example.shared.data.repositories.ImageRepository
 import com.example.shared.data.repositories.ResourceRepository
@@ -20,12 +21,12 @@ import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationS
 import com.example.friendly_words.therapist.ui.configuration.save.ConfigurationSaveViewModel
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestEvent
 import com.example.friendly_words.therapist.ui.configuration.test.ConfigurationTestViewModel
-import com.example.shared.data.another.toDerivedTestState
-import com.example.shared.data.another.toTestSettings
 import com.example.shared.data.another.ConfigurationMaterialState
 import com.example.shared.data.another.VocabularyItem
 import com.example.shared.data.another.toConfigurationImageUsages
+import com.example.shared.data.another.toDerivedTestState
 import com.example.shared.data.another.toLearningSettings
+import com.example.shared.data.another.toTestSettings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,24 +34,33 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class ConfigurationSettingsViewModel @Inject constructor(
     private val configurationRepository: ConfigurationRepository,
     private val resourceRepository: ResourceRepository,
     private val imageRepository: ImageRepository,
-
-
-    ) : ViewModel() {
+    private val preferencesRepository: PreferencesRepository,       // 👈 DODANE
+) : ViewModel() {
 
     private val _state = MutableStateFlow(ConfigurationSettingsState())
     val state: StateFlow<ConfigurationSettingsState> = _state
 
     init {
-
-
+        // 1. od razu pobierz dostępne materiały
         viewModelScope.launch {
             updateAvailableWordsToAdd()
+        }
+
+        // 2. słuchaj preferencji „ukryj przykładowe materiały”
+        viewModelScope.launch {
+            preferencesRepository.hideExampleMaterialsFlow.collect { hide ->
+                _state.update {
+                    it.copy(hideExamples = hide)
+                }
+                // za każdym razem, gdy zmienia się hideExamples,
+                // możesz też odświeżyć listę dostępnych, jeśli chcesz ją przycinać już tu:
+                updateAvailableWordsToAdd()
+            }
         }
     }
 
@@ -80,7 +90,7 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 learnedWord = resource.learnedWord,
                                 selectedImages = List(images.size) { true },
                                 inLearningStates = List(images.size) { true },
-                                inTestStates = List(images.size) { true},
+                                inTestStates = List(images.size) { true },
                                 imagePaths = images.map { it.path }
                             )
 
@@ -107,8 +117,10 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 removeAt(materialEvent.index)
                             }
                             val newIndex = when {
-                                oldState.selectedWordIndex == materialEvent.index -> if (updatedList.isNotEmpty()) 0 else -1
-                                oldState.selectedWordIndex > materialEvent.index -> oldState.selectedWordIndex - 1
+                                oldState.selectedWordIndex == materialEvent.index ->
+                                    if (updatedList.isNotEmpty()) 0 else -1
+                                oldState.selectedWordIndex > materialEvent.index ->
+                                    oldState.selectedWordIndex - 1
                                 else -> oldState.selectedWordIndex
                             }
 
@@ -149,11 +161,13 @@ class ConfigurationSettingsViewModel @Inject constructor(
                     )
                 }
             }
+
             is ConfigurationSettingsEvent.ResetNavigation -> {
                 _state.update {
-                    it.copy(navigateToList = false,message = null)
+                    it.copy(navigateToList = false, message = null)
                 }
             }
+
             is ConfigurationSettingsEvent.Test -> {
                 _state.update { current ->
                     val learning = current.learningState
@@ -188,7 +202,10 @@ class ConfigurationSettingsViewModel @Inject constructor(
 
                             val currentName = saveEvent.name.trim()
                             val currentId = currentState.saveState.editingConfigId
-                            val alreadyExists = existingConfigurations.any { it.name.equals(saveEvent.name, ignoreCase = true) && (currentId == null || it.id != currentId) }
+                            val alreadyExists = existingConfigurations.any {
+                                it.name.equals(saveEvent.name, ignoreCase = true) &&
+                                        (currentId == null || it.id != currentId)
+                            }
 
                             if (alreadyExists) {
                                 _state.update {
@@ -198,14 +215,14 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 }
                                 return@launch
                             }
+
                             var insertedId: Long? = null
 
-                            // edytujemy istniejącą konfigurację
-                            if(currentId != null) {
-
+                            if (currentId != null) {
+                                // edycja istniejącej
                                 val originalConfiguration = existingConfigurations.first { it.id == currentId }
 
-                                val updated = originalConfiguration.copy (
+                                val updated = originalConfiguration.copy(
                                     name = currentName,
                                     isExample = false,
                                     learningSettings = learningSettings,
@@ -214,27 +231,30 @@ class ConfigurationSettingsViewModel @Inject constructor(
 
                                 configurationRepository.update(updated)
 
-                                // usuwanie starych powiązań - todo: zeby nie musiec usuwac tylko edytowac je
+                                // nadpisujemy powiązania
                                 configurationRepository.deleteResourcesByConfigId(currentId)
                                 configurationRepository.deleteImageUsagesByConfigId(currentId)
 
-                                // dodanie na nowo powiazan
                                 val resourceLinks = currentState.materialState.vocabItems
                                     .map { it.id }
                                     .distinct()
-                                    .map { ConfigurationResource(configurationId = currentId, resourceId = it) }
-
+                                    .map {
+                                        ConfigurationResource(
+                                            configurationId = currentId,
+                                            resourceId = it
+                                        )
+                                    }
                                 configurationRepository.insertResources(resourceLinks)
 
-                                val imageUsages = currentState.materialState.toConfigurationImageUsages(
-                                    configurationId = currentId,
-                                    imageRepository = imageRepository
-                                )
-
+                                val imageUsages =
+                                    currentState.materialState.toConfigurationImageUsages(
+                                        configurationId = currentId,
+                                        imageRepository = imageRepository
+                                    )
                                 configurationRepository.insertImageUsages(imageUsages)
 
                             } else {
-
+                                // nowa konfiguracja
                                 val configuration = Configuration(
                                     name = saveEvent.name,
                                     isExample = false,
@@ -245,19 +265,22 @@ class ConfigurationSettingsViewModel @Inject constructor(
                                 val newId = configurationRepository.insert(configuration)
                                 insertedId = newId
 
-                                // dodajemy informacje o tym ktore mateiraly zostaly dodane do konfiguracji
                                 val resourceLinks = currentState.materialState.vocabItems
                                     .map { it.id }
                                     .distinct()
-                                    .map { ConfigurationResource(configurationId = newId, resourceId = it) }
-
+                                    .map {
+                                        ConfigurationResource(
+                                            configurationId = newId,
+                                            resourceId = it
+                                        )
+                                    }
                                 configurationRepository.insertResources(resourceLinks)
 
-                                // dodajemy użycia obrazów w konfiguracji
-                                val imageUsages = currentState.materialState.toConfigurationImageUsages(
-                                    configurationId = newId,
-                                    imageRepository = imageRepository
-                                )
+                                val imageUsages =
+                                    currentState.materialState.toConfigurationImageUsages(
+                                        configurationId = newId,
+                                        imageRepository = imageRepository
+                                    )
                                 configurationRepository.insertImageUsages(imageUsages)
                             }
 
@@ -275,10 +298,14 @@ class ConfigurationSettingsViewModel @Inject constructor(
                             }
                         }
                     }
+
                     else -> {
                         _state.update {
                             it.copy(
-                                saveState = ConfigurationSaveViewModel.reduce(it.saveState, saveEvent)
+                                saveState = ConfigurationSaveViewModel.reduce(
+                                    it.saveState,
+                                    saveEvent
+                                )
                             )
                         }
                     }
@@ -288,19 +315,33 @@ class ConfigurationSettingsViewModel @Inject constructor(
             is ConfigurationSettingsEvent.ShowExitDialog -> {
                 _state.update { it.copy(showExitDialog = true) }
             }
+
             is ConfigurationSettingsEvent.CancelExitDialog -> {
                 _state.update { it.copy(showExitDialog = false) }
             }
+
             is ConfigurationSettingsEvent.ConfirmExitDialog -> {
                 _state.value = ConfigurationSettingsState()
             }
         }
     }
 
+    /**
+     * Odświeża listę materiałów, które można dodać w dialogu "DODAJ".
+     * Uwzględnia już materiały użyte w konfiguracji, a jeśli w stanie mamy
+     * hideExamples == true – to także ukrywa przykładowe.
+     */
     private suspend fun updateAvailableWordsToAdd() {
         val allResources = resourceRepository.getAllOnce()
-        val usedIds = _state.value.materialState.vocabItems.map { it.id }
-        val available = allResources.filter { it.id !in usedIds }
+        val current = _state.value
+        val usedIds = current.materialState.vocabItems.map { it.id }
+
+        var available = allResources.filter { it.id !in usedIds }
+
+        // 👈 tu używamy flagi ze stanu
+        if (current.hideExamples) {
+            available = available.filter { !it.isExample }
+        }
 
         _state.update {
             it.copy(
@@ -342,16 +383,13 @@ class ConfigurationSettingsViewModel @Inject constructor(
         }
     }
 
-    // zaladowanie istniejacej konfiguracji, gdy edycja i wrzucenie informacji do konkretnych State'ów
     fun loadConfiguration(configId: Long) {
         viewModelScope.launch {
-
             val config = configurationRepository.getById(configId)
-            val linkResources = configurationRepository.getResources(configId) // pobranie z ConfigurationResource
-            val linkImages = configurationRepository.getImageUsages(configId) // pobranie z ConfigurationImageUsage
+            val linkResources = configurationRepository.getResources(configId)
+            val linkImages = configurationRepository.getImageUsages(configId)
 
             val vocabItems = linkResources.map { link ->
-
                 val resource = resourceRepository.getById(link.resourceId)
                 val dbImages = imageRepository.getByResourceId(link.resourceId)
 
@@ -398,14 +436,11 @@ class ConfigurationSettingsViewModel @Inject constructor(
                         ),
                         editingConfigId = config.id
                     )
-
                 )
             }
 
-            // aktualizacja dostępnych słów do dodania
+            // po załadowaniu też uaktualnij dostępne
             updateAvailableWordsToAdd()
         }
     }
-
-
 }

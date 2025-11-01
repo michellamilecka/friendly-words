@@ -5,8 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,16 +14,17 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import com.composables.core.VerticalScrollbar
-import com.composables.core.rememberScrollAreaState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -35,12 +34,13 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.composables.core.ScrollArea
 import com.composables.core.Thumb
+import com.composables.core.VerticalScrollbar
+import com.composables.core.rememberScrollAreaState
 import com.example.friendly_words.therapist.ui.components.YesNoDialogWithName
 import com.example.friendly_words.therapist.ui.theme.DarkBlue
 import com.example.friendly_words.therapist.ui.theme.LightBlue
 import com.example.friendly_words.therapist.ui.theme.White
 import com.example.shared.data.another.ConfigurationMaterialState
-
 
 @Composable
 fun ImageSelectionWithCheckbox(
@@ -53,16 +53,16 @@ fun ImageSelectionWithCheckbox(
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .background(color = White)
     ) {
         images.chunked(3).forEachIndexed { chunkIndex, chunk ->
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-                    .background(
-                        color = White
-                    )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = White)
             ) {
                 chunk.forEachIndexed { innerIndex, resId ->
                     val index = chunkIndex * 3 + innerIndex
@@ -73,12 +73,10 @@ fun ImageSelectionWithCheckbox(
                         Checkbox(
                             checked = selectedImages[index],
                             onCheckedChange = {
-                                val newSelectedImages =
-                                    selectedImages.toMutableList()
-                                        .also { it[index] = it[index].not() }
+                                val newSelectedImages = selectedImages.toMutableList()
+                                    .also { it[index] = !it[index] }
                                 onImageSelectionChanged(newSelectedImages)
 
-                                // Automatyczne ustawienie inLearning i inTest
                                 val checked = newSelectedImages[index]
                                 onLearningTestChanged(index, checked, checked)
                             },
@@ -88,9 +86,13 @@ fun ImageSelectionWithCheckbox(
                                 checkmarkColor = Color.White
                             )
                         )
-                        Box(modifier = Modifier.height(200.dp).aspectRatio(1f)) {
+                        Box(
+                            modifier = Modifier
+                                .height(200.dp)
+                                .aspectRatio(1f)
+                        ) {
                             Image(
-                                painter = rememberAsyncImagePainter(model = resId), // teraz resId to String = ścieżka do pliku
+                                painter = rememberAsyncImagePainter(model = resId),
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize()
                             )
@@ -102,17 +104,12 @@ fun ImageSelectionWithCheckbox(
                         ) {
                             Checkbox(
                                 checked = inLearningStates[index],
-                                //enabled = selectedImages[index],
                                 onCheckedChange = { newLearning ->
                                     val currentTest = inTestStates[index]
                                     val shouldSelectImage = newLearning || currentTest
-
-                                    // Update stan obrazka (czy ma być wybrany)
                                     val newSelectedImages = selectedImages.toMutableList()
                                         .also { it[index] = shouldSelectImage }
                                     onImageSelectionChanged(newSelectedImages)
-
-                                    // Update stanu learning i test
                                     onLearningTestChanged(index, newLearning, currentTest)
                                 },
                                 colors = CheckboxDefaults.colors(
@@ -124,17 +121,12 @@ fun ImageSelectionWithCheckbox(
                             Spacer(modifier = Modifier.width(35.dp))
                             Checkbox(
                                 checked = inTestStates[index],
-                                //enabled = selectedImages[index],
                                 onCheckedChange = { newTest ->
                                     val currentLearning = inLearningStates[index]
                                     val shouldSelectImage = newTest || currentLearning
-
-                                    // Update stan obrazka
                                     val newSelectedImages = selectedImages.toMutableList()
                                         .also { it[index] = shouldSelectImage }
                                     onImageSelectionChanged(newSelectedImages)
-
-                                    // Update stanu learning i test
                                     onLearningTestChanged(index, currentLearning, newTest)
                                 },
                                 colors = CheckboxDefaults.colors(
@@ -161,19 +153,26 @@ fun ImageSelectionWithCheckbox(
 @Composable
 fun ConfigurationMaterialScreen(
     state: ConfigurationMaterialState,
+    hideExamples: Boolean,
     onEvent: (ConfigurationMaterialEvent) -> Unit,
     onBackClick: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val lazyListState = rememberLazyListState()
-    val scrollAreaState = rememberScrollAreaState(lazyListState)
+    val listState = rememberLazyListState()
+    val scrollAreaState = rememberScrollAreaState(listState)
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // 👇 nowy stan na pop-up z info
+    var showHideExamplesInfo by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(modifier = Modifier.fillMaxSize().weight(1f)) {
-            // Lista słów po lewej
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+        ) {
+            // LEWA STRONA
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -182,48 +181,55 @@ fun ConfigurationMaterialScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(modifier = Modifier.fillMaxHeight()) {
+
+                    // nagłówek
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        listOf(
-                            "SŁOWO",
-                            "W UCZENIU",
-                            "W TEŚCIE",
-                            "USUŃ"
-                        ).forEachIndexed { index, label ->
-                            Text(
-                                label,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Gray,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = if (index == 3) 13.dp else 0.dp),
-                                textAlign = when (index) {
-                                    0 -> TextAlign.Start
-                                    3 -> TextAlign.End
-                                    else -> TextAlign.Center
-                                }
-                            )
-                        }
+                        listOf("SŁOWO", "W UCZENIU", "W TEŚCIE", "USUŃ")
+                            .forEachIndexed { i, label ->
+                                Text(
+                                    label,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Gray,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = if (i == 3) 13.dp else 0.dp),
+                                    textAlign = when (i) {
+                                        0 -> TextAlign.Start
+                                        3 -> TextAlign.End
+                                        else -> TextAlign.Center
+                                    }
+                                )
+                            }
                     }
 
-                    LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    // lista
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
                         items(state.vocabItems) { item ->
                             val index = state.vocabItems.indexOf(item)
                             val isSelected = state.selectedWordIndex == index
 
                             val hasLearning = item.selectedImages.zip(item.inLearningStates)
-                                .any { it.first && it.second }
+                                .any { (isSelectedImage, inLearning) -> isSelectedImage && inLearning }
+
                             val hasTest = item.selectedImages.zip(item.inTestStates)
-                                .any { it.first && it.second }
+                                .any { (isSelectedImage, inTest) -> isSelectedImage && inTest }
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(if (isSelected) LightBlue.copy(alpha = 0.3f) else Color.Transparent)
+                                    .background(
+                                        if (isSelected) LightBlue.copy(alpha = 0.3f)
+                                        else Color.Transparent
+                                    )
                                     .padding(horizontal = 4.dp, vertical = 8.dp)
                                     .clickable {
                                         onEvent(ConfigurationMaterialEvent.WordSelected(index))
@@ -236,46 +242,46 @@ fun ConfigurationMaterialScreen(
                                         fontWeight = FontWeight.Bold,
                                     )
                                 }
-
-                                Row(
-                                    modifier = Modifier.weight(2f)
-                                ) {
+                                Row(modifier = Modifier.weight(2f)) {
                                     Row(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .fillMaxHeight(),
+                                        modifier = Modifier.weight(1f),
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Icon(
-                                            imageVector = if (hasLearning) Icons.Default.Check else Icons.Default.Close,
+                                            imageVector = if (hasLearning)
+                                                Icons.Default.Check
+                                            else
+                                                Icons.Default.Close,
                                             contentDescription = null,
-                                            tint = if (hasLearning) Color(0xFF4CAF50) else Color.Red,
+                                            tint = if (hasLearning)
+                                                Color(0xFF4CAF50)
+                                            else
+                                                Color.Red,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
-
                                     Row(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .fillMaxHeight(),
+                                        modifier = Modifier.weight(1f),
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Icon(
-                                            imageVector = if (hasTest) Icons.Default.Check else Icons.Default.Close,
+                                            imageVector = if (hasTest)
+                                                Icons.Default.Check
+                                            else
+                                                Icons.Default.Close,
                                             contentDescription = null,
-                                            tint = if (hasTest) Color(0xFF4CAF50) else Color.Red,
+                                            tint = if (hasTest)
+                                                Color(0xFF4CAF50)
+                                            else
+                                                Color.Red,
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
                                 }
-
                                 Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .fillMaxWidth(),
+                                    modifier = Modifier.weight(1f),
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
                                     IconButton(onClick = {
@@ -293,14 +299,19 @@ fun ConfigurationMaterialScreen(
                         }
                     }
 
-                    // Dialog przeniesiony poza pętlę LazyColumn
-                    if (state.showDeleteDialog && state.wordIndexToDelete != null && state.wordIndexToDelete!! in state.vocabItems.indices) {
+                    // dialog usuwania
+                    val indexToDelete = state.wordIndexToDelete
+                    if (
+                        state.showDeleteDialog &&
+                        indexToDelete != null &&
+                        indexToDelete in state.vocabItems.indices
+                    ) {
                         YesNoDialogWithName(
                             show = true,
                             message = "Czy chcesz usunąć z kroku uczenia słowo:",
-                            name = "${state.vocabItems[state.wordIndexToDelete!!].learnedWord}?",
+                            name = "${state.vocabItems[indexToDelete].learnedWord}?",
                             onConfirm = {
-                                onEvent(ConfigurationMaterialEvent.ConfirmDelete(state.wordIndexToDelete!!))
+                                onEvent(ConfigurationMaterialEvent.ConfirmDelete(indexToDelete))
                             },
                             onDismiss = {
                                 onEvent(ConfigurationMaterialEvent.CancelDelete)
@@ -308,14 +319,22 @@ fun ConfigurationMaterialScreen(
                         )
                     }
 
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        contentAlignment = Alignment.Center
+                    // przycisk DODAJ + ikonka info
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         Button(
-                            onClick = { onEvent(ConfigurationMaterialEvent.ShowAddDialog) },
+                            onClick = {
+                                onEvent(ConfigurationMaterialEvent.ShowAddDialog)
+                            },
                             colors = ButtonDefaults.buttonColors(backgroundColor = DarkBlue),
-                            modifier = Modifier.width(200.dp).height(48.dp)
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(48.dp)
                         ) {
                             Text(
                                 "DODAJ",
@@ -324,18 +343,31 @@ fun ConfigurationMaterialScreen(
                                 color = Color.White
                             )
                         }
+
+                        // 👇 MAŁA IKONKA INFO
+                        IconButton(
+                            onClick = { showHideExamplesInfo = true },
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(30.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Informacja o ukrytych materiałach",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(44.dp)
+                            )
+                        }
                     }
                 }
             }
 
-            // Obrazki i checkboxy po prawej
+            // PRAWA STRONA – obrazki
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(
-                        color = White
-                    )
+                    .background(color = White)
                     .padding(16.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
@@ -361,7 +393,9 @@ fun ConfigurationMaterialScreen(
                                 inLearningStates = item.inLearningStates,
                                 inTestStates = item.inTestStates,
                                 onImageSelectionChanged = {
-                                    onEvent(ConfigurationMaterialEvent.ImageSelectionChanged(it))
+                                    onEvent(
+                                        ConfigurationMaterialEvent.ImageSelectionChanged(it)
+                                    )
                                 },
                                 onLearningTestChanged = { i, learning, test ->
                                     onEvent(
@@ -374,7 +408,6 @@ fun ConfigurationMaterialScreen(
                                 }
                             )
                         }
-
                     } else {
                         Text(
                             "Do kroku uczenia nie dodano jeszcze żadnych materiałów. Aby to zrobić, kliknij przycisk 'DODAJ'. ",
@@ -385,18 +418,18 @@ fun ConfigurationMaterialScreen(
             }
         }
 
-
-        // Dialog dodawania słowa
+        // DIALOG DODAWANIA (to co miałeś)
         if (state.showAddDialog) {
-            val scrollState = rememberScrollState()
-            val lazyListState = rememberLazyListState()
-            val scrollAreaState = rememberScrollAreaState(lazyListState)
+            val dialogListState = rememberLazyListState()
+            val dialogScrollAreaState = rememberScrollAreaState(dialogListState)
 
-            // Funkcja do zamykania klawiatury i dialogu
+            val focus = focusManager
+            val kb = keyboardController
+
             val closeDialog = {
                 searchQuery = ""
-                keyboardController?.hide()
-                focusManager.clearFocus()
+                kb?.hide()
+                focus.clearFocus()
                 onEvent(ConfigurationMaterialEvent.HideAddDialog)
             }
 
@@ -420,8 +453,8 @@ fun ConfigurationMaterialScreen(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
                         ) {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
+                            kb?.hide()
+                            focus.clearFocus()
                         },
                     elevation = 8.dp,
                     color = Color.White,
@@ -432,15 +465,23 @@ fun ConfigurationMaterialScreen(
                             .fillMaxSize()
                             .padding(16.dp)
                     ) {
-                        // Tytuł
                         Text(
                             text = "Wybierz materiał, który chcesz dodać do kroku uczenia:",
                             fontSize = 26.sp,
                             fontStyle = FontStyle.Italic,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
+                        if (hideExamples) {
+                            Text(
+                                text = "Przykładowe materiały są ukryte. Aby je zobaczyć, odznacz opcję „Ukryj przykładowe materiały” w sekcji „Materiały edukacyjne”.",
+                                color = Color.Red,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            )
+                        }
 
-                        // Pole wyszukiwania z focusable
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
@@ -453,8 +494,8 @@ fun ConfigurationMaterialScreen(
                             ),
                             keyboardActions = KeyboardActions(
                                 onDone = {
-                                    keyboardController?.hide()
-                                    focusManager.clearFocus()
+                                    kb?.hide()
+                                    focus.clearFocus()
                                 }
                             ),
                             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -467,20 +508,22 @@ fun ConfigurationMaterialScreen(
                             )
                         )
 
-                        // Lista słów
-                        val filteredWords = state.availableWordsToAdd.filter {
-                            it.name.contains(searchQuery, ignoreCase = true) ||
-                                    it.category.contains(searchQuery, ignoreCase = true)
-                        }.sortedWith { a, b -> a.name.compareTo(b.name, ignoreCase = true) }
+                        val filteredWords = state.availableWordsToAdd
+                            .filter {
+                                (it.name.contains(searchQuery, ignoreCase = true) ||
+                                        it.category.contains(searchQuery, ignoreCase = true)) &&
+                                        (!hideExamples || !it.isExample)
+                            }
+                            .sortedBy { it.name.lowercase() }
 
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
                         ) {
-                            ScrollArea(state = scrollAreaState) {
+                            ScrollArea(state = dialogScrollAreaState) {
                                 LazyColumn(
-                                    state = lazyListState,
+                                    state = dialogListState,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(end = 12.dp)
@@ -501,7 +544,11 @@ fun ConfigurationMaterialScreen(
                                                     .fillMaxWidth()
                                                     .clickable {
                                                         closeDialog()
-                                                        onEvent(ConfigurationMaterialEvent.AddWord(resource.id))
+                                                        onEvent(
+                                                            ConfigurationMaterialEvent.AddWord(
+                                                                resource.id
+                                                            )
+                                                        )
                                                     }
                                                     .padding(vertical = 8.dp)
                                             ) {
@@ -520,7 +567,6 @@ fun ConfigurationMaterialScreen(
                                                     )
                                                 }
                                             }
-
                                         }
                                     }
                                 }
@@ -536,7 +582,6 @@ fun ConfigurationMaterialScreen(
                             }
                         }
 
-                        // Przycisk anuluj
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
@@ -554,15 +599,38 @@ fun ConfigurationMaterialScreen(
                     }
                 }
             }
+        }
+    }
 
-            // Efekt do ukrywania klawiatury przy zamknięciu
-            LaunchedEffect(state.showAddDialog) {
-                if (!state.showAddDialog) {
-                    keyboardController?.hide()
-                    focusManager.clearFocus()
+    if (showHideExamplesInfo) {
+        AlertDialog(
+            onDismissRequest = { showHideExamplesInfo = false },
+            title = { Text("Kolejny krok") },
+            text = {
+                Text(
+                    "Możesz dodać kolejne materiały poprzez przycisk DODAJ lub przejść do kolejnej zakładki klikając wyżej przycisk z napisem UCZENIE."
+                )
+            },
+            confirmButton = {
+                Box(
+                    modifier = Modifier
+                        .clickable(
+                            indication = null, // 🔇 brak ripple
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            showHideExamplesInfo = false
+                        }
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "OK",
+                        color = DarkBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
-        }
-
+        )
     }
+
 }
