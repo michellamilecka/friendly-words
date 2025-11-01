@@ -15,6 +15,7 @@ data class ConfigurationSettingsState (
     val showExitDialog: Boolean = false,
     val message: String? = null,
     val navigateToList: Boolean = false,
-    val lastSavedConfigId: Long? = null
+    val lastSavedConfigId: Long? = null,
+    val hideExamples: Boolean = false,
 
-)
+    )
