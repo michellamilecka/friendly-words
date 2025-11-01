@@ -5,7 +5,7 @@ import com.example.shared.data.entities.LearningSettings
 data class ConfigurationLearningState(
     val imageCount: Int = 3,
     val repetitionCount: Int = 2,
-    val timeCount: Int = 3,
+    val timeCount: Int = 6,
     val selectedPrompt: String = "{Słowo}",
     val captionsEnabled: Boolean = true,
     val readingEnabled: Boolean = true,

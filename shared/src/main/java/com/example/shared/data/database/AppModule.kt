@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.shared.data.daos.ConfigurationDao
+import com.example.shared.data.daos.ConfigurationResourceDao
 import com.example.shared.data.daos.ImageDao
 import com.example.shared.data.daos.ResourceDao
 import com.example.shared.data.repositories.ConfigurationRepository
@@ -46,6 +47,14 @@ object AppModule {
     fun provideConfigurationDao(db: AppDatabase): ConfigurationDao =
         db.configurationDao()
     @Provides
-    fun provideConfigurationRepository(dao: ConfigurationDao,  resourceDao: ResourceDao): ConfigurationRepository =
-        ConfigurationRepository(dao, resourceDao)
+    fun provideConfigurationResourceDao(db: AppDatabase): ConfigurationResourceDao =
+        db.configurationResourceDao()
+    @Provides
+    fun provideConfigurationRepository(
+        dao: ConfigurationDao,
+        resourceDao: ResourceDao,
+        configurationResourceDao: ConfigurationResourceDao
+    ): ConfigurationRepository =
+        ConfigurationRepository(dao, resourceDao, configurationResourceDao)
+
 }

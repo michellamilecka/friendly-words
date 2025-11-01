@@ -20,7 +20,9 @@ data class ConfigurationMaterialState(
     val selectedWordIndex: Int = 0,
     val wordIndexToDelete: Int? = null,
     val showDeleteDialog: Boolean = false,
-    val showAddDialog: Boolean = false
+    val showAddDialog: Boolean = false,
+    val hideExampleMaterials: Boolean = false
+
 )
 
 suspend fun ConfigurationMaterialState.toConfigurationImageUsages(

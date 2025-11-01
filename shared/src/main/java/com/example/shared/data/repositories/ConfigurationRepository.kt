@@ -13,11 +13,13 @@ import javax.inject.Singleton
 import com.example.shared.data.another.ConfigurationMaterialState
 import com.example.shared.data.another.VocabularyItem
 import com.example.shared.data.another.ConfigurationReinforcementState
+import com.example.shared.data.daos.ConfigurationResourceDao
 
 @Singleton
 class ConfigurationRepository @Inject constructor(
     private val dao: ConfigurationDao,
-    private val resourceDao: ResourceDao
+    private val resourceDao: ResourceDao,
+    private val configurationResourceDao: ConfigurationResourceDao
 ) {
 
     // metody dla konfiguracji
@@ -109,6 +111,14 @@ class ConfigurationRepository @Inject constructor(
 
     suspend fun hasMaterialsForActiveConfig(isTestMode: Boolean): Boolean {
         return getResourcesWithImagesForActiveConfigFiltered(isTestMode).isNotEmpty()
+    }
+    suspend fun getConfigurationNamesUsingResource(resourceId: Long): List<String> {
+        val links = configurationResourceDao.getByResourceId(resourceId)
+        if (links.isEmpty()) return emptyList()
+
+        val configIds = links.map { it.configurationId }
+        val configs = dao.getByIds(configIds)   // patrz niżej
+        return configs.map { it.name }
     }
 
     suspend fun getResourcesWithImagesForActiveConfigFiltered(isTestMode: Boolean): List<ResourceWithImages> {
