@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +70,6 @@ fun ImageSelectionWithCheckbox(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f)
                     ) {
-                        // checkbox główny (wybór obrazka)
                         Checkbox(
                             checked = selectedImages[index],
                             onCheckedChange = {
@@ -77,7 +77,6 @@ fun ImageSelectionWithCheckbox(
                                     .also { it[index] = !it[index] }
                                 onImageSelectionChanged(newSelectedImages)
 
-                                // automatycznie ustaw Uczenie + Test jeśli zaznaczony
                                 val checked = newSelectedImages[index]
                                 onLearningTestChanged(index, checked, checked)
                             },
@@ -87,8 +86,6 @@ fun ImageSelectionWithCheckbox(
                                 checkmarkColor = Color.White
                             )
                         )
-
-                        // sam obrazek
                         Box(
                             modifier = Modifier
                                 .height(200.dp)
@@ -100,24 +97,19 @@ fun ImageSelectionWithCheckbox(
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
-
-                        // dodatkowe checkboxy: Uczenie / Test
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(top = 8.dp)
                         ) {
-                            // Uczenie
                             Checkbox(
                                 checked = inLearningStates[index],
                                 onCheckedChange = { newLearning ->
                                     val currentTest = inTestStates[index]
                                     val shouldSelectImage = newLearning || currentTest
-
                                     val newSelectedImages = selectedImages.toMutableList()
                                         .also { it[index] = shouldSelectImage }
                                     onImageSelectionChanged(newSelectedImages)
-
                                     onLearningTestChanged(index, newLearning, currentTest)
                                 },
                                 colors = CheckboxDefaults.colors(
@@ -127,18 +119,14 @@ fun ImageSelectionWithCheckbox(
                                 )
                             )
                             Spacer(modifier = Modifier.width(35.dp))
-
-                            // Test
                             Checkbox(
                                 checked = inTestStates[index],
                                 onCheckedChange = { newTest ->
                                     val currentLearning = inLearningStates[index]
                                     val shouldSelectImage = newTest || currentLearning
-
                                     val newSelectedImages = selectedImages.toMutableList()
                                         .also { it[index] = shouldSelectImage }
                                     onImageSelectionChanged(newSelectedImages)
-
                                     onLearningTestChanged(index, currentLearning, newTest)
                                 },
                                 colors = CheckboxDefaults.colors(
@@ -175,13 +163,16 @@ fun ConfigurationMaterialScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    // 👇 nowy stan na pop-up z info
+    var showHideExamplesInfo by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            // LEWA STRONA – lista słów
+            // LEWA STRONA
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -244,7 +235,6 @@ fun ConfigurationMaterialScreen(
                                         onEvent(ConfigurationMaterialEvent.WordSelected(index))
                                     }
                             ) {
-                                // nazwa
                                 Box(modifier = Modifier.weight(1f)) {
                                     Text(
                                         item.learnedWord,
@@ -252,10 +242,7 @@ fun ConfigurationMaterialScreen(
                                         fontWeight = FontWeight.Bold,
                                     )
                                 }
-
-                                // status uczenie / test
                                 Row(modifier = Modifier.weight(2f)) {
-                                    // uczenie
                                     Row(
                                         modifier = Modifier.weight(1f),
                                         horizontalArrangement = Arrangement.Center,
@@ -274,7 +261,6 @@ fun ConfigurationMaterialScreen(
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }
-                                    // test
                                     Row(
                                         modifier = Modifier.weight(1f),
                                         horizontalArrangement = Arrangement.Center,
@@ -294,8 +280,6 @@ fun ConfigurationMaterialScreen(
                                         )
                                     }
                                 }
-
-                                // usuń
                                 Box(
                                     modifier = Modifier.weight(1f),
                                     contentAlignment = Alignment.CenterEnd
@@ -315,7 +299,7 @@ fun ConfigurationMaterialScreen(
                         }
                     }
 
-                    // dialog usuwania – z poprawionym smart castem
+                    // dialog usuwania
                     val indexToDelete = state.wordIndexToDelete
                     if (
                         state.showDeleteDialog &&
@@ -335,12 +319,13 @@ fun ConfigurationMaterialScreen(
                         )
                     }
 
-                    // przycisk DODAJ
-                    Box(
+                    // przycisk DODAJ + ikonka info
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        contentAlignment = Alignment.Center
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         Button(
                             onClick = {
@@ -358,11 +343,26 @@ fun ConfigurationMaterialScreen(
                                 color = Color.White
                             )
                         }
+
+                        // 👇 MAŁA IKONKA INFO
+                        IconButton(
+                            onClick = { showHideExamplesInfo = true },
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .size(30.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Informacja o ukrytych materiałach",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(44.dp)
+                            )
+                        }
                     }
                 }
             }
 
-            // PRAWA STRONA – obrazki i checkboxy
+            // PRAWA STRONA – obrazki
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -417,6 +417,8 @@ fun ConfigurationMaterialScreen(
                 }
             }
         }
+
+        // DIALOG DODAWANIA (to co miałeś)
         if (state.showAddDialog) {
             val dialogListState = rememberLazyListState()
             val dialogScrollAreaState = rememberScrollAreaState(dialogListState)
@@ -470,9 +472,6 @@ fun ConfigurationMaterialScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         if (hideExamples) {
-                            // sprawdźmy, czy w ogóle były jakieś przykładowe w availableWordsToAdd
-
-
                             Text(
                                 text = "Przykładowe materiały są ukryte. Aby je zobaczyć, odznacz opcję „Ukryj przykładowe materiały” w sekcji „Materiały edukacyjne”.",
                                 color = Color.Red,
@@ -481,7 +480,6 @@ fun ConfigurationMaterialScreen(
                                     .fillMaxWidth()
                                     .padding(bottom = 8.dp)
                             )
-
                         }
 
                         OutlinedTextField(
@@ -510,7 +508,6 @@ fun ConfigurationMaterialScreen(
                             )
                         )
 
-                        // TU używamy hideExamples z parametru
                         val filteredWords = state.availableWordsToAdd
                             .filter {
                                 (it.name.contains(searchQuery, ignoreCase = true) ||
@@ -518,9 +515,6 @@ fun ConfigurationMaterialScreen(
                                         (!hideExamples || !it.isExample)
                             }
                             .sortedBy { it.name.lowercase() }
-
-                        // 🔔 info o ukrytych przykładowych
-
 
                         Box(
                             modifier = Modifier
@@ -607,4 +601,36 @@ fun ConfigurationMaterialScreen(
             }
         }
     }
+
+    if (showHideExamplesInfo) {
+        AlertDialog(
+            onDismissRequest = { showHideExamplesInfo = false },
+            title = { Text("Kolejny krok") },
+            text = {
+                Text(
+                    "Możesz dodać kolejne materiały poprzez przycisk DODAJ lub przejść do kolejnej zakładki klikając wyżej przycisk z napisem UCZENIE."
+                )
+            },
+            confirmButton = {
+                Box(
+                    modifier = Modifier
+                        .clickable(
+                            indication = null, // 🔇 brak ripple
+                            interactionSource = remember { MutableInteractionSource() }
+                        ) {
+                            showHideExamplesInfo = false
+                        }
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "OK",
+                        color = DarkBlue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        )
+    }
+
 }
