@@ -1,10 +1,16 @@
 package com.example.friendly_words.therapist.ui.configuration.material
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.friendly_words.therapist.data.PreferencesRepository
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.example.shared.data.another.ConfigurationMaterialState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class ImageUsageInfo(
     val word: String,
@@ -14,7 +20,32 @@ data class ImageUsageInfo(
     val inTest: Boolean
 )
 @HiltViewModel
-class ConfigurationMaterialViewModel @Inject constructor() : ViewModel() {
+class ConfigurationMaterialViewModel @Inject constructor(
+    private val preferencesRepository: PreferencesRepository
+) : ViewModel() {
+    // główny stan tego ekranu
+    // (tu możesz wstawić swój stan początkowy, jeśli go gdzieś budujesz)
+    private val _uiState = MutableStateFlow(ConfigurationMaterialState())
+    val uiState: StateFlow<ConfigurationMaterialState> = _uiState
+
+    // to będzie nasze "ukryj przykładowe"
+    private val _hideExamples = MutableStateFlow(false)
+    val hideExamples: StateFlow<Boolean> = _hideExamples
+
+    init {
+        // słuchamy preferencji – dokładnie tak jak w MaterialsListViewModel
+        viewModelScope.launch {
+            preferencesRepository.hideExampleMaterialsFlow.collect { hide ->
+                _hideExamples.value = hide
+            }
+        }
+    }
+
+    fun onEvent(event: ConfigurationMaterialEvent) {
+        _uiState.update { current ->
+            reduce(current, event)
+        }
+    }
 
     companion object {
         fun reduce(
